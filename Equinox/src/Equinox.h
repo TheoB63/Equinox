@@ -2,8 +2,9 @@
 
 // For use by Equinox applications
 
-#include "Application.h"
+#include "Equinox/Application.h"
+#include "Equinox/Log.h"
 
 // ---Entry Point-----------------
-#include "EntryPoint.h"
+#include "Equinox/EntryPoint.h"
 // -------------------------------

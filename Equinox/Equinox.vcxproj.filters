@@ -23,16 +23,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cpp">
+    <ClCompile Include="src\Equinox\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ApplicationEvent.h">
+    <ClCompile Include="src\Equinox\Events\ApplicationEvent.h">
       <Filter>src\Equinox\Events</Filter>
     </ClCompile>
-    <ClCompile Include="src\Application.cpp">
+    <ClCompile Include="src\Equinox\Application.cpp">
       <Filter>src\Equinox</Filter>
     </ClCompile>
-    <ClCompile Include="src\Log.cpp">
+    <ClCompile Include="src\Equinox\Log.cpp">
       <Filter>src\Equinox</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,25 +45,25 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Event.h">
+    <ClInclude Include="src\Equinox\Events\Event.h">
       <Filter>src\Equinox\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\KeyEvent.h">
+    <ClInclude Include="src\Equinox\Events\KeyEvent.h">
       <Filter>src\Equinox\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\MouseEvent.h">
+    <ClInclude Include="src\Equinox\Events\MouseEvent.h">
       <Filter>src\Equinox\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\Application.h">
+    <ClInclude Include="src\Equinox\Application.h">
       <Filter>src\Equinox</Filter>
     </ClInclude>
-    <ClInclude Include="src\Log.h">
+    <ClInclude Include="src\Equinox\Log.h">
       <Filter>src\Equinox</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core.h">
+    <ClInclude Include="src\Equinox\Core.h">
       <Filter>src\Equinox</Filter>
     </ClInclude>
-    <ClInclude Include="src\EntryPoint.h">
+    <ClInclude Include="src\Equinox\EntryPoint.h">
       <Filter>src\Equinox</Filter>
     </ClInclude>
     <ClInclude Include="src\Equinox.h">

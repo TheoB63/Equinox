@@ -1,3 +1,13 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\Microsoft.Common.CurrentVersion.targets(2189,5): warning MSB9008: The referenced project ..\VulkanGraphics\VulkanGraphics.vcxproj does not exist.
   SandboxApp.cpp
+C:\Users\theob\Documents\BlanchardTheo\Documents\Cours\3emeAnnee\Projets Persos\Equinox\Equinox\src\Equinox\Log.h(19,42): warning C4251: 'Equinox::Log::s_ClientLogger': 'std::shared_ptr<spdlog::logger>' needs to have dll-interface to be used by clients of 'Equinox::Log'
+  (compiling source file 'SandboxApp.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<spdlog::logger>'
+  
+C:\Users\theob\Documents\BlanchardTheo\Documents\Cours\3emeAnnee\Projets Persos\Equinox\Equinox\src\Equinox\Log.h(20,42): warning C4251: 'Equinox::Log::s_CoreLogger': 'std::shared_ptr<spdlog::logger>' needs to have dll-interface to be used by clients of 'Equinox::Log'
+  (compiling source file 'SandboxApp.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\memory(1565,7):
+      see declaration of 'std::shared_ptr<spdlog::logger>'
+  
   Sandbox.vcxproj -> C:\Users\theob\Documents\BlanchardTheo\Documents\Cours\3emeAnnee\Projets Persos\Equinox\bin\x64-Debug\Sandbox\Sandbox.exe

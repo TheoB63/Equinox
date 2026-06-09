@@ -111,8 +111,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>EQN_PLATFORM_WINDOWS;EQN_BUILD_DLL;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\stb;$(SolutionDir)External\tinyobjloader;C:\VulkanSDK\1.4.350.0\Include;$(SolutionDir)External\glfw-3.4.bin.WIN64\include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\stb;$(SolutionDir)External\tinyobjloader;C:\VulkanSDK\1.4.350.0\Include;$(SolutionDir)External\glfw-3.4.bin.WIN64\include;$(SolutionDir)External\spdlog\include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,8 +130,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>EQN_PLATFORM_WINDOWS;EQN_BUILD_DLL;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)External\stb;$(SolutionDir)External\tinyobjloader;C:\VulkanSDK\1.4.350.0\Include;$(SolutionDir)External\glfw-3.4.bin.WIN64\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\stb;$(SolutionDir)External\tinyobjloader;C:\VulkanSDK\1.4.350.0\Include;$(SolutionDir)External\glfw-3.4.bin.WIN64\include;$(SolutionDir)External\spdlog\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,24 +142,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Application.cpp" />
-    <ClCompile Include="src\ApplicationEvent.h" />
-    <ClCompile Include="src\Log.cpp" />
-    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Equinox\Application.cpp" />
+    <ClCompile Include="src\Equinox\Events\ApplicationEvent.h" />
+    <ClCompile Include="src\Equinox\Log.cpp" />
+    <ClCompile Include="src\Equinox\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\WorkingDirectory\shaders\shader.frag" />
     <None Include="..\WorkingDirectory\shaders\shader.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Application.h" />
-    <ClInclude Include="src\Core.h" />
-    <ClInclude Include="src\EntryPoint.h" />
+    <ClInclude Include="src\Equinox\Application.h" />
+    <ClInclude Include="src\Equinox\Core.h" />
+    <ClInclude Include="src\Equinox\EntryPoint.h" />
     <ClInclude Include="src\Equinox.h" />
-    <ClInclude Include="src\Event.h" />
-    <ClInclude Include="src\KeyEvent.h" />
-    <ClInclude Include="src\Log.h" />
-    <ClInclude Include="src\MouseEvent.h" />
+    <ClInclude Include="src\Equinox\Events\Event.h" />
+    <ClInclude Include="src\Equinox\Events\KeyEvent.h" />
+    <ClInclude Include="src\Equinox\Log.h" />
+    <ClInclude Include="src\Equinox\Events\MouseEvent.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
