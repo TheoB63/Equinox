@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.36811.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandbox", "Sandbox\Sandbox.vcxproj", "{EC8F1F5D-57CC-44AB-83C4-57F169C52E31}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MyEngine", "VulkanGraphics\VulkanGraphics.vcxproj", "{96652E12-6797-4541-99CD-1BB417E66A2F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Equinox", "Equinox\Equinox.vcxproj", "{96652E12-6797-4541-99CD-1BB417E66A2F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
