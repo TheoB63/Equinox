@@ -4,12 +4,12 @@
 
 extern Equinox::Application* Equinox::CreateApplication();
 
-int main(int argc,char** argv)
+int main(int argc, char** argv)
 {
 	Equinox::Log::Init();
 	EQN_CORE_WARN("Initialized Log!");
 	int a = 5;
-	EQN_INFO("Welcome to Equinox! Var={0}",a);
+	EQN_INFO("Hello! Var={0}", a);
 
 	auto app = Equinox::CreateApplication();
 	app->Run();

@@ -1,73 +1,47 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Equinox">
+      <UniqueIdentifier>{EE9549D3-5A75-C86E-638D-5345CFEB2ED0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="Resource Files\Shaders">
-      <UniqueIdentifier>{0b92da95-cacb-47c2-88a1-e2aa6b16a3b4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src">
-      <UniqueIdentifier>{da285325-376e-4c79-89cd-fd288e9ca039}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Equinox">
-      <UniqueIdentifier>{2b1b25f7-9bdf-4320-a116-14c861550984}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Equinox\Events">
-      <UniqueIdentifier>{8e323325-aad3-4ae2-90bc-47bbed02181f}</UniqueIdentifier>
+    <Filter Include="Equinox\Events">
+      <UniqueIdentifier>{128AB9E8-FE57-ADEE-E7EB-1D15D3588953}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Equinox\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Equinox\Events\ApplicationEvent.h">
-      <Filter>src\Equinox\Events</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Equinox\Application.cpp">
-      <Filter>src\Equinox</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Equinox\Log.cpp">
-      <Filter>src\Equinox</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\WorkingDirectory\shaders\shader.vert">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="..\WorkingDirectory\shaders\shader.frag">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Equinox\Events\Event.h">
-      <Filter>src\Equinox\Events</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Equinox\Events\KeyEvent.h">
-      <Filter>src\Equinox\Events</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Equinox\Events\MouseEvent.h">
-      <Filter>src\Equinox\Events</Filter>
-    </ClInclude>
+    <ClInclude Include="src\Equinox.h" />
     <ClInclude Include="src\Equinox\Application.h">
-      <Filter>src\Equinox</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Equinox\Log.h">
-      <Filter>src\Equinox</Filter>
+      <Filter>Equinox</Filter>
     </ClInclude>
     <ClInclude Include="src\Equinox\Core.h">
-      <Filter>src\Equinox</Filter>
+      <Filter>Equinox</Filter>
     </ClInclude>
     <ClInclude Include="src\Equinox\EntryPoint.h">
-      <Filter>src\Equinox</Filter>
+      <Filter>Equinox</Filter>
     </ClInclude>
-    <ClInclude Include="src\Equinox.h">
-      <Filter>src</Filter>
+    <ClInclude Include="src\Equinox\Events\ApplicationEvent.h">
+      <Filter>Equinox\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Equinox\Events\Event.h">
+      <Filter>Equinox\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Equinox\Events\KeyEvent.h">
+      <Filter>Equinox\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Equinox\Events\MouseEvent.h">
+      <Filter>Equinox\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Equinox\Log.h">
+      <Filter>Equinox</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Equinox\Application.cpp">
+      <Filter>Equinox</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Equinox\Log.cpp">
+      <Filter>Equinox</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
 </Project>

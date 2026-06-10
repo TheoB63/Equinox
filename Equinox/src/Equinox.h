@@ -5,6 +5,6 @@
 #include "Equinox/Application.h"
 #include "Equinox/Log.h"
 
-// ---Entry Point-----------------
+// ---Entry Point---------------------
 #include "Equinox/EntryPoint.h"
-// -------------------------------
+// -----------------------------------

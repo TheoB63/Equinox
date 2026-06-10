@@ -12,6 +12,7 @@ public:
 	{
 
 	}
+
 };
 
 Equinox::Application* Equinox::CreateApplication()
