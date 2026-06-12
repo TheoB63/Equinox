@@ -10,6 +10,11 @@ workspace "Equinox"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+IncludeDir = {}
+IncludeDir["GLFW"] = "Equinox/vendor/GLFW/include"
+
+include "Equinox/vendor/GLFW"
+
 project "Equinox"
 	location "Equinox"
 	kind "SharedLib"
@@ -30,7 +35,14 @@ project "Equinox"
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{prj.name}/vendor/spdlog/include"
+		"%{prj.name}/vendor/spdlog/include",
+		"%{IncludeDir.GLFW}"
+	}
+
+	links 
+	{ 
+		"GLFW",
+		"opengl32.lib"
 	}
 
 	filter "system:windows"
