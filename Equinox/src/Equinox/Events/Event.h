@@ -3,9 +3,6 @@
 #include "Equinox/Core.h"
 #include "Equinox/Log.h"
 
-#include <string>
-#include <functional>
-
 namespace Equinox {
 
 	// Events in Equinox are currently blocking, meaning when an event occurs it

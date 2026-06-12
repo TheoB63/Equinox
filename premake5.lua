@@ -18,6 +18,9 @@ project "Equinox"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+	pchheader "eqnpch.h"
+	pchsource "Equinox/src/eqnpch.cpp"
+
 	files
 	{
 		"%{prj.name}/src/**.h",

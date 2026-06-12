@@ -2,8 +2,6 @@
 
 #include "Event.h"
 
-#include <sstream>
-
 namespace Equinox {
 
 	class EQUINOX_API MouseMovedEvent : public Event

@@ -1,3 +1,4 @@
+#include "eqnpch.h"
 #include "Application.h"
 
 #include "Equinox/Events/ApplicationEvent.h"

@@ -34,6 +34,7 @@
     <ClInclude Include="src\Equinox\Log.h">
       <Filter>Equinox</Filter>
     </ClInclude>
+    <ClInclude Include="src\eqnpch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Equinox\Application.cpp">
@@ -42,6 +43,7 @@
     <ClCompile Include="src\Equinox\Log.cpp">
       <Filter>Equinox</Filter>
     </ClCompile>
+    <ClCompile Include="src\eqnpch.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
 </Project>
