@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Equinox/Log.h"
+
 #ifdef EQ_PLATFORM_WINDOWS
 	#include <Windows.h>
 #endif
