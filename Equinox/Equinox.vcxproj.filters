@@ -37,6 +37,12 @@
     <ClInclude Include="src\Equinox\Events\MouseEvent.h">
       <Filter>Equinox\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Equinox\Layer.h">
+      <Filter>Equinox</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Equinox\LayerStack.h">
+      <Filter>Equinox</Filter>
+    </ClInclude>
     <ClInclude Include="src\Equinox\Log.h">
       <Filter>Equinox</Filter>
     </ClInclude>
@@ -50,6 +56,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Equinox\Application.cpp">
+      <Filter>Equinox</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Equinox\Layer.cpp">
+      <Filter>Equinox</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Equinox\LayerStack.cpp">
       <Filter>Equinox</Filter>
     </ClCompile>
     <ClCompile Include="src\Equinox\Log.cpp">

@@ -3,6 +3,7 @@
 // For use by Equinox applications
 
 #include "Equinox/Application.h"
+#include "Equinox/Layer.h"
 #include "Equinox/Log.h"
 
 // ---Entry Point---------------------
