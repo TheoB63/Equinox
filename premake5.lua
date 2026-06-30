@@ -19,6 +19,8 @@ include "Equinox/vendor/GLFW"
 include "Equinox/vendor/Glad"
 include "Equinox/vendor/imgui"
 
+startproject "Sandbox"
+
 project "Equinox"
 	location "Equinox"
 	kind "SharedLib"
