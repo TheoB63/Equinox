@@ -6,6 +6,8 @@
 #include "Equinox/Layer.h"
 #include "Equinox/Log.h"
 
+#include "Equinox/ImGui/ImGuiLayer.h"
+
 // ---Entry Point---------------------
 #include "Equinox/EntryPoint.h"
 // -----------------------------------

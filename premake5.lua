@@ -12,8 +12,12 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
 IncludeDir["GLFW"] = "Equinox/vendor/GLFW/include"
+IncludeDir["Glad"] = "Equinox/vendor/Glad/include"
+IncludeDir["ImGui"] = "Equinox/vendor/imgui"
 
 include "Equinox/vendor/GLFW"
+include "Equinox/vendor/Glad"
+include "Equinox/vendor/imgui"
 
 project "Equinox"
 	location "Equinox"
@@ -36,12 +40,16 @@ project "Equinox"
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
-		"%{IncludeDir.GLFW}"
+		"%{IncludeDir.GLFW}",
+		"%{IncludeDir.Glad}",
+		"%{IncludeDir.ImGui}"
 	}
 
 	links 
 	{ 
 		"GLFW",
+		"Glad",
+		"ImGui",
 		"opengl32.lib"
 	}
 
@@ -58,7 +66,8 @@ project "Equinox"
 		defines
 		{
 			"EQN_PLATFORM_WINDOWS",
-			"EQN_BUILD_DLL"
+			"EQN_BUILD_DLL",
+			"GLFW_INCLUDE_NONE"
 		}
 
 		postbuildcommands

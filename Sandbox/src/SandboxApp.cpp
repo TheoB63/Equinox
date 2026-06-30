@@ -27,6 +27,7 @@ public:
 	Sandbox()
 	{
 		PushLayer(new ExampleLayer());
+		PushLayer(new Equinox::ImGuiLayer());
 	}
 
 	~Sandbox()
