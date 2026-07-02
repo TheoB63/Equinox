@@ -10,6 +10,10 @@
 	#error Equinox only supports Windows!
 #endif
 
+#ifdef EQN_DEBUG
+	#define EQN_ENABLE_ASSERTS
+#endif
+
 #ifdef EQN_ENABLE_ASSERTS
 	#define EQN_ASSERT(x, ...) { if(!(x)) { EQN_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
 	#define EQN_CORE_ASSERT(x, ...) { if(!(x)) { EQN_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); } }
