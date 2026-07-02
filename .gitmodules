@@ -7,3 +7,6 @@
 [submodule "Equinox/vendor/imgui"]
 	path = Equinox/vendor/imgui
 	url = https://github.com/TheCherno/imgui
+[submodule "Equinox/vendor/glm"]
+	path = Equinox/vendor/glm
+	url = https://github.com/g-truc/glm

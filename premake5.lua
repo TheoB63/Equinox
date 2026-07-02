@@ -15,11 +15,11 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "Equinox/vendor/GLFW/include"
 IncludeDir["Glad"] = "Equinox/vendor/Glad/include"
 IncludeDir["ImGui"] = "Equinox/vendor/imgui"
+IncludeDir["glm"] = "Equinox/vendor/glm"
 
 include "Equinox/vendor/GLFW"
 include "Equinox/vendor/Glad"
 include "Equinox/vendor/imgui"
-
 
 project "Equinox"
 	location "Equinox"
@@ -36,7 +36,9 @@ project "Equinox"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/glm/glm/**.hpp",
+		"%{prj.name}/vendor/glm/glm/**.inl",
 	}
 
 	includedirs
@@ -45,7 +47,8 @@ project "Equinox"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"	
 	}
 
 	links 
@@ -110,7 +113,8 @@ project "Sandbox"
 	includedirs
 	{
 		"Equinox/vendor/spdlog/include",
-		"Equinox/src"
+		"Equinox/src",
+		"%{IncludeDir.glm}"
 	}
 
 	links
