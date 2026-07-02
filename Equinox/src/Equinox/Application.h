@@ -7,6 +7,8 @@
 #include "Equinox/Events/Event.h"
 #include "Equinox/Events/ApplicationEvent.h"
 
+#include "Equinox/ImGui/ImGuiLayer.h"
+
 namespace Equinox {
 
 	class EQUINOX_API Application
@@ -29,6 +31,7 @@ namespace Equinox {
 		bool OnWindowClose(WindowCloseEvent& e);
 
 		std::unique_ptr<Window> m_Window;
+		ImGuiLayer* m_ImGuiLayer;
 		bool m_Running = true;
 		LayerStack m_LayerStack;
 	private:

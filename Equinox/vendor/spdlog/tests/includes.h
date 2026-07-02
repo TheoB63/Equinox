@@ -1,14 +1,6 @@
 #pragma once
 
-#if defined(__GNUC__) && __GNUC__ == 12
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"  // Workaround for GCC 12
-#endif
-#include <catch2/catch_all.hpp>
-#if defined(__GNUC__) && __GNUC__ == 12
-#pragma GCC diagnostic pop
-#endif
-
+#include "catch.hpp"
 #include "utils.h"
 #include <chrono>
 #include <cstdio>
@@ -16,30 +8,17 @@
 #include <fstream>
 #include <iostream>
 #include <ostream>
-#include <sstream>
 #include <string>
-#include <iomanip>
-#include <stdlib.h>
 
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
-
-#undef SPDLOG_LEVEL_NAMES
-#undef SPDLOG_SHORT_LEVEL_NAMES
+#define SPDLOG_TRACE_ON
+#define SPDLOG_DEBUG_ON
+#define SPDLOG_ENABLE_MESSAGE_COUNTER
 
 #include "spdlog/spdlog.h"
 #include "spdlog/async.h"
-#include "spdlog/details/fmt_helper.h"
-#include "spdlog/details/os.h"
-
-#ifndef SPDLOG_NO_TLS
-#include "spdlog/mdc.h"
-#endif
-
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/daily_file_sink.h"
 #include "spdlog/sinks/null_sink.h"
 #include "spdlog/sinks/ostream_sink.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/sinks/msvc_sink.h"
-#include "spdlog/pattern_formatter.h"

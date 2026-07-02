@@ -11,6 +11,7 @@ workspace "Equinox"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
+-- Include directories relative to root folder (solution directory)
 IncludeDir = {}
 IncludeDir["GLFW"] = "Equinox/vendor/GLFW/include"
 IncludeDir["Glad"] = "Equinox/vendor/Glad/include"
@@ -23,9 +24,10 @@ include "Equinox/vendor/imgui"
 
 project "Equinox"
 	location "Equinox"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
-	staticruntime "off"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -41,6 +43,11 @@ project "Equinox"
 		"%{prj.name}/vendor/glm/glm/**.inl",
 	}
 
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
+
 	includedirs
 	{
 		"%{prj.name}/src",
@@ -48,7 +55,7 @@ project "Equinox"
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.glm}"	
+		"%{IncludeDir.glm}"
 	}
 
 	links 
@@ -60,13 +67,7 @@ project "Equinox"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
-
-    buildoptions
-		{
-			"/utf-8"
-		}
 
 		defines
 		{
@@ -75,31 +76,27 @@ project "Equinox"
 			"GLFW_INCLUDE_NONE"
 		}
 
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/Sandbox/\"")
-		}
-
 	filter "configurations:Debug"
 		defines "EQN_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "EQN_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "EQN_DIST"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
-	staticruntime "off"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -114,6 +111,7 @@ project "Sandbox"
 	{
 		"Equinox/vendor/spdlog/include",
 		"Equinox/src",
+		"Equinox/vendor",
 		"%{IncludeDir.glm}"
 	}
 
@@ -123,14 +121,8 @@ project "Sandbox"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		systemversion "latest"
 
-    buildoptions
-		{
-			"/utf-8"
-		}
-    
 		defines
 		{
 			"EQN_PLATFORM_WINDOWS"
@@ -139,14 +131,14 @@ project "Sandbox"
 	filter "configurations:Debug"
 		defines "EQN_DEBUG"
 		runtime "Debug"
-		symbols "On"
+		symbols "on"
 
 	filter "configurations:Release"
 		defines "EQN_RELEASE"
 		runtime "Release"
-		optimize "On"
+		optimize "on"
 
 	filter "configurations:Dist"
 		defines "EQN_DIST"
 		runtime "Release"
-		optimize "On"
+		optimize "on"

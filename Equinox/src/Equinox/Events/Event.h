@@ -1,7 +1,7 @@
 #pragma once
 
+#include "eqnpch.h"
 #include "Equinox/Core.h"
-#include "Equinox/Log.h"
 
 namespace Equinox {
 
@@ -22,11 +22,11 @@ namespace Equinox {
 	enum EventCategory
 	{
 		None = 0,
-		EventCategoryApplication = BIT(0),
-		EventCategoryInput = BIT(1),
-		EventCategoryKeyboard = BIT(2),
-		EventCategoryMouse = BIT(3),
-		EventCategoryMouseButton = BIT(4)
+		EventCategoryApplication    = BIT(0),
+		EventCategoryInput          = BIT(1),
+		EventCategoryKeyboard       = BIT(2),
+		EventCategoryMouse          = BIT(3),
+		EventCategoryMouseButton    = BIT(4)
 	};
 
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::##type; }\
@@ -79,12 +79,6 @@ namespace Equinox {
 	{
 		return os << e.ToString();
 	}
+
 }
 
-template <typename T>
-struct fmt::formatter<T, std::enable_if_t<std::is_base_of<Equinox::Event, T>::value, char>> :
-	fmt::formatter<std::string> {
-	auto format(const Equinox::Event& e, format_context& ctx) const {
-		return fmt::formatter<std::string>::format(e.ToString(), ctx);
-	}
-};

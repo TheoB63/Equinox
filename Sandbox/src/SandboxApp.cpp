@@ -1,5 +1,6 @@
 #include <Equinox.h>
 
+#include "imgui/imgui.h"
 
 class ExampleLayer : public Equinox::Layer
 {
@@ -13,6 +14,13 @@ public:
 	{
 		if (Equinox::Input::IsKeyPressed(EQN_KEY_TAB))
 			EQN_TRACE("Tab key is pressed (poll)!");
+	}
+
+	virtual void OnImGuiRender() override
+	{
+		ImGui::Begin("Test");
+		ImGui::Text("Hello World");
+		ImGui::End();
 	}
 
 	void OnEvent(Equinox::Event& event) override
@@ -34,7 +42,6 @@ public:
 	Sandbox()
 	{
 		PushLayer(new ExampleLayer());
-		PushLayer(new Equinox::ImGuiLayer());
 	}
 
 	~Sandbox()

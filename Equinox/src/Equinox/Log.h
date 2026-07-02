@@ -20,6 +20,7 @@ namespace Equinox {
 
 }
 
+
 // Core log macros
 #define EQN_CORE_TRACE(...)    ::Equinox::Log::GetCoreLogger()->trace(__VA_ARGS__)
 #define EQN_CORE_INFO(...)     ::Equinox::Log::GetCoreLogger()->info(__VA_ARGS__)

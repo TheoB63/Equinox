@@ -1,11 +1,15 @@
 #pragma once
 
 #ifdef EQN_PLATFORM_WINDOWS
+#if EQN_DYNAMIC_LINK
 	#ifdef EQN_BUILD_DLL
 		#define EQUINOX_API __declspec(dllexport)
 	#else
 		#define EQUINOX_API __declspec(dllimport)
 	#endif
+#else
+    #define EQUINOX_API
+#endif
 #else
 	#error Equinox only supports Windows!
 #endif
