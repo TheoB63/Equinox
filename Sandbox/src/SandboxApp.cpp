@@ -11,12 +11,19 @@ public:
 
 	void OnUpdate() override
 	{
-		EQN_INFO("ExampleLayer::Update");
+		if (Equinox::Input::IsKeyPressed(EQN_KEY_TAB))
+			EQN_TRACE("Tab key is pressed (poll)!");
 	}
 
 	void OnEvent(Equinox::Event& event) override
 	{
-		EQN_TRACE("{0}", event);
+		if (event.GetEventType() == Equinox::EventType::KeyPressed)
+		{
+			Equinox::KeyPressedEvent& e = (Equinox::KeyPressedEvent&)event;
+			if (e.GetKeyCode() == EQN_KEY_TAB)
+				EQN_TRACE("Tab key is pressed (event)!");
+			EQN_TRACE("{0}", (char)e.GetKeyCode());
+		}
 	}
 
 };

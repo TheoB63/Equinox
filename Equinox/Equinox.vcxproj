@@ -97,7 +97,7 @@
     <ProjectReference>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>IF EXIST ..\bin\Debug-windows-x86_64\Equinox\Equinox.dll\ (xcopy /Q /E /Y /I ..\bin\Debug-windows-x86_64\Equinox\Equinox.dll ..\bin\Debug-windows-x86_64\Sandbox &gt; nul) ELSE (xcopy /Q /Y /I ..\bin\Debug-windows-x86_64\Equinox\Equinox.dll ..\bin\Debug-windows-x86_64\Sandbox &gt; nul)</Command>
+      <Command>IF EXIST ..\bin\Debug-windows-x86_64\Equinox\Equinox.dll\ (xcopy /Q /E /Y /I ..\bin\Debug-windows-x86_64\Equinox\Equinox.dll "..\bin\Debug-windows-x86_64\Sandbox\" &gt; nul) ELSE (xcopy /Q /Y /I ..\bin\Debug-windows-x86_64\Equinox\Equinox.dll "..\bin\Debug-windows-x86_64\Sandbox\" &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -127,7 +127,7 @@
     <ProjectReference>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>IF EXIST ..\bin\Release-windows-x86_64\Equinox\Equinox.dll\ (xcopy /Q /E /Y /I ..\bin\Release-windows-x86_64\Equinox\Equinox.dll ..\bin\Release-windows-x86_64\Sandbox &gt; nul) ELSE (xcopy /Q /Y /I ..\bin\Release-windows-x86_64\Equinox\Equinox.dll ..\bin\Release-windows-x86_64\Sandbox &gt; nul)</Command>
+      <Command>IF EXIST ..\bin\Release-windows-x86_64\Equinox\Equinox.dll\ (xcopy /Q /E /Y /I ..\bin\Release-windows-x86_64\Equinox\Equinox.dll "..\bin\Release-windows-x86_64\Sandbox\" &gt; nul) ELSE (xcopy /Q /Y /I ..\bin\Release-windows-x86_64\Equinox\Equinox.dll "..\bin\Release-windows-x86_64\Sandbox\" &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -157,7 +157,7 @@
     <ProjectReference>
     </ProjectReference>
     <PostBuildEvent>
-      <Command>IF EXIST ..\bin\Dist-windows-x86_64\Equinox\Equinox.dll\ (xcopy /Q /E /Y /I ..\bin\Dist-windows-x86_64\Equinox\Equinox.dll ..\bin\Dist-windows-x86_64\Sandbox &gt; nul) ELSE (xcopy /Q /Y /I ..\bin\Dist-windows-x86_64\Equinox\Equinox.dll ..\bin\Dist-windows-x86_64\Sandbox &gt; nul)</Command>
+      <Command>IF EXIST ..\bin\Dist-windows-x86_64\Equinox\Equinox.dll\ (xcopy /Q /E /Y /I ..\bin\Dist-windows-x86_64\Equinox\Equinox.dll "..\bin\Dist-windows-x86_64\Sandbox\" &gt; nul) ELSE (xcopy /Q /Y /I ..\bin\Dist-windows-x86_64\Equinox\Equinox.dll "..\bin\Dist-windows-x86_64\Sandbox\" &gt; nul)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -170,11 +170,15 @@
     <ClInclude Include="src\Equinox\Events\KeyEvent.h" />
     <ClInclude Include="src\Equinox\Events\MouseEvent.h" />
     <ClInclude Include="src\Equinox\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\Equinox\Input.h" />
+    <ClInclude Include="src\Equinox\KeyCodes.h" />
     <ClInclude Include="src\Equinox\Layer.h" />
     <ClInclude Include="src\Equinox\LayerStack.h" />
     <ClInclude Include="src\Equinox\Log.h" />
+    <ClInclude Include="src\Equinox\MouseButtonCodes.h" />
     <ClInclude Include="src\Equinox\Window.h" />
     <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.h" />
+    <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\eqnpch.h" />
   </ItemGroup>
@@ -185,6 +189,7 @@
     <ClCompile Include="src\Equinox\LayerStack.cpp" />
     <ClCompile Include="src\Equinox\Log.cpp" />
     <ClCompile Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\eqnpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

@@ -65,6 +65,10 @@
       <Filter>Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\eqnpch.h" />
+    <ClInclude Include="src\Equinox\Input.h" />
+    <ClInclude Include="src\Platform\Windows\WindowsInput.h" />
+    <ClInclude Include="src\Equinox\KeyCodes.h" />
+    <ClInclude Include="src\Equinox\MouseButtonCodes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Equinox\Application.cpp">
@@ -90,5 +94,6 @@
     </ClCompile>
     <ClCompile Include="src\eqnpch.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
   </ItemGroup>
 </Project>
