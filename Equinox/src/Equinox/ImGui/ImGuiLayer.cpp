@@ -2,10 +2,10 @@
 #include "ImGuiLayer.h"
 
 #include "imgui.h"
-#include "Platform/OpenGL/ImGuiOpenGLRenderer.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 
 #include "Equinox/Application.h"
-
 
 // TEMPORARY
 #include <GLFW/glfw3.h>
