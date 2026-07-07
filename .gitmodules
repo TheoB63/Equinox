@@ -1,0 +1,15 @@
+[submodule "equinox/extern/source/assimp"]
+	path = equinox/extern/source/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "equinox/extern/source/glfw"]
+	path = equinox/extern/source/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "EquinoxApp/extern/source/imgui"]
+	path = EquinoxApp/extern/source/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "equinox/extern/source/glm"]
+	path = equinox/extern/source/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "equinox/extern/source/spdlog"]
+	path = equinox/extern/source/spdlog
+	url = https://github.com/gabime/spdlog.git

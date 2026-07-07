@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="..">
+      <UniqueIdentifier>{61705900-4DFC-870B-B6AA-880BA255880B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\equinox">
+      <UniqueIdentifier>{59E7D7AC-459F-19FA-AEA6-F2559A7DB4EA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\equinox\extern">
+      <UniqueIdentifier>{5E0D3895-CA23-362B-139B-C14C7FF006B3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\equinox\extern\source">
+      <UniqueIdentifier>{BEB980D4-AADE-CF54-D329-B5E4BFADCE72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\equinox\extern\source\glad">
+      <UniqueIdentifier>{85539DED-F16B-8417-BA18-14B126F018B1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\equinoxApp">
+      <UniqueIdentifier>{1A785490-8638-D0C6-4F73-1944BBF214A3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="..\equinoxApp\extern">
+      <UniqueIdentifier>{FF1A945A-EBA9-1D24-94C8-311F80362ECA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\equinox\extern\premake5.lua">
+      <Filter>..\equinox\extern</Filter>
+    </None>
+    <None Include="..\..\equinox\extern\source\glad\premake5.lua">
+      <Filter>..\equinox\extern\source\glad</Filter>
+    </None>
+    <None Include="..\..\equinox\premake5.lua">
+      <Filter>..\equinox</Filter>
+    </None>
+    <None Include="..\..\equinoxApp\extern\premake5.lua">
+      <Filter>..\equinoxApp\extern</Filter>
+    </None>
+    <None Include="..\..\equinoxApp\premake5.lua">
+      <Filter>..\equinoxApp</Filter>
+    </None>
+    <None Include="..\..\premake5.lua">
+      <Filter>..</Filter>
+    </None>
+    <None Include="premake5.lua" />
+  </ItemGroup>
+</Project>
