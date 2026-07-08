@@ -25,6 +25,7 @@ project "Equinox"
       IncludeDir["glad"],
       IncludeDir["glfw"],
       IncludeDir["glm"],
+      IncludeDir["imgui"],
       IncludeDir["spdlog"]
    }
 
@@ -33,7 +34,8 @@ project "Equinox"
       "assimp",
       "glad",
       "glfw",
-      "glm"
+      "glm",
+      "imgui"
    }
    
    filter "configurations:Debug"

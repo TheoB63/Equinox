@@ -18,13 +18,15 @@ project "EquinoxApp"
    {
       "source",
       "%{wks.location}/equinox/source", 
+      IncludeDir["imgui"],
+      IncludeDir["glfw"],
+      IncludeDir["glm"],
       IncludeDir["spdlog"]
    }
 
    links
    {
-      "Equinox",
-      "ImGui"
+      "Equinox"
    }
 
    filter "configurations:Debug"

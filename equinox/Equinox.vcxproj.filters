@@ -7,8 +7,21 @@
     <Filter Include="equinox\core">
       <UniqueIdentifier>{46D7B026-323A-40CB-DBBF-7881C7010C4E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\events">
+      <UniqueIdentifier>{52D2659B-3EA0-59A1-2734-CAC713A13506}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="equinox\input">
+      <UniqueIdentifier>{ADC037FD-1981-B333-E2BB-FCB04E3BF80F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="equinox\ui">
+      <UniqueIdentifier>{BBF232CE-A7AA-741B-10B2-4D77FC880F0C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="equinox\window">
+      <UniqueIdentifier>{55337CC4-4101-70CA-2A95-E0F016024C2F}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\Equinox.h" />
     <ClInclude Include="source\eqnpch.h" />
     <ClInclude Include="source\equinox\core\App.h">
       <Filter>equinox\core</Filter>
@@ -19,8 +32,33 @@
     <ClInclude Include="source\equinox\core\Log.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\events\Event.h" />
-    <ClInclude Include="source\equinox\events\EventBus.h" />
+    <ClInclude Include="source\equinox\core\Timestep.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\events\AppEvent.h">
+      <Filter>equinox\events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\events\Event.h">
+      <Filter>equinox\events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\events\EventBus.h">
+      <Filter>equinox\events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\events\KeyEvent.h">
+      <Filter>equinox\events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\events\MouseEvent.h">
+      <Filter>equinox\events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\input\Input.h">
+      <Filter>equinox\input</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\ui\UI.h">
+      <Filter>equinox\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\window\Window.h">
+      <Filter>equinox\window</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -29,6 +67,15 @@
     </ClCompile>
     <ClCompile Include="source\equinox\core\Log.cpp">
       <Filter>equinox\core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\input\Input.cpp">
+      <Filter>equinox\input</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\ui\UI.cpp">
+      <Filter>equinox\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\window\Window.cpp">
+      <Filter>equinox\window</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

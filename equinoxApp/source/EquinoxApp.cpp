@@ -1,5 +1,4 @@
-#include "equinox/core/App.h"
-#include "equinox/core/Log.h"
+#include "Equinox.h"
 
 namespace Equinox
 {
@@ -13,7 +12,7 @@ namespace Equinox
 	protected:
 		void OnInit() override {}
 
-		void OnUpdate() override {}
+		void OnUpdate(f32 deltaTime) override {}
 
 		void OnShutdown() override {}
 	};

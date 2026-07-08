@@ -21,6 +21,27 @@
     <ClInclude Include="source\glfw\src\glfw_config.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="source\glfw\src\internal.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glfw\src\mappings.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glfw\src\null_joystick.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glfw\src\null_platform.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glfw\src\platform.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glfw\src\win32_thread.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glfw\src\win32_time.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\glfw\src\context.c">
@@ -38,7 +59,22 @@
     <ClCompile Include="source\glfw\src\monitor.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="source\glfw\src\null_init.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glfw\src\null_joystick.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glfw\src\null_monitor.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glfw\src\null_window.c">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="source\glfw\src\osmesa_context.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glfw\src\platform.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="source\glfw\src\vulkan.c">
@@ -51,6 +87,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="source\glfw\src\win32_joystick.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glfw\src\win32_module.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="source\glfw\src\win32_monitor.c">

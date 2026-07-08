@@ -74,7 +74,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <PreprocessorDefinitions>_GLFW_WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -91,7 +91,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <PreprocessorDefinitions>_GLFW_WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -111,10 +111,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <PreprocessorDefinitions>_GLFW_WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -126,6 +127,13 @@
     <ClInclude Include="source\glfw\include\GLFW\glfw3.h" />
     <ClInclude Include="source\glfw\include\GLFW\glfw3native.h" />
     <ClInclude Include="source\glfw\src\glfw_config.h" />
+    <ClInclude Include="source\glfw\src\internal.h" />
+    <ClInclude Include="source\glfw\src\mappings.h" />
+    <ClInclude Include="source\glfw\src\null_joystick.h" />
+    <ClInclude Include="source\glfw\src\null_platform.h" />
+    <ClInclude Include="source\glfw\src\platform.h" />
+    <ClInclude Include="source\glfw\src\win32_thread.h" />
+    <ClInclude Include="source\glfw\src\win32_time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\glfw\src\context.c" />
@@ -133,11 +141,17 @@
     <ClCompile Include="source\glfw\src\init.c" />
     <ClCompile Include="source\glfw\src\input.c" />
     <ClCompile Include="source\glfw\src\monitor.c" />
+    <ClCompile Include="source\glfw\src\null_init.c" />
+    <ClCompile Include="source\glfw\src\null_joystick.c" />
+    <ClCompile Include="source\glfw\src\null_monitor.c" />
+    <ClCompile Include="source\glfw\src\null_window.c" />
     <ClCompile Include="source\glfw\src\osmesa_context.c" />
+    <ClCompile Include="source\glfw\src\platform.c" />
     <ClCompile Include="source\glfw\src\vulkan.c" />
     <ClCompile Include="source\glfw\src\wgl_context.c" />
     <ClCompile Include="source\glfw\src\win32_init.c" />
     <ClCompile Include="source\glfw\src\win32_joystick.c" />
+    <ClCompile Include="source\glfw\src\win32_module.c" />
     <ClCompile Include="source\glfw\src\win32_monitor.c" />
     <ClCompile Include="source\glfw\src\win32_thread.c" />
     <ClCompile Include="source\glfw\src\win32_time.c" />

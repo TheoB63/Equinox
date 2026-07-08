@@ -1,30 +1,34 @@
 #pragma once
 
+#include "equinox/core/EquinoxTypes.h"
+#include "equinox/window/Window.h"
+
+#include <vector>
+
 namespace Equinox
 {
 	class App
 	{
 	public:
-		App() {}
-		virtual ~App() = default;
+		App();
+		virtual ~App();
 
-		// Start the application loop
 		void Run();
 
-		// Signals the app to close
 		void Close();
 
+		Window& GetWindow() { return *m_Window; }
+
 	protected:
-		// Called once at startup
 		virtual void OnInit() {}
-
-		// Called every frame
-		virtual void OnUpdate() {}
-
-		// Called once on shutdown
+		virtual void OnUpdate(f32 dt) {}
 		virtual void OnShutdown() {}
 
+	private:
+
+		std::unique_ptr<Window> m_Window;
 		bool m_Running = true;
+		f32 m_LastFrameTime = 0.0f;
 	};
 
 	App* CreateApp();
