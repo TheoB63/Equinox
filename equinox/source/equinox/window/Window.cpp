@@ -60,6 +60,9 @@ namespace Equinox
 			});
 
 		LH_CORE_INFO("Created window '{0}' ({1}x{2})", m_Spec.Title, m_Spec.Width, m_Spec.Height);
+
+		m_Renderer = Renderer::Create();
+		m_Renderer->Init();
 	}
 
 	void Window::Shutdown()
@@ -73,7 +76,13 @@ namespace Equinox
 
 	void Window::OnUpdate()
 	{
+		m_Renderer.get()->Clear();
 		glfwPollEvents();
+	}
+
+	void Window::SwapBuffers()
+	{
+		glfwSwapBuffers(m_Window);
 	}
 
 	void Window::SetVSync(bool enabled)

@@ -1,5 +1,7 @@
 #include "Equinox.h"
 
+#include <imgui.h>
+
 namespace Equinox
 {
 	class EquinoxApp : public App
@@ -12,7 +14,20 @@ namespace Equinox
 	protected:
 		void OnInit() override {}
 
-		void OnUpdate(f32 deltaTime) override {}
+		void OnUpdate(f32 dt) override {}
+		void OnUIRender() override
+		{
+			ImGui::Begin("Equinox Dashboard");
+			ImGui::Text("Welcome to Equinox!");
+			ImGui::End();
+
+			// Demo Window
+			static bool showDemo = true;
+			if (showDemo)
+			{
+				ImGui::ShowDemoWindow(&showDemo);
+			}
+		}
 
 		void OnShutdown() override {}
 	};

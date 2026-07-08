@@ -1,9 +1,11 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/renderer/Renderer.h"
 
 #include <GLFW/glfw3.h>
 #include <functional>
+#include <memory>
 
 namespace Equinox
 {
@@ -23,6 +25,8 @@ namespace Equinox
 		~Window();
 
 		void OnUpdate();
+		void SwapBuffers();
+
 		void SetVSync(bool enabled);
 		void ToggleFullscreen();
 
@@ -36,5 +40,6 @@ namespace Equinox
 
 		WindowSpec m_Spec;
 		GLFWwindow* m_Window = nullptr;
+		std::unique_ptr<Renderer> m_Renderer;
 	};
 }

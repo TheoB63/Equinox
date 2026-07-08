@@ -6,7 +6,7 @@ struct ImGuiContext;
 
 namespace Equinox
 {
-    class UI
+    class Editor
     {
     public:
         static void Init(void* window);

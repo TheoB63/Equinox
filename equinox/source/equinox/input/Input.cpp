@@ -1,6 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/input/Input.h"
-#include "equinox/ui/UI.h"
+#include "equinox/editor/Editor.h"
 
 #include <GLFW/glfw3.h>
 
@@ -13,13 +13,13 @@ namespace Equinox
 
     bool Input::IsKeyPressed(int keycode)
     {
-        if (UI::WantCaptureKeyboard()) return false;
+        if (Editor::WantCaptureKeyboard()) return false;
         return glfwGetKey(static_cast<GLFWwindow*>(s_Window), keycode) == GLFW_PRESS;
     }
 
     bool Input::IsMouseButtonPressed(int button)
     {
-        if (UI::WantCaptureMouse()) return false;
+        if (Editor::WantCaptureMouse()) return false;
         return glfwGetMouseButton(static_cast<GLFWwindow*>(s_Window), button) == GLFW_PRESS;
     }
 

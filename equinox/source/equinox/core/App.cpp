@@ -1,9 +1,10 @@
 #include "eqnpch.h"
 #include "equinox/core/App.h"
 #include "equinox/core/Log.h"
+#include "equinox/core/Timestep.h"
 #include "equinox/window/Window.h"
 #include "equinox/input/Input.h"
-#include "equinox/ui/UI.h"
+#include "equinox/editor/Editor.h"
 #include "equinox/events/Event.h"
 #include "equinox/events/AppEvent.h"
 #include "equinox/events/KeyEvent.h"
@@ -17,7 +18,7 @@ namespace Equinox
 
 		m_Window = std::make_unique<Window>(spec);
 		Input::SetWindow(m_Window->GetNativeWindow());
-		UI::Init(m_Window->GetNativeWindow());
+		Editor::Init(m_Window->GetNativeWindow());
 	}
 
 	App::~App()
@@ -41,9 +42,9 @@ namespace Equinox
 			OnUpdate(dt);
 
 			// Render UI
-			UI::BeginFrame();
-			// UI stuff here
-			UI::EndFrame();
+			Editor::BeginFrame();
+			OnUIRender();
+			Editor::EndFrame();
 		}
 		OnShutdown();
 	}

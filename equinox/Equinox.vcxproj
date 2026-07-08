@@ -75,7 +75,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;extern\source;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -96,7 +96,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;extern\source;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -120,7 +120,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;extern\source;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -146,13 +146,15 @@
     <ClInclude Include="source\equinox\core\EquinoxTypes.h" />
     <ClInclude Include="source\equinox\core\Log.h" />
     <ClInclude Include="source\equinox\core\Timestep.h" />
+    <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\events\AppEvent.h" />
     <ClInclude Include="source\equinox\events\Event.h" />
     <ClInclude Include="source\equinox\events\EventBus.h" />
     <ClInclude Include="source\equinox\events\KeyEvent.h" />
     <ClInclude Include="source\equinox\events\MouseEvent.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
-    <ClInclude Include="source\equinox\ui\UI.h" />
+    <ClInclude Include="source\equinox\renderer\Renderer.h" />
+    <ClInclude Include="source\equinox\renderer\openGL\OpenGLRenderer.h" />
     <ClInclude Include="source\equinox\window\Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -161,8 +163,10 @@
     </ClCompile>
     <ClCompile Include="source\equinox\core\App.cpp" />
     <ClCompile Include="source\equinox\core\Log.cpp" />
+    <ClCompile Include="source\equinox\editor\Editor.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
-    <ClCompile Include="source\equinox\ui\UI.cpp" />
+    <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
+    <ClCompile Include="source\equinox\renderer\openGL\OpenGLRenderer.cpp" />
     <ClCompile Include="source\equinox\window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>

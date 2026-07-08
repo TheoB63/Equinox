@@ -11,6 +11,11 @@ project "Equinox"
    
    buildoptions { "/utf-8" }
 
+   defines
+   {
+      "GLFW_INCLUDE_NONE"
+   }
+
    files
    {
       "source/**.h",

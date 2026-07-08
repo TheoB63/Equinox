@@ -7,14 +7,20 @@
     <Filter Include="equinox\core">
       <UniqueIdentifier>{46D7B026-323A-40CB-DBBF-7881C7010C4E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\editor">
+      <UniqueIdentifier>{A463229A-9031-16A0-79C5-86C66532F204}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\events">
       <UniqueIdentifier>{52D2659B-3EA0-59A1-2734-CAC713A13506}</UniqueIdentifier>
     </Filter>
     <Filter Include="equinox\input">
       <UniqueIdentifier>{ADC037FD-1981-B333-E2BB-FCB04E3BF80F}</UniqueIdentifier>
     </Filter>
-    <Filter Include="equinox\ui">
-      <UniqueIdentifier>{BBF232CE-A7AA-741B-10B2-4D77FC880F0C}</UniqueIdentifier>
+    <Filter Include="equinox\renderer">
+      <UniqueIdentifier>{94BD1E03-80B6-3D55-A9E8-22DA95401D61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="equinox\renderer\openGL">
+      <UniqueIdentifier>{68EC98F2-D423-E189-DD2D-45AD49E40783}</UniqueIdentifier>
     </Filter>
     <Filter Include="equinox\window">
       <UniqueIdentifier>{55337CC4-4101-70CA-2A95-E0F016024C2F}</UniqueIdentifier>
@@ -35,6 +41,9 @@
     <ClInclude Include="source\equinox\core\Timestep.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\editor\Editor.h">
+      <Filter>equinox\editor</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\events\AppEvent.h">
       <Filter>equinox\events</Filter>
     </ClInclude>
@@ -53,8 +62,11 @@
     <ClInclude Include="source\equinox\input\Input.h">
       <Filter>equinox\input</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\ui\UI.h">
-      <Filter>equinox\ui</Filter>
+    <ClInclude Include="source\equinox\renderer\Renderer.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\openGL\OpenGLRenderer.h">
+      <Filter>equinox\renderer\openGL</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
@@ -68,11 +80,17 @@
     <ClCompile Include="source\equinox\core\Log.cpp">
       <Filter>equinox\core</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\editor\Editor.cpp">
+      <Filter>equinox\editor</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\input\Input.cpp">
       <Filter>equinox\input</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\ui\UI.cpp">
-      <Filter>equinox\ui</Filter>
+    <ClCompile Include="source\equinox\renderer\Renderer.cpp">
+      <Filter>equinox\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\openGL\OpenGLRenderer.cpp">
+      <Filter>equinox\renderer\openGL</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
