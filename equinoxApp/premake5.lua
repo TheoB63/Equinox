@@ -8,6 +8,11 @@ project "EquinoxApp"
 
    buildoptions { "/utf-8" }
 
+   defines
+   {
+      "GLFW_INCLUDE_NONE"
+   }
+
    files
    {
       "source/**.h",
@@ -18,9 +23,10 @@ project "EquinoxApp"
    {
       "source",
       "%{wks.location}/equinox/source", 
-      IncludeDir["imgui"],
+      IncludeDir["glad"],
       IncludeDir["glfw"],
       IncludeDir["glm"],
+      IncludeDir["imgui"],
       IncludeDir["spdlog"]
    }
 

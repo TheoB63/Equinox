@@ -154,7 +154,10 @@
     <ClInclude Include="source\equinox\events\MouseEvent.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
-    <ClInclude Include="source\equinox\renderer\openGL\OpenGLRenderer.h" />
+    <ClInclude Include="source\equinox\renderer\Shader.h" />
+    <ClInclude Include="source\equinox\renderer\openGL\GLRenderer.h" />
+    <ClInclude Include="source\equinox\renderer\openGL\GLShader.h" />
+    <ClInclude Include="source\equinox\resources\ShaderLibrary.h" />
     <ClInclude Include="source\equinox\window\Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -166,7 +169,10 @@
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
-    <ClCompile Include="source\equinox\renderer\openGL\OpenGLRenderer.cpp" />
+    <ClCompile Include="source\equinox\renderer\Shader.cpp" />
+    <ClCompile Include="source\equinox\renderer\openGL\GLRenderer.cpp" />
+    <ClCompile Include="source\equinox\renderer\openGL\GLShader.cpp" />
+    <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp" />
     <ClCompile Include="source\equinox\window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>

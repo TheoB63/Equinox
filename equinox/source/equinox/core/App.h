@@ -7,6 +7,8 @@
 
 namespace Equinox
 {
+	typedef unsigned int GLuint;
+
 	class App
 	{
 	public:
@@ -30,6 +32,8 @@ namespace Equinox
 		std::unique_ptr<Window> m_Window;
 		bool m_Running = true;
 		f32 m_LastFrameTime = 0.0f;
+
+		GLuint quadVAO, quadVBO;
 	};
 
 	App* CreateApp();

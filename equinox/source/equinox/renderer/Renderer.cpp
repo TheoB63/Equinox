@@ -1,6 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/renderer/Renderer.h"
-#include "equinox/renderer/openGL/OpenGLRenderer.h"
+#include "equinox/renderer/openGL/GLRenderer.h"
 
 namespace Equinox
 {
@@ -16,7 +16,7 @@ namespace Equinox
 		switch (s_API)
 		{
 		case RendererAPI::OpenGL:
-			return std::make_unique<OpenGLRenderer>();
+			return std::make_unique<GLRenderer>();
 		case RendererAPI::Vulkan:
 			LH_CORE_ASSERT(false,"RendererAPI::Vulkan is not supported!");
 			return nullptr;

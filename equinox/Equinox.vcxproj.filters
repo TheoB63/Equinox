@@ -22,6 +22,9 @@
     <Filter Include="equinox\renderer\openGL">
       <UniqueIdentifier>{68EC98F2-D423-E189-DD2D-45AD49E40783}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\resources">
+      <UniqueIdentifier>{18DDA302-84F3-A198-CD6A-2DBA39C07220}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\window">
       <UniqueIdentifier>{55337CC4-4101-70CA-2A95-E0F016024C2F}</UniqueIdentifier>
     </Filter>
@@ -65,8 +68,17 @@
     <ClInclude Include="source\equinox\renderer\Renderer.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\openGL\OpenGLRenderer.h">
+    <ClInclude Include="source\equinox\renderer\Shader.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\openGL\GLRenderer.h">
       <Filter>equinox\renderer\openGL</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\openGL\GLShader.h">
+      <Filter>equinox\renderer\openGL</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\resources\ShaderLibrary.h">
+      <Filter>equinox\resources</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
@@ -89,8 +101,17 @@
     <ClCompile Include="source\equinox\renderer\Renderer.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\openGL\OpenGLRenderer.cpp">
+    <ClCompile Include="source\equinox\renderer\Shader.cpp">
+      <Filter>equinox\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\openGL\GLRenderer.cpp">
       <Filter>equinox\renderer\openGL</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\openGL\GLShader.cpp">
+      <Filter>equinox\renderer\openGL</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp">
+      <Filter>equinox\resources</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
