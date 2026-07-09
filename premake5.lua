@@ -23,7 +23,11 @@ group "Equinox"
 group ""
 
 group "Equinox/Extern"
-      include "equinox/extern"
+   include "equinox/extern/premake5-assimp"
+   include "equinox/extern/premake5-glad"
+   include "equinox/extern/premake5-glfw"
+   include "equinox/extern/premake5-glm"
+   include "equinox/extern/premake5-imgui"
 group ""
 
 group "EquinoxApp"
