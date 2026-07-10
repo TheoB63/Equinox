@@ -20,6 +20,7 @@ namespace Equinox
 		void Close();
 
 		Window& GetWindow() { return *m_Window; }
+		Renderer& GetRenderer() { return *m_Renderer; }
 
 	protected:
 		virtual void OnInit() {}
@@ -30,6 +31,7 @@ namespace Equinox
 	private:
 
 		std::unique_ptr<Window> m_Window;
+		std::unique_ptr<Renderer> m_Renderer;
 		bool m_Running = true;
 		f32 m_LastFrameTime = 0.0f;
 

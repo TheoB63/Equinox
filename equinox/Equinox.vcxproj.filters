@@ -22,6 +22,9 @@
     <Filter Include="equinox\renderer\openGL">
       <UniqueIdentifier>{68EC98F2-D423-E189-DD2D-45AD49E40783}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\renderer\vulkan">
+      <UniqueIdentifier>{B4504B03-2088-939A-2992-F7BD9548BA93}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\resources">
       <UniqueIdentifier>{18DDA302-84F3-A198-CD6A-2DBA39C07220}</UniqueIdentifier>
     </Filter>
@@ -77,8 +80,20 @@
     <ClInclude Include="source\equinox\renderer\openGL\GLShader.h">
       <Filter>equinox\renderer\openGL</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKCommon.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKFormat.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKRenderer.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h">
       <Filter>equinox\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\window\GLFWWindow.h">
+      <Filter>equinox\window</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
@@ -110,8 +125,14 @@
     <ClCompile Include="source\equinox\renderer\openGL\GLShader.cpp">
       <Filter>equinox\renderer\openGL</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\vulkan\VKRenderer.cpp">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp">
       <Filter>equinox\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\window\GLFWWindow.cpp">
+      <Filter>equinox\window</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>

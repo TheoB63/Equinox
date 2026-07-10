@@ -77,12 +77,12 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="..\..\equinox\extern\premake5.lua" />
     <None Include="..\..\equinox\extern\source\glad\premake5.lua" />
     <None Include="..\..\equinox\premake5.lua" />
     <None Include="..\..\equinoxApp\extern\premake5.lua" />
     <None Include="..\..\equinoxApp\premake5.lua" />
     <None Include="..\..\premake5.lua" />
+    <None Include="..\..\sandbox\premake5.lua" />
     <None Include="premake5.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

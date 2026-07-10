@@ -4,6 +4,8 @@ workspace "Equinox"
    architecture "x86_64"
    startproject "EquinoxApp"
 
+   buildoptions { "/utf-8" }
+
    configurations
    {
       "Debug",
@@ -36,6 +38,10 @@ group ""
 
 group "EquinoxApp/Extern"
       include "equinoxApp/extern"
+group ""
+
+group "Sandbox"
+   include "Sandbox"
 group ""
 
 group "Tools"

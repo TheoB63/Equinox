@@ -22,11 +22,11 @@
     <Filter Include="..\equinoxApp\extern">
       <UniqueIdentifier>{FF1A945A-EBA9-1D24-94C8-311F80362ECA}</UniqueIdentifier>
     </Filter>
+    <Filter Include="..\sandbox">
+      <UniqueIdentifier>{5F13B3BC-4BCB-F409-B4D2-CD65A0A98FFA}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\equinox\extern\premake5.lua">
-      <Filter>..\equinox\extern</Filter>
-    </None>
     <None Include="..\..\equinox\extern\source\glad\premake5.lua">
       <Filter>..\equinox\extern\source\glad</Filter>
     </None>
@@ -41,6 +41,9 @@
     </None>
     <None Include="..\..\premake5.lua">
       <Filter>..</Filter>
+    </None>
+    <None Include="..\..\sandbox\premake5.lua">
+      <Filter>..\sandbox</Filter>
     </None>
     <None Include="premake5.lua" />
   </ItemGroup>
