@@ -5,7 +5,7 @@
 	path = equinox/extern/source/glfw
 	url = https://github.com/glfw/glfw.git
 [submodule "equinox/extern/source/imgui"]
-	path = EquinoxApp/extern/source/imgui
+	path = equinox/extern/source/imgui
 	url = https://github.com/ocornut/imgui.git
 [submodule "equinox/extern/source/glm"]
 	path = equinox/extern/source/glm

@@ -1,48 +1,27 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/renderer/RendererAPI.h"
 
 #include <glm/glm.hpp>
 #include <memory>
 
 namespace Equinox
 {
-	enum class RendererAPI
-	{
-		None = 0,
-		OpenGL,
-		Vulkan
-	};
-
 	class Renderer
 	{
 	public:
-		Renderer() = default;
-		virtual ~Renderer() = default;
+		static void Init(RendererAPI::API api, void* window);
+		static void Shutdown();
 
-		virtual void Init() = 0;
-		virtual void Shutdown() = 0;
+		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+		static void SetClearColor(const glm::vec4& color);
+		static void Clear();
+		static void DrawIndexed(uint32_t count);
 
+		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
-		virtual void SetClearColor(const glm::vec4& color) = 0;
-		virtual void Clear() = 0;
-		virtual void SetViewport(u32 x, u32 y, u32 width, u32 height) = 0;
-
-		virtual void EnableDepthTest(bool enable) = 0;
-		virtual bool IsDepthTestEnabled() const = 0;
-
-		virtual void EnableBlending(bool enable) = 0;
-		virtual void SetBlendFunction(u32 srcFactor, u32 dstFactor) = 0;
-
-		virtual void DrawIndexed(u32 count) = 0;
-
-		static RendererAPI GetAPI();
-		static void SetAPI(RendererAPI API);
-		static std::string APIToString();
-
-		static std::unique_ptr<Renderer> Create(RendererAPI API);
-
-	protected:
-		static RendererAPI s_API;
+	private:
+		static std::unique_ptr<RendererAPI> s_RendererAPI;
 	};
 }

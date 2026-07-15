@@ -19,6 +19,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\glm\glm\common.hpp" />
+    <ClInclude Include="source\glm\glm\detail\_features.hpp">
+      <Filter>detail</Filter>
+    </ClInclude>
     <ClInclude Include="source\glm\glm\detail\_fixes.hpp">
       <Filter>detail</Filter>
     </ClInclude>
@@ -196,7 +199,7 @@
     <ClInclude Include="source\glm\glm\detail\type_vec4.inl">
       <Filter>detail</Filter>
     </ClInclude>
-    <ClInclude Include="source\glm\glm\detail\type_vec_simd.inl">
+    <ClInclude Include="source\glm\glm\detail\type_vec4_simd.inl">
       <Filter>detail</Filter>
     </ClInclude>
     <ClInclude Include="source\glm\glm\exponential.hpp" />
@@ -933,7 +936,7 @@
     <ClInclude Include="source\glm\glm\gtx\fast_trigonometry.inl">
       <Filter>gtx</Filter>
     </ClInclude>
-    <ClInclude Include="source\glm\glm\gtx\float_normalize.inl">
+    <ClInclude Include="source\glm\glm\gtx\float_notmalize.inl">
       <Filter>gtx</Filter>
     </ClInclude>
     <ClInclude Include="source\glm\glm\gtx\functions.hpp">
@@ -976,12 +979,6 @@
       <Filter>gtx</Filter>
     </ClInclude>
     <ClInclude Include="source\glm\glm\gtx\io.inl">
-      <Filter>gtx</Filter>
-    </ClInclude>
-    <ClInclude Include="source\glm\glm\gtx\iteration.hpp">
-      <Filter>gtx</Filter>
-    </ClInclude>
-    <ClInclude Include="source\glm\glm\gtx\iteration.inl">
       <Filter>gtx</Filter>
     </ClInclude>
     <ClInclude Include="source\glm\glm\gtx\log_base.hpp">
@@ -1153,12 +1150,6 @@
       <Filter>gtx</Filter>
     </ClInclude>
     <ClInclude Include="source\glm\glm\gtx\string_cast.inl">
-      <Filter>gtx</Filter>
-    </ClInclude>
-    <ClInclude Include="source\glm\glm\gtx\structured_bindings.hpp">
-      <Filter>gtx</Filter>
-    </ClInclude>
-    <ClInclude Include="source\glm\glm\gtx\structured_bindings.inl">
       <Filter>gtx</Filter>
     </ClInclude>
     <ClInclude Include="source\glm\glm\gtx\texture.hpp">

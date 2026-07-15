@@ -134,6 +134,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="source\glm\glm\common.hpp" />
+    <ClInclude Include="source\glm\glm\detail\_features.hpp" />
     <ClInclude Include="source\glm\glm\detail\_fixes.hpp" />
     <ClInclude Include="source\glm\glm\detail\_noise.hpp" />
     <ClInclude Include="source\glm\glm\detail\_swizzle.hpp" />
@@ -193,7 +194,7 @@
     <ClInclude Include="source\glm\glm\detail\type_vec3.inl" />
     <ClInclude Include="source\glm\glm\detail\type_vec4.hpp" />
     <ClInclude Include="source\glm\glm\detail\type_vec4.inl" />
-    <ClInclude Include="source\glm\glm\detail\type_vec_simd.inl" />
+    <ClInclude Include="source\glm\glm\detail\type_vec4_simd.inl" />
     <ClInclude Include="source\glm\glm\exponential.hpp" />
     <ClInclude Include="source\glm\glm\ext.hpp" />
     <ClInclude Include="source\glm\glm\ext\_matrix_vectorize.hpp" />
@@ -442,7 +443,7 @@
     <ClInclude Include="source\glm\glm\gtx\fast_square_root.inl" />
     <ClInclude Include="source\glm\glm\gtx\fast_trigonometry.hpp" />
     <ClInclude Include="source\glm\glm\gtx\fast_trigonometry.inl" />
-    <ClInclude Include="source\glm\glm\gtx\float_normalize.inl" />
+    <ClInclude Include="source\glm\glm\gtx\float_notmalize.inl" />
     <ClInclude Include="source\glm\glm\gtx\functions.hpp" />
     <ClInclude Include="source\glm\glm\gtx\functions.inl" />
     <ClInclude Include="source\glm\glm\gtx\gradient_paint.hpp" />
@@ -457,8 +458,6 @@
     <ClInclude Include="source\glm\glm\gtx\intersect.inl" />
     <ClInclude Include="source\glm\glm\gtx\io.hpp" />
     <ClInclude Include="source\glm\glm\gtx\io.inl" />
-    <ClInclude Include="source\glm\glm\gtx\iteration.hpp" />
-    <ClInclude Include="source\glm\glm\gtx\iteration.inl" />
     <ClInclude Include="source\glm\glm\gtx\log_base.hpp" />
     <ClInclude Include="source\glm\glm\gtx\log_base.inl" />
     <ClInclude Include="source\glm\glm\gtx\matrix_cross_product.hpp" />
@@ -516,8 +515,6 @@
     <ClInclude Include="source\glm\glm\gtx\std_based_type.inl" />
     <ClInclude Include="source\glm\glm\gtx\string_cast.hpp" />
     <ClInclude Include="source\glm\glm\gtx\string_cast.inl" />
-    <ClInclude Include="source\glm\glm\gtx\structured_bindings.hpp" />
-    <ClInclude Include="source\glm\glm\gtx\structured_bindings.inl" />
     <ClInclude Include="source\glm\glm\gtx\texture.hpp" />
     <ClInclude Include="source\glm\glm\gtx\texture.inl" />
     <ClInclude Include="source\glm\glm\gtx\transform.hpp" />

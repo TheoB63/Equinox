@@ -10,7 +10,7 @@
 
 //TEST VULKAN
 #define GLFW_INCLUDE_VULKAN
-#include "equinox/renderer/vulkan/VKRenderer.h"
+#include "equinox/renderer/vulkan/VKRendererAPI.h"
 
 // TEST GL
 #include <GLFW/glfw3.h>
@@ -23,27 +23,12 @@ namespace Equinox
 	{
 	public:
 		SandboxApp() {}
-
 		~SandboxApp() override = default;
 
 	protected:
 		void OnInit() override
 		{
-			LH_CORE_INFO("=== Starting Vulkan Validation Test ===");
-
-			// Vulkan status checks
-			auto& renderer = GetRenderer();
-			LH_CORE_INFO("Renderer API: {0}", Renderer::APIToString());
-
-			// Vulkan-specific checks
-			if (auto vulkanRenderer = dynamic_cast<VKRenderer*>(&renderer)) {
-				VkInstance instance = vulkanRenderer->GetInstance();
-				LH_CORE_INFO("Vulkan Instance Created: {0}", (bool)instance);
-				// Other checks
-			}
-			else {
-				LH_CORE_ERROR("Renderer is not Vulkan implementation!");
-			}
+			InitTestOpenGL();
 		}
 
 		void OnUpdate(f32 dt) override
@@ -51,7 +36,7 @@ namespace Equinox
 			static float time = 0;
 			time += dt;
 
-			//TestOpenGL(time);
+			TestOpenGL(time);
 		}
 
 		void OnUIRender() override
@@ -110,10 +95,10 @@ namespace Equinox
 
 		void TestOpenGL(float time)
 		{
-			auto shader = Shader::Create("C:/Users/theob/Documents/BlanchardTheo/Documents/Cours/3emeAnnee/Projets Persos/Equinox/equinoxApp/resources/test.glsl");
+			auto shader = Shader::Create("C:/Users/theob/Documents/BlanchardTheo/Documents/Cours/3emeAnnee/Projets Persos/Equinox/equinoxApp/resources/raycasting.glsl");
 
 			shader->Bind();
-			shader->SetFloat("u_time", time);
+			shader->SetFloat("u_Time", time);
 			//shader->SetVec2("u_resolution",  glm::vec2(1280.0, 720.0));
 			//shader->SetVec2("u_Resolution",  glm::vec2((f32)m_Window->GetWidth(), (f32)m_Window->GetHeight()));
 			//shader->SetFloat("u_playerJump", Input::IsMouseButtonPressed(0));
