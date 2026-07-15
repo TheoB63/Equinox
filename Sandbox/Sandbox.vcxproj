@@ -147,6 +147,15 @@
       <Project>{EE9549D3-5A75-C86E-638D-5345CFEB2ED0}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\galaxy.glsl" />
+    <None Include="assets\shaders\mandelbrott.glsl" />
+    <None Include="assets\shaders\raycasting.glsl" />
+    <None Include="assets\shaders\raytracing.glsl" />
+    <None Include="assets\shaders\spaceInvaders.glsl" />
+    <None Include="assets\shaders\test.glsl" />
+    <None Include="assets\shaders\theMatrix.glsl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

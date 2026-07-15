@@ -2,9 +2,12 @@
 #include "equinox/core/App.h"
 #include "equinox/core/Log.h"
 #include "equinox/core/Timestep.h"
+
 #include "equinox/window/Window.h"
 #include "equinox/input/Input.h"
 #include "equinox/editor/Editor.h"
+#include "equinox/resources/ResourceManager.h"
+
 #include "equinox/events/Event.h"
 #include "equinox/events/AppEvent.h"
 #include "equinox/events/KeyEvent.h"
@@ -30,6 +33,7 @@ namespace Equinox
 		Input::SetWindow(m_Window->GetNativeWindow());
 		Renderer::Init(ws.rendererAPI, m_Window->GetNativeWindow());
 		Editor::Init(m_Window->GetNativeWindow());
+		ResourceManager::Initialize();
 	}
 
 	App::~App()

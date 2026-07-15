@@ -175,6 +175,7 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKFormat.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKRendererAPI.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKSwapChain.h" />
+    <ClInclude Include="source\equinox\resources\ResourceManager.h" />
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h" />
     <ClInclude Include="source\equinox\window\WinWindow.h" />
     <ClInclude Include="source\equinox\window\Window.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKDevice.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKRendererAPI.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKSwapChain.cpp" />
+    <ClCompile Include="source\equinox\resources\ResourceManager.cpp" />
     <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp" />
     <ClCompile Include="source\equinox\window\WinWindow.cpp" />
     <ClCompile Include="source\equinox\window\Window.cpp" />

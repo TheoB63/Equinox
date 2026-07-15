@@ -18,6 +18,8 @@ namespace Equinox
         static bool WantCaptureMouse();
         static bool WantCaptureKeyboard();
 
+        static void SetCustomStyle();
+
     private:
         static inline ImGuiContext* s_Context = nullptr;
     };
