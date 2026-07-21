@@ -23,11 +23,10 @@
 
 namespace Equinox
 {
-	App::App()
+	App::App(int argc, char** argv)
 	{
 		// Create Window and initialize
-		WindowSpec ws;
-		ws.rendererAPI = RendererAPI::API::OpenGL;
+		WindowSpec ws = ParseCommandLineArgs(argc, argv);
 
 		m_Window = Window::Create(ws);
 		Input::SetWindow(m_Window->GetNativeWindow());
@@ -56,10 +55,15 @@ namespace Equinox
 			// User-defined update
 			OnUpdate(dt);
 
+			Renderer::DrawFrame();
+
 			// Render UI
-			Editor::BeginFrame();
-			OnUIRender();
-			Editor::EndFrame();
+			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+			{
+				Editor::BeginFrame();
+				OnUIRender();
+				Editor::EndFrame();
+			}
 
 			m_Window->SwapBuffers();
 			Renderer::Clear();
@@ -70,5 +74,38 @@ namespace Equinox
 	void App::Close()
 	{
 		m_Running = false;
+	}
+
+	WindowSpec App::ParseCommandLineArgs(int argc, char** argv)
+	{
+		WindowSpec spec;
+		spec.rendererAPI = RendererAPI::API::OpenGL;
+
+		if (argc < 2) 
+		{ // No arguments
+			EQN_CORE_WARN("Usage: {} [--vulkan|--rt]", argv[0]);
+			EQN_CORE_WARN("Initializing default [--opengl]");
+			return spec;
+		}
+
+		for (int i = 1; i < argc; ++i) 
+		{
+			std::string arg = argv[i];
+			if (arg == "--opengl")
+			{
+				spec.rendererAPI = RendererAPI::API::OpenGL;
+				break;
+			}
+			else if (arg == "--vulkan") 
+			{
+				spec.rendererAPI = RendererAPI::API::Vulkan;
+				break;
+			}
+			else 
+			{  // Invalid argument
+				EQN_CORE_WARN("Unknown argument: {}", arg);
+			}
+		}
+		return spec;
 	}
 }

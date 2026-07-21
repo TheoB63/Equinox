@@ -5,20 +5,20 @@ namespace Equinox
 {
     void ShaderLibrary::Init()
     {
-        LH_CORE_INFO("Initialized Shader Library");
+        EQN_CORE_INFO("Initialized Shader Library");
     }
 
     void ShaderLibrary::Shutdown()
     {
         s_Shaders.clear();
-        LH_CORE_INFO("Cleared Shader Library");
+        EQN_CORE_INFO("Cleared Shader Library");
     }
 
     void ShaderLibrary::Add(const std::string& name, const std::shared_ptr<Shader>& shader)
     {
         if (Exists(name))
         {
-            LH_CORE_WARN("Shader '{0}' already exists! Overwriting...", name);
+            EQN_CORE_WARN("Shader '{0}' already exists! Overwriting...", name);
         }
         s_Shaders[name] = shader;
     }
@@ -39,7 +39,7 @@ namespace Equinox
 
     std::shared_ptr<Shader> ShaderLibrary::Get(const std::string& name)
     {
-        LH_CORE_ASSERT(Exists(name), "Shader '{0}' not found!", name);
+        EQN_CORE_ASSERT(Exists(name), "Shader '{0}' not found!", name);
         return s_Shaders.at(name);
     }
 
@@ -53,7 +53,7 @@ namespace Equinox
         for (auto& [name, shader] : s_Shaders)
         {
             // TODO: Implement shader reloading
-            LH_CORE_INFO("Reloaded shader: {0}", name);
+            EQN_CORE_INFO("Reloaded shader: {0}", name);
         }
     }
 }

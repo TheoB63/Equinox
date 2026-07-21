@@ -10,13 +10,13 @@ namespace Equinox
 
     std::unique_ptr<RendererAPI> RendererAPI::Create(API api)
     {
-        LH_CORE_INFO("Initialized {0} renderer", APIToString(api));
+        EQN_CORE_INFO("Initialized {0} renderer", APIToString(api));
         s_API = api;
 
         switch (api)
         {
         case RendererAPI::API::None:
-            LH_CORE_ASSERT(false, "{0} is not supported!", APIToString(api));
+            EQN_CORE_ASSERT(false, "{0} is not supported!", APIToString(api));
             return nullptr;
 
         case RendererAPI::API::OpenGL:
@@ -26,7 +26,7 @@ namespace Equinox
             return std::make_unique<VKRendererAPI>();
 
         default:
-            LH_CORE_ASSERT(false, "{1} Unknown RendererAPI!", APIToString(api));
+            EQN_CORE_ASSERT(false, "{1} Unknown RendererAPI!", APIToString(api));
             return nullptr;
         }
     }

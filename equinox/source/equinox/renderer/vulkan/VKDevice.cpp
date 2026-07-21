@@ -4,150 +4,170 @@
 
 namespace Equinox
 {
-    QueueFamilyIndices VKPhysicalDevice::FindQueueFamilies() const
-    {
-        QueueFamilyIndices indices;
+	QueueFamilyIndices VKPhysicalDevice::FindQueueFamilies(VkSurfaceKHR surface) const
+	{
+		QueueFamilyIndices indices;
 
-        uint32_t queueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, nullptr);
-        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, queueFamilies.data());
+		uint32_t queueFamilyCount = 0;
+		vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, nullptr);
+		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, queueFamilies.data());
 
-        int i = 0;
-        for (const auto& queueFamily : queueFamilies) {
-            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                indices.graphicsFamily = i;
-            }
-            if (indices.IsComplete()) break;
-            i++;
-        }
+		int i = 0;
+		for (const auto& queueFamily : queueFamilies) {
+			// Graphics queue
+			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+				indices.graphicsFamily = i;
+			}
 
-        return indices;
-    }
+			// Present queue
+			VkBool32 presentSupport = false;
+			vkGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, i, surface, &presentSupport);
+			if (presentSupport) {
+				indices.presentFamily = i;
+			}
 
-    VKPhysicalDevice::VKPhysicalDevice(VkInstance instance)
-    {
-        uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+			if (indices.IsComplete()) break;
+			i++;
+		}
 
-        if (deviceCount == 0) {
-            LH_CORE_ASSERT(false, "Failed to find GPUs with Vulkan support!");
-        }
+		EQN_CORE_ASSERT(indices.IsComplete(), "Failed to find suitable queue families!");
+		return indices;
+	}
 
-        std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+	VKPhysicalDevice::VKPhysicalDevice(VkInstance instance)
+	{
+		uint32_t deviceCount = 0;
+		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
-        // Select best device
-        for (const auto& device : devices) {
-            RateDeviceSuitability(device);
-            if (m_Score > 0) {
-                m_PhysicalDevice = device;
-                break;
-            }
-        }
+		if (deviceCount == 0) {
+			EQN_CORE_ASSERT(false, "Failed to find GPUs with Vulkan support!");
+		}
 
-        if (m_PhysicalDevice == VK_NULL_HANDLE) {
-            LH_CORE_ASSERT(false, "Failed to find a suitable GPU!");
-        }
+		std::vector<VkPhysicalDevice> devices(deviceCount);
+		vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-        VkPhysicalDeviceProperties deviceProperties;
-        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &deviceProperties);
-        LH_CORE_INFO("Selected Vulkan device: {0}", deviceProperties.deviceName);
-    }
+		// Select best device
+		for (const auto& device : devices) {
+			RateDeviceSuitability(device);
+			if (m_Score > 0) {
+				m_PhysicalDevice = device;
+				break;
+			}
+		}
 
-    bool VKPhysicalDevice::IsSuitable() const
-    {
-        return m_Score > 0;
-    }
+		if (m_PhysicalDevice == VK_NULL_HANDLE) {
+			EQN_CORE_ASSERT(false, "Failed to find a suitable GPU!");
+		}
 
-    void VKPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device)
-    {
-        VkPhysicalDeviceProperties deviceProperties;
-        VkPhysicalDeviceFeatures deviceFeatures;
-        vkGetPhysicalDeviceProperties(device, &deviceProperties);
-        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+		VkPhysicalDeviceProperties deviceProperties;
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &deviceProperties);
+		EQN_CORE_INFO("Selected Vulkan device: {0}", deviceProperties.deviceName);
+	}
 
-        int score = 0;
-        bool suitable = true;
+	bool VKPhysicalDevice::IsSuitable() const
+	{
+		return m_Score > 0;
+	}
 
-        // 1. Mandatory requirements
-        // -----------------------------
-        const std::vector<const char*> requiredExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME
-        };
+	void VKPhysicalDevice::RateDeviceSuitability(VkPhysicalDevice device)
+	{
+		VkPhysicalDeviceProperties deviceProperties;
+		VkPhysicalDeviceFeatures deviceFeatures;
+		vkGetPhysicalDeviceProperties(device, &deviceProperties);
+		vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
-        uint32_t extensionCount;
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
-        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+		int score = 0;
+		bool suitable = true;
 
-        std::set<std::string> requiredSet(requiredExtensions.begin(), requiredExtensions.end());
-        for (const auto& ext : availableExtensions) {
-            requiredSet.erase(ext.extensionName);
-        }
-        if (!requiredSet.empty()) {
-            LH_CORE_TRACE("Device {0} is missing required extensions", deviceProperties.deviceName);
-            suitable = false;
-        }
+		// 1. Mandatory requirements
+		// -----------------------------
+		const std::vector<const char*> requiredExtensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
 
-        if (!deviceFeatures.geometryShader) {
-            LH_CORE_TRACE("Device {0} lacks geometry shader support", deviceProperties.deviceName);
-            suitable = false;
-        }
+		uint32_t extensionCount;
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-        if (!suitable) {
-            m_Score = 0;
-            return;
-        }
+		std::set<std::string> requiredSet(requiredExtensions.begin(), requiredExtensions.end());
+		for (const auto& ext : availableExtensions) {
+			requiredSet.erase(ext.extensionName);
+		}
+		if (!requiredSet.empty()) {
+			EQN_CORE_TRACE("Device {0} is missing required extensions", deviceProperties.deviceName);
+			suitable = false;
+		}
 
-        // 2. Score optional features
-        // -----------------------------
-        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-            score += 1000;
-        }
+		if (!deviceFeatures.geometryShader) {
+			EQN_CORE_TRACE("Device {0} lacks geometry shader support", deviceProperties.deviceName);
+			suitable = false;
+		}
 
-        score += deviceProperties.limits.maxImageDimension2D;
+		if (!suitable) {
+			m_Score = 0;
+			return;
+		}
 
-        m_Score = score;
+		// 2. Score optional features
+		// -----------------------------
+		if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+			score += 1000;
+		}
 
-        LH_CORE_INFO("Device {0} scored {1}", deviceProperties.deviceName, score);
-    }
+		score += deviceProperties.limits.maxImageDimension2D;
 
-    VKLogicalDevice::VKLogicalDevice(VkPhysicalDevice physicalDevice, const QueueFamilyIndices& queueIndices)
-    {
-        // Queue create info
-        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        const float queuePriority = 1.0f;
+		m_Score = score;
 
-        VkDeviceQueueCreateInfo queueCreateInfo{};
-        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.queueFamilyIndex = queueIndices.graphicsFamily.value();
-        queueCreateInfo.queueCount = 1;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
-        queueCreateInfos.push_back(queueCreateInfo);
+		EQN_CORE_INFO("Device {0} scored {1}", deviceProperties.deviceName, score);
+	}
 
-        // Device features
-        VkPhysicalDeviceFeatures deviceFeatures{};
+	VKLogicalDevice::VKLogicalDevice(VkPhysicalDevice physicalDevice, 
+		const QueueFamilyIndices& queueIndices, 
+		const std::vector<const char*>& extensions)
+	{
+		// Queue create info
+		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+		std::set<uint32_t> uniqueQueueFamilies = {
+			queueIndices.graphicsFamily.value(),
+			queueIndices.presentFamily.value()
+		};
 
-        // Device create info
-        VkDeviceCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-        createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.pEnabledFeatures = &deviceFeatures;
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(m_DeviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
+		const float queuePriority = 1.0f;
+		for (uint32_t queueFamily : uniqueQueueFamilies)
+		{
+			VkDeviceQueueCreateInfo queueCreateInfo{};
+			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.queueFamilyIndex = queueFamily;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.pQueuePriorities = &queuePriority;
+			queueCreateInfos.push_back(queueCreateInfo);
+		}
 
-        VK_CHECK_RESULT(vkCreateDevice(physicalDevice, &createInfo, nullptr, &m_Device),
-            "Failed to create logical device!");
+		// Device features
+		VkPhysicalDeviceFeatures deviceFeatures{};
 
-        vkGetDeviceQueue(m_Device, queueIndices.graphicsFamily.value(), 0, &m_GraphicsQueue);
-    }
+		// Device create info
+		VkDeviceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+		createInfo.pQueueCreateInfos = queueCreateInfos.data();
+		createInfo.pEnabledFeatures = &deviceFeatures;
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(m_DeviceExtensions.size());
+		createInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
 
-    VKLogicalDevice::~VKLogicalDevice()
-    {
-        if (m_Device) {
-            vkDestroyDevice(m_Device, nullptr);
-        }
-    }
+		VK_CHECK_RESULT(vkCreateDevice(physicalDevice, &createInfo, nullptr, &m_Device),
+			"Failed to create logical device!");
+
+		vkGetDeviceQueue(m_Device, queueIndices.graphicsFamily.value(), 0, &m_GraphicsQueue);
+		vkGetDeviceQueue(m_Device, queueIndices.presentFamily.value(), 0, &m_PresentQueue);
+	}
+
+	VKLogicalDevice::~VKLogicalDevice()
+	{
+		if (m_Device) {
+			vkDestroyDevice(m_Device, nullptr);
+		}
+	}
 }

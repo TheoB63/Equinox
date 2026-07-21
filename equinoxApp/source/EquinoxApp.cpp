@@ -1,4 +1,5 @@
-#include "Equinox.h"
+#include <Equinox.h>
+#include <Equinox/core/EntryPoint.h>
 
 #include <imgui.h>
 
@@ -7,7 +8,7 @@ namespace Equinox
 	class EquinoxApp : public App
 	{
 	public:
-		EquinoxApp() {}
+		EquinoxApp(int argc, char** argv) : App(argc, argv) {}
 		~EquinoxApp() override = default;
 
 	protected:
@@ -36,17 +37,8 @@ namespace Equinox
 		void OnShutdown() override {}
 	};
 
-	App* createApp()
+	App* CreateApp(int argc, char** argv)
 	{
-		return new EquinoxApp();
+		return new EquinoxApp(argc,argv);
 	}
-}
-
-int main()
-{
-	Equinox::Log::Init();
-	Equinox::App* app = Equinox::createApp();
-	app->Run();
-	delete app;
-	return 0;
 }

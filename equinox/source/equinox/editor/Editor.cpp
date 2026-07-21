@@ -18,11 +18,11 @@ namespace Equinox
 		{
 			ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window), true);
 			ImGui_ImplOpenGL3_Init("#version 460");
-			LH_CORE_INFO("Initialized ImGui context for OpenGL");
+			EQN_CORE_INFO("Initialized ImGui context for OpenGL");
 		}
 		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
-			LH_CORE_WARN("ImGui not yet implemented for Vulkan");
+			EQN_CORE_WARN("ImGui not yet implemented for Vulkan");
 		}
 	}
 
@@ -39,7 +39,7 @@ namespace Equinox
 		}
 
 		s_Context = nullptr;
-		LH_CORE_INFO("Shutdown ImGui context");
+		EQN_CORE_INFO("Shutdown ImGui context");
 	}
 
 	void Editor::BeginFrame()

@@ -75,7 +75,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;extern\source;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\spdlog\include;extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -100,7 +100,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;extern\source;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\spdlog\include;extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -128,7 +128,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;extern\source;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\spdlog\include;extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -155,6 +155,7 @@
     <ClInclude Include="source\Equinox.h" />
     <ClInclude Include="source\eqnpch.h" />
     <ClInclude Include="source\equinox\core\App.h" />
+    <ClInclude Include="source\equinox\core\EntryPoint.h" />
     <ClInclude Include="source\equinox\core\EquinoxTypes.h" />
     <ClInclude Include="source\equinox\core\Log.h" />
     <ClInclude Include="source\equinox\core\Timestep.h" />
@@ -170,11 +171,16 @@
     <ClInclude Include="source\equinox\renderer\Shader.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLRendererAPI.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLShader.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKCommandPool.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKCommon.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKDevice.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKFormat.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKFrameBuffer.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKRenderPass.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKRendererAPI.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKSwapChain.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKSync.h" />
     <ClInclude Include="source\equinox\resources\ResourceManager.h" />
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h" />
     <ClInclude Include="source\equinox\window\WinWindow.h" />
@@ -193,9 +199,14 @@
     <ClCompile Include="source\equinox\renderer\Shader.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLRendererAPI.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLShader.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKCommandPool.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKDevice.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKFrameBuffer.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKRenderPass.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKRendererAPI.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKSwapChain.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKSync.cpp" />
     <ClCompile Include="source\equinox\resources\ResourceManager.cpp" />
     <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp" />
     <ClCompile Include="source\equinox\window\WinWindow.cpp" />

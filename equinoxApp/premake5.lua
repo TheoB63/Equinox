@@ -10,7 +10,8 @@ project "EquinoxApp"
 
    defines
    {
-      "GLFW_INCLUDE_NONE"
+      "GLFW_INCLUDE_NONE",
+      "FMT_HEADER_ONLY=1"
    }
 
    files

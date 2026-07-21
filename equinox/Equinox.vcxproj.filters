@@ -38,6 +38,9 @@
     <ClInclude Include="source\equinox\core\App.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\core\EntryPoint.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\core\EquinoxTypes.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
@@ -92,11 +95,20 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKFormat.h">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKRenderPass.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\vulkan\VKRendererAPI.h">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\vulkan\VKSwapChain.h">
       <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\resources\ResourceManager.h">
+      <Filter>equinox\resources</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h">
       <Filter>equinox\resources</Filter>
@@ -107,7 +119,9 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\resources\ResourceManager.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKCommandPool.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKFrameBuffer.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKSync.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -141,11 +155,20 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKDevice.cpp">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.cpp">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\vulkan\VKRenderPass.cpp">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\renderer\vulkan\VKRendererAPI.cpp">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\vulkan\VKSwapChain.cpp">
       <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\resources\ResourceManager.cpp">
+      <Filter>equinox\resources</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp">
       <Filter>equinox\resources</Filter>
@@ -156,6 +179,8 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\resources\ResourceManager.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKCommandPool.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKFrameBuffer.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKSync.cpp" />
   </ItemGroup>
 </Project>

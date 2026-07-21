@@ -6,7 +6,7 @@ namespace Equinox
 {
 	static void GLFW_ErrorCallback(int error, const char* description)
 	{
-		LH_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
+		EQN_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
 	WinWindow::WinWindow(const WindowSpec& spec)
@@ -29,7 +29,7 @@ namespace Equinox
 		if (!s_GLFWInitialized)
 		{
 			bool init = glfwInit();
-			LH_CORE_ASSERT(init, "Failed to initialize GLFW!");
+			EQN_CORE_ASSERT(init, "Failed to initialize GLFW!");
 			glfwSetErrorCallback(GLFW_ErrorCallback);
 			s_GLFWInitialized = true;
 		}
@@ -58,7 +58,7 @@ namespace Equinox
 
 		if (!m_GLFWwindow)
 		{
-			LH_CORE_CRITICAL("Failed to create GLFW window!");
+			EQN_CORE_CRITICAL("Failed to create GLFW window!");
 			glfwTerminate();
 			return;
 		}
@@ -78,7 +78,7 @@ namespace Equinox
 				win->Height = height;
 			});
 
-		LH_CORE_INFO("Created window '{0}' ({1}x{2})", spec.Title, spec.Width, spec.Height);
+		EQN_CORE_INFO("Created window '{0}' ({1}x{2})", spec.Title, spec.Width, spec.Height);
 
 	}
 
@@ -87,7 +87,7 @@ namespace Equinox
 		if (m_GLFWwindow)
 		{
 			glfwDestroyWindow(m_GLFWwindow);
-			LH_CORE_INFO("Destroyed window '{0}'", m_Data.Title);
+			EQN_CORE_INFO("Destroyed window '{0}'", m_Data.Title);
 			m_GLFWwindow = nullptr;
 		}
 	}
@@ -105,7 +105,7 @@ namespace Equinox
 		}
 		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
-			//LH_CORE_WARN("SwapBuffers not yet implemented for Vulkan");
+			//EQN_CORE_WARN("SwapBuffers not yet implemented for Vulkan");
 		}
 	}
 
@@ -115,11 +115,11 @@ namespace Equinox
 		{
 			glfwSwapInterval(enabled ? 1 : 0);
 			m_Data.VSync = enabled;
-			LH_CORE_INFO("VSync {0}", enabled ? "enabled" : "disabled");
+			EQN_CORE_INFO("VSync {0}", enabled ? "enabled" : "disabled");
 		}
 		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
-			LH_CORE_WARN("Vsync not yet implemented for Vulkan");
+			EQN_CORE_WARN("Vsync not yet implemented for Vulkan");
 		}
 	}
 

@@ -37,6 +37,12 @@ namespace Equinox
         glUseProgram(0);
     }
 
+    void GLShader::SetBool(const std::string& name, bool value)
+    {
+        GLint location = GetUniformLocation(name);
+        glUniform1i(location, value ? 1 : 0);
+    }
+
     void GLShader::SetInt(const std::string& name, int value)
     {
         GLint location = GetUniformLocation(name);
@@ -119,7 +125,7 @@ namespace Equinox
                 glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
                 glDeleteShader(shader);
 
-                LH_CORE_ERROR("Shader compilation failed: {0}", infoLog.data());
+                EQN_CORE_ERROR("Shader compilation failed: {0}", infoLog.data());
                 return;
             }
 
@@ -142,7 +148,7 @@ namespace Equinox
 
             glDeleteProgram(program);
 
-            LH_CORE_ERROR("Shader linking failed: {0}", infoLog.data());
+            EQN_CORE_ERROR("Shader linking failed: {0}", infoLog.data());
             return;
         }
 
@@ -158,7 +164,7 @@ namespace Equinox
         if (type == "fragment") return GL_FRAGMENT_SHADER;
         if (type == "geometry") return GL_GEOMETRY_SHADER;
 
-        LH_CORE_ASSERT(false, "Unknown shader type!");
+        EQN_CORE_ASSERT(false, "Unknown shader type!");
         return 0;
     }
 
@@ -169,7 +175,7 @@ namespace Equinox
 
         GLint location = glGetUniformLocation(m_RendererID, name.c_str());
         if (location == -1)
-            LH_CORE_WARN("Uniform '{0}' not found!", name);
+            EQN_CORE_WARN("Uniform '{0}' not found!", name);
 
         m_UniformLocationCache[name] = location;
         return location;

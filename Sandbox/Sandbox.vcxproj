@@ -77,7 +77,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -97,7 +97,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -120,7 +120,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -140,7 +140,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\SandboxApp.cpp" />
+    <ClCompile Include="source\RTShaderApp.cpp" />
+    <ClCompile Include="source\Sandbox.cpp" />
+    <ClCompile Include="source\VulkanApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Equinox\Equinox.vcxproj">
@@ -148,13 +150,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="assets\shaders\galaxy.glsl" />
-    <None Include="assets\shaders\mandelbrott.glsl" />
-    <None Include="assets\shaders\raycasting.glsl" />
-    <None Include="assets\shaders\raytracing.glsl" />
-    <None Include="assets\shaders\spaceInvaders.glsl" />
-    <None Include="assets\shaders\test.glsl" />
-    <None Include="assets\shaders\theMatrix.glsl" />
+    <ClInclude Include="source\RTShaderApp.h" />
+    <ClInclude Include="source\VulkanApp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

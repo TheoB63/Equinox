@@ -42,4 +42,8 @@ namespace Equinox
 	{
 		s_RendererAPI->DrawIndexed(count);
 	}
+	void Renderer::DrawFrame()
+	{
+		s_RendererAPI->DrawFrame();
+	}
 }

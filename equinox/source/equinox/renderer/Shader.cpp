@@ -12,7 +12,7 @@ namespace Equinox
 		case RendererAPI::API::OpenGL:
 			return std::make_shared<GLShader>(filePath);
 		default:
-			LH_CORE_ASSERT(false, "Unknown RendererAPI!");
+			EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
 			return nullptr;
 		}
 	}
@@ -24,7 +24,7 @@ namespace Equinox
 		case RendererAPI::API::OpenGL:
 			return std::make_shared<GLShader>(vertexSrc, fragmentSrc);
 		default:
-			LH_CORE_ASSERT(false, "Unknown RendererAPI!");
+			EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
 			return nullptr;
 		}
 	}
@@ -34,7 +34,7 @@ namespace Equinox
 		std::ifstream in(filePath, std::ios::in | std::ios::binary);
 		if (!in)
 		{
-			LH_CORE_ERROR("Could not open shader file: {0}", filePath);
+			EQN_CORE_ERROR("Could not open shader file: {0}", filePath);
 			return "";
 		}
 

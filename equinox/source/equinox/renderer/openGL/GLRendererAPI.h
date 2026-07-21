@@ -23,6 +23,7 @@ namespace Equinox
 		void SetBlendFunction(u32 srcFactor, u32 dstFactor);
 
 		void DrawIndexed(u32 count) override;
+		void DrawFrame() override;
 
 	private:
 		void CheckError(const char* file, int line);
