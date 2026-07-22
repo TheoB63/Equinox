@@ -19,9 +19,11 @@ namespace Equinox
         void SetVSync(bool enabled) override;
         void ToggleFullscreen() override;
 
+        bool IsMinimized() override;
+
         u32 GetWidth() const override { return m_Data.Width; }
         u32 GetHeight() const override { return m_Data.Height; }
-        virtual void* GetNativeWindow() const override { return m_GLFWwindow; }
+        void* GetNativeWindow() const override { return m_GLFWwindow; }
 
     private:
         void Init(const WindowSpec& spec);

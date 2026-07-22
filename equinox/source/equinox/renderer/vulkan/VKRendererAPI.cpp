@@ -61,9 +61,30 @@ namespace Equinox
 
 	void VKRendererAPI::Shutdown()
 	{
+		vkDeviceWaitIdle(m_LogicalDevice->GetHandle());
+
+		m_Sync.reset();
+
+		if (!m_CommandBuffers.empty()) {
+			vkFreeCommandBuffers(m_LogicalDevice->GetHandle(),
+				m_CommandPool->GetHandle(),
+				static_cast<uint32_t>(m_CommandBuffers.size()),
+				m_CommandBuffers.data());
+			m_CommandBuffers.clear();
+		}
+
+		m_CommandPool.reset();
+		m_Framebuffers.clear();
+		m_GraphicsPipeline.reset();
+		m_RenderPass.reset();
+		m_Swapchain.reset();
+		m_LogicalDevice.reset();
+		m_PhysicalDevice.reset();
+
 		if (m_Surface)
 		{
 			vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
+			m_Surface = VK_NULL_HANDLE;
 			EQN_CORE_INFO("Vulkan surface destroyed");
 		}
 
@@ -381,8 +402,11 @@ namespace Equinox
 		vkDeviceWaitIdle(m_LogicalDevice->GetHandle());
 
 		// Cleanup old resources
-		m_Framebuffers.clear();
 		m_CommandBuffers.clear();
+		m_Framebuffers.clear();
+		m_GraphicsPipeline.reset();
+		m_RenderPass.reset();
+		m_Swapchain.reset();
 
 		// Recreate components
 		CreateSwapchain();

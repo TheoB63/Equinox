@@ -131,25 +131,16 @@ namespace Equinox
 		{
 			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
 			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-			glfwSetWindowMonitor(
-				m_GLFWwindow,
-				monitor,
-				0, 0,
-				mode->width,
-				mode->height,
-				mode->refreshRate
-			);
+			glfwSetWindowMonitor(m_GLFWwindow, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 		}
 		else
 		{
-			glfwSetWindowMonitor(
-				m_GLFWwindow,
-				nullptr,
-				100, 100, // Default position
-				(int)m_Data.Width,
-				(int)m_Data.Height,
-				0
-			);
+			glfwSetWindowMonitor(m_GLFWwindow, nullptr, 100, 100, (int)m_Data.Width, (int)m_Data.Height, 0);
 		}
+	}
+
+	bool WinWindow::IsMinimized()
+	{
+		return glfwGetWindowAttrib(m_GLFWwindow, GLFW_ICONIFIED);
 	}
 }

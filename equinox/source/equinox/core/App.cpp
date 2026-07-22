@@ -55,7 +55,10 @@ namespace Equinox
 			// User-defined update
 			OnUpdate(dt);
 
-			Renderer::DrawFrame();
+			// Draw Frame
+			if (!m_Window->IsMinimized()) {
+				Renderer::DrawFrame();
+			}
 
 			// Render UI
 			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
