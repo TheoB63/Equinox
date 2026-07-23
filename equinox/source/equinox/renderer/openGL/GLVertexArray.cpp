@@ -1,6 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/renderer/openGL/GLVertexArray.h"
-#include "equinox/renderer/openGL/GLVertexBuffer.h"
+#include "equinox/renderer/openGL/GLBuffer.h"
 
 #include <glad/glad.h>
 
@@ -27,9 +27,20 @@ namespace Equinox
         glBindVertexArray(m_RendererID);
         vb->Bind();
 
-        // Vertex buffer layout implementation needed here
-        // This would iterate through buffer elements and set glVertexAttribPointer
-
+        const auto& layout = vb->GetLayout();
+        uint32_t index = 0;
+        for (const auto& element : layout.GetElements()) {
+            glEnableVertexAttribArray(index);
+            glVertexAttribPointer(
+                index,
+                element.GetComponentCount(),
+                GL_FLOAT,
+                element.Normalized ? GL_TRUE : GL_FALSE,
+                layout.GetStride(),
+                (const void*)element.Offset
+            );
+            index++;
+        }
         m_VertexBuffers.push_back(vb);
     }
 

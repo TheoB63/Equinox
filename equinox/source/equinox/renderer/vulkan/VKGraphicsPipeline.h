@@ -8,7 +8,9 @@ namespace Equinox
 	class VKGraphicsPipeline
 	{
 	public:
-		VKGraphicsPipeline(VkDevice device, VkExtent2D swapchainExtent, VkRenderPass renderPass);
+		VKGraphicsPipeline(VkDevice device, VkExtent2D swapchainExtent, VkRenderPass renderPass,
+			const std::vector<VkVertexInputBindingDescription>& bindingDescriptions,
+			const std::vector<VkVertexInputAttributeDescription>& attributeDescriptions);
 		~VKGraphicsPipeline();
 
 		VkPipeline GetHandle() const { return m_Pipeline; }

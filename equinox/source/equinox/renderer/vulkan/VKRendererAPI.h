@@ -10,6 +10,7 @@
 #include "equinox/renderer/vulkan/VKFrameBuffer.h"
 #include "equinox/renderer/vulkan/VKCommandPool.h"
 #include "equinox/renderer/vulkan/VKSync.h"
+#include "equinox/renderer/vulkan/VKMesh.h"
 
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -27,12 +28,18 @@ namespace Equinox
         virtual void SetClearColor(const glm::vec4& color) override;
         virtual void Clear() override;
 
+        virtual void SubmitMesh(const std::shared_ptr<Mesh>& mesh) override;
+
         virtual void DrawIndexed(u32 count) override;
         virtual void DrawFrame() override;
 
 		VkInstance GetInstance() const { return m_Instance; }
-        VkDevice GetLogicalDevice() const { return m_LogicalDevice->GetHandle(); }
-        VkPhysicalDevice GetPhysicalDevice() const { return m_PhysicalDevice->GetHandle(); }
+        VkSurfaceKHR GetSurface() const { return m_Surface; }
+
+        const VKLogicalDevice& GetLogicalDevice() const { return *m_LogicalDevice; }
+        const VKPhysicalDevice& GetPhysicalDevice() const { return *m_PhysicalDevice; }
+        const VKSwapchain& GetSwapchain() const { return *m_Swapchain; }
+        const VKCommandPool& GetCommandPool() const { return *m_CommandPool; }
 
 	private:
         // Core Vulkan components
@@ -73,6 +80,7 @@ namespace Equinox
         std::unique_ptr<VKCommandPool> m_CommandPool;
         std::vector<VkCommandBuffer> m_CommandBuffers;
         std::unique_ptr<VKSync> m_Sync;
+        std::shared_ptr<VKMesh> m_CurrentMesh;
 
         // Configuration
         const std::vector<const char*> m_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };

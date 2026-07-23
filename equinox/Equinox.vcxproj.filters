@@ -122,15 +122,14 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKCommandPool.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKFrameBuffer.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKSync.h" />
-    <ClInclude Include="source\equinox\renderer\VertexBuffer.h" />
-    <ClInclude Include="source\equinox\renderer\openGL\GLVertexBuffer.h" />
-    <ClInclude Include="source\equinox\renderer\vulkan\VKVertexBuffer.h" />
-    <ClInclude Include="source\equinox\renderer\IndexBuffer.h" />
+    <ClInclude Include="source\equinox\renderer\openGL\GLBuffer.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKBuffer.h" />
     <ClInclude Include="source\equinox\renderer\VertexArray.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLVertexArray.h" />
-    <ClInclude Include="source\equinox\renderer\openGL\GLIndexBuffer.h" />
-    <ClInclude Include="source\equinox\renderer\vulkan\VKIndexBuffer.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKVertexArray.h" />
+    <ClInclude Include="source\equinox\renderer\Buffer.h" />
+    <ClInclude Include="source\equinox\renderer\Mesh.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -191,15 +190,12 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKCommandPool.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKFrameBuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKSync.cpp" />
-    <ClCompile Include="source\equinox\renderer\VertexBuffer.cpp" />
-    <ClCompile Include="source\equinox\renderer\openGL\GLVertexBuffer.cpp" />
-    <ClCompile Include="source\equinox\renderer\vulkan\VKVertexBuffer.cpp" />
-    <ClCompile Include="source\equinox\renderer\IndexBuffer.cpp" />
+    <ClCompile Include="source\equinox\renderer\openGL\GLBuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\VertexArray.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLVertexArray.cpp" />
-    <ClCompile Include="source\equinox\renderer\openGL\GLIndexBuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKCommon.cpp" />
-    <ClCompile Include="source\equinox\renderer\vulkan\VKIndexBuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp" />
+    <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKBuffer.cpp" />
   </ItemGroup>
 </Project>

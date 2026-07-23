@@ -8,94 +8,98 @@
 
 namespace Equinox
 {
-    void GLRendererAPI::Init()
-    {
-        // Glad should already be initialized by Window class
-        // Verify GLAD loaded properly
-        if (!gladLoadGL()) {
-            EQN_CORE_CRITICAL("Failed to initialize Glad!");
-            return;
-        }
+	void GLRendererAPI::Init()
+	{
+		// Glad should already be initialized by Window class
+		// Verify GLAD loaded properly
+		if (!gladLoadGL()) {
+			EQN_CORE_CRITICAL("Failed to initialize Glad!");
+			return;
+		}
 
-        EnableDepthTest(true);
-        EnableBlending(true);
-        SetBlendFunction(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		EnableDepthTest(true);
+		EnableBlending(true);
+		SetBlendFunction(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // TODO: Look into fmt GLubyte*
-        EQN_CORE_INFO("OpenGL Renderer initialized");
-        EQN_CORE_INFO(" - Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
-        EQN_CORE_INFO(" - Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-        EQN_CORE_INFO(" - Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-    }
+		// TODO: Look into fmt GLubyte*
+		EQN_CORE_INFO("OpenGL Renderer initialized");
+		EQN_CORE_INFO(" - Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+		EQN_CORE_INFO(" - Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+		EQN_CORE_INFO(" - Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	}
 
-    void GLRendererAPI::Shutdown()
-    {
-        // Cleanup OpenGL-specific resources
-    }
+	void GLRendererAPI::Shutdown()
+	{
+		// Cleanup OpenGL-specific resources
+	}
 
-    void GLRendererAPI::SetClearColor(const glm::vec4& color)
-    {
-        m_ClearColor = color;
-        glClearColor(color.r, color.g, color.b, color.a);
-        EQN_GL_CHECK_ERROR();
-    }
+	void GLRendererAPI::SetClearColor(const glm::vec4& color)
+	{
+		m_ClearColor = color;
+		glClearColor(color.r, color.g, color.b, color.a);
+		EQN_GL_CHECK_ERROR();
+	}
 
-    void GLRendererAPI::Clear()
-    {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        EQN_GL_CHECK_ERROR();
-    }
+	void GLRendererAPI::Clear()
+	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		EQN_GL_CHECK_ERROR();
+	}
 
-    void GLRendererAPI::SetViewport(u32 x, u32 y, u32 width, u32 height)
-    {
-        glViewport(x, y, width, height);
-        EQN_GL_CHECK_ERROR();
-    }
+	void GLRendererAPI::SetViewport(u32 x, u32 y, u32 width, u32 height)
+	{
+		glViewport(x, y, width, height);
+		EQN_GL_CHECK_ERROR();
+	}
 
-    void GLRendererAPI::EnableDepthTest(bool enable)
-    {
-        m_DepthTestEnabled = enable;
-        enable ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
-        EQN_GL_CHECK_ERROR();
-    }
+	void GLRendererAPI::EnableDepthTest(bool enable)
+	{
+		m_DepthTestEnabled = enable;
+		enable ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+		EQN_GL_CHECK_ERROR();
+	}
 
-    void GLRendererAPI::EnableBlending(bool enable)
-    {
-        m_BlendingEnabled = enable;
-        enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
-        EQN_GL_CHECK_ERROR();
-    }
+	void GLRendererAPI::EnableBlending(bool enable)
+	{
+		m_BlendingEnabled = enable;
+		enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
+		EQN_GL_CHECK_ERROR();
+	}
 
-    void GLRendererAPI::SetBlendFunction(u32 srcFactor, u32 dstFactor)
-    {
-        glBlendFunc(srcFactor, dstFactor);
-        EQN_GL_CHECK_ERROR();
-    }
+	void GLRendererAPI::SetBlendFunction(u32 srcFactor, u32 dstFactor)
+	{
+		glBlendFunc(srcFactor, dstFactor);
+		EQN_GL_CHECK_ERROR();
+	}
 
-    void GLRendererAPI::DrawIndexed(u32 count)
-    {
-        glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
-        EQN_GL_CHECK_ERROR();
-    }
+	void GLRendererAPI::SubmitMesh(const std::shared_ptr<Mesh>& mesh)
+	{
+	}
 
-    void GLRendererAPI::DrawFrame()
-    {
-    }
+	void GLRendererAPI::DrawIndexed(u32 count)
+	{
+		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		EQN_GL_CHECK_ERROR();
+	}
 
-    void GLRendererAPI::CheckError(const char* file, int line)
-    {
-        while (GLenum error = glGetError())
-        {
-            std::string errorStr;
-            switch (error)
-            {
-            case GL_INVALID_ENUM:       errorStr = "INVALID_ENUM";  break;
-            case GL_INVALID_VALUE:      errorStr = "INVALID_VALUE"; break;
-            case GL_INVALID_OPERATION:  errorStr = "INVALID_OPERATION"; break;
-            case GL_OUT_OF_MEMORY:      errorStr = "OUT_OF_MEMORY"; break;
-            default:                    errorStr = "UNKNOWN_ERROR"; break;
-            }
-            EQN_CORE_ERROR("OpenGL Error ({0}) at {1}:{2}", errorStr, file, line);
-        }
-    }
+	void GLRendererAPI::DrawFrame()
+	{
+	}
+
+	void GLRendererAPI::CheckError(const char* file, int line)
+	{
+		while (GLenum error = glGetError())
+		{
+			std::string errorStr;
+			switch (error)
+			{
+			case GL_INVALID_ENUM:       errorStr = "INVALID_ENUM";  break;
+			case GL_INVALID_VALUE:      errorStr = "INVALID_VALUE"; break;
+			case GL_INVALID_OPERATION:  errorStr = "INVALID_OPERATION"; break;
+			case GL_OUT_OF_MEMORY:      errorStr = "OUT_OF_MEMORY"; break;
+			default:                    errorStr = "UNKNOWN_ERROR"; break;
+			}
+			EQN_CORE_ERROR("OpenGL Error ({0}) at {1}:{2}", errorStr, file, line);
+		}
+	}
 }

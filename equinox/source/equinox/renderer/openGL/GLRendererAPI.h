@@ -1,6 +1,9 @@
 #pragma once
 
 #include "equinox/renderer/Renderer.h"
+#include "equinox/renderer/Mesh.h"
+
+#include <memory>
 
 namespace Equinox
 {
@@ -21,6 +24,8 @@ namespace Equinox
 
 		void EnableBlending(bool enable);
 		void SetBlendFunction(u32 srcFactor, u32 dstFactor);
+
+		virtual void SubmitMesh(const std::shared_ptr<Mesh>& mesh) override;
 
 		void DrawIndexed(u32 count) override;
 		void DrawFrame() override;

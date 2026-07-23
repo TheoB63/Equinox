@@ -19,7 +19,7 @@ namespace Equinox
         case RendererAPI::API::Vulkan:
         {
             auto vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
-            return std::make_unique<VKVertexArray>(vkRenderer->GetLogicalDevice());
+            return std::make_unique<VKVertexArray>(vkRenderer->GetLogicalDevice().GetHandle());
         }
 
         default:

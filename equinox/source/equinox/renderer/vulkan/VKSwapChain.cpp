@@ -19,7 +19,8 @@ namespace Equinox
 		CreateImageViews();
 	}
 
-	VKSwapchain::~VKSwapchain() {
+	VKSwapchain::~VKSwapchain()
+	{
 		Cleanup();
 	}
 
@@ -37,7 +38,8 @@ namespace Equinox
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_PhysicalDevice, m_Surface, &capabilities);
 
 		uint32_t imageCount = capabilities.minImageCount + 1;
-		if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount) {
+		if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount)
+		{
 			imageCount = capabilities.maxImageCount;
 		}
 
@@ -67,7 +69,8 @@ namespace Equinox
 	{
 		m_ImageViews.resize(m_Images.size());
 
-		for (size_t i = 0; i < m_Images.size(); i++) {
+		for (size_t i = 0; i < m_Images.size(); i++)
+		{
 			VkImageViewCreateInfo createInfo{};
 			createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 			createInfo.image = m_Images[i];
@@ -88,7 +91,8 @@ namespace Equinox
 
 	void VKSwapchain::Cleanup()
 	{
-		for (auto imageView : m_ImageViews) {
+		for (auto imageView : m_ImageViews)
+		{
 			vkDestroyImageView(m_LogicalDevice, imageView, nullptr);
 		}
 		vkDestroySwapchainKHR(m_LogicalDevice, m_Swapchain, nullptr);
@@ -101,9 +105,11 @@ namespace Equinox
 		std::vector<VkSurfaceFormatKHR> formats(formatCount);
 		vkGetPhysicalDeviceSurfaceFormatsKHR(m_PhysicalDevice, m_Surface, &formatCount, formats.data());
 
-		for (const auto& format : formats) {
+		for (const auto& format : formats)
+		{
 			if (format.format == VK_FORMAT_B8G8R8A8_SRGB &&
-				format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+				format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			{
 				return format;
 			}
 		}
@@ -118,7 +124,8 @@ namespace Equinox
 		vkGetPhysicalDeviceSurfacePresentModesKHR(m_PhysicalDevice, m_Surface, &presentModeCount, modes.data());
 
 		for (const auto& mode : modes) {
-			if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
+			if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
+			{
 				return mode;
 			}
 		}
@@ -130,11 +137,13 @@ namespace Equinox
 		VkSurfaceCapabilitiesKHR capabilities;
 		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_PhysicalDevice, m_Surface, &capabilities);
 
-		if (capabilities.currentExtent.width != UINT32_MAX) {
+		if (capabilities.currentExtent.width != UINT32_MAX)
+		{
 			return capabilities.currentExtent;
 		}
 
-		VkExtent2D actualExtent = {
+		VkExtent2D actualExtent =
+		{
 			std::clamp(width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
 			std::clamp(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
 		};

@@ -8,6 +8,7 @@
 #include <equinox/resources/ResourceManager.h>
 
 #include <equinox/renderer/Renderer.h>
+#include <equinox/renderer/Buffer.h>
 #include <equinox/renderer/vulkan/VKRendererAPI.h>
 #include <equinox/renderer/Shader.h>
 #include <memory>
@@ -23,6 +24,33 @@ namespace Equinox
 
 	void VulkanApp::OnInit()
 	{
+        const std::vector<Vertex> vertices = {
+            { {0.0f, -0.5f}, {1.0f, 0.0f, 0.0f} },
+            { {0.5f, 0.5f }, {0.0f, 1.0f, 0.0f} },
+            { {-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f} }
+        };
+
+        BufferLayout layout = {
+            { ShaderDataType::Float2, "inPosition" },
+            { ShaderDataType::Float3, "inColor"    }
+        };
+
+        auto vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
+        auto vb = std::make_shared<VKVertexBuffer>(
+            vkRenderer->GetLogicalDevice().GetHandle(),
+            vkRenderer->GetPhysicalDevice().GetHandle(),
+            vertices.data(),
+            sizeof(Vertex) * vertices.size(),
+            vkRenderer->GetLogicalDevice().GetTransferQueue(),
+            vkRenderer->GetPhysicalDevice().FindQueueFamilies(vkRenderer->GetSurface()).transferFamily.value()
+        );
+
+        vb->SetLayout(layout);
+
+        //auto ib = std::make_shared<VKIndexBuffer>(...);
+        auto mesh = std::make_shared<VKMesh>(vb/*, ib*/);
+
+        Renderer::SubmitMesh(mesh);
 	}
 
 	void VulkanApp::OnUpdate(f32 dt)

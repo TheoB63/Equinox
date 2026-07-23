@@ -1,7 +1,6 @@
 #pragma once
 
-#include "equinox/renderer/VertexBuffer.h"
-#include "equinox/renderer/IndexBuffer.h"
+#include "equinox/renderer/Buffer.h"
 
 #include <memory>
 #include <vector>
