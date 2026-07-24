@@ -129,6 +129,7 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKMesh.h" />
     <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
     <ClInclude Include="source\equinox\core\Math.h" />
+    <ClInclude Include="source\equinox\renderer\openGL\GLMesh.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />

@@ -169,6 +169,7 @@
     <ClInclude Include="source\equinox\input\Input.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Mesh.h" />
+    <ClInclude Include="source\equinox\renderer\openGL\GLMesh.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLVertexArray.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLBuffer.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />

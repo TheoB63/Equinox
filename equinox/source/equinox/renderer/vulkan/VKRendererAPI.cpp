@@ -166,7 +166,7 @@ namespace Equinox
 				vkCmdDraw(commandBuffer, vkMesh->GetVertexCount(), 1, 0, 0);
 			}
 		}
-		//vkCmdDraw(commandBuffer, 3, 1, 0, 0); // Draw triangle		
+
 		vkCmdEndRenderPass(commandBuffer);
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer),

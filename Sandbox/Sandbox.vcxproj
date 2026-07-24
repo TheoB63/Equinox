@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\OpenGLApp.cpp" />
     <ClCompile Include="source\RTShaderApp.cpp" />
     <ClCompile Include="source\Sandbox.cpp" />
     <ClCompile Include="source\VulkanApp.cpp" />
@@ -150,8 +151,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\OpenGLApp.h" />
     <ClInclude Include="source\RTShaderApp.h" />
     <ClInclude Include="source\VulkanApp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\triangle.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
