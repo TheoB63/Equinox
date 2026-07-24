@@ -12,3 +12,5 @@
 #include <algorithm>
 
 #include "equinox/core/Log.h"
+#include "equinox/core/Math.h"
+#include "equinox/utils/CustomFormatters.h"

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/core/Math.h"
 #include "equinox/renderer/Mesh.h"
 
-#include <glm/glm.hpp>
 #include <memory>
 
 namespace Equinox

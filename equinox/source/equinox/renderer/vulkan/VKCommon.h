@@ -1,7 +1,7 @@
 #pragma once
 
 #include "equinox/core/Log.h"
-#include "equinox/renderer/vulkan/VKFormat.h"
+#include "equinox/utils/CustomFormatters.h"
 
 #define VK_CHECK_RESULT(result, message)                                          \
     do {                                                                          \

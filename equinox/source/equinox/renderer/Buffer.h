@@ -1,10 +1,11 @@
 #pragma once
 
+#include "equinox/core/Math.h"
+
 #include <vector>
 #include <string>
 #include <initializer_list>
 #include <memory>
-#include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 
 namespace Equinox

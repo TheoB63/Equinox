@@ -92,9 +92,6 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKDevice.h">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKFormat.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.h">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClInclude>
@@ -130,6 +127,8 @@
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Mesh.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKMesh.h" />
+    <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
+    <ClInclude Include="source\equinox\core\Math.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />

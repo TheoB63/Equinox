@@ -158,6 +158,7 @@
     <ClInclude Include="source\equinox\core\EntryPoint.h" />
     <ClInclude Include="source\equinox\core\EquinoxTypes.h" />
     <ClInclude Include="source\equinox\core\Log.h" />
+    <ClInclude Include="source\equinox\core\Math.h" />
     <ClInclude Include="source\equinox\core\Timestep.h" />
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\events\AppEvent.h" />
@@ -179,7 +180,6 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKCommandPool.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKCommon.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKDevice.h" />
-    <ClInclude Include="source\equinox\renderer\vulkan\VKFormat.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKFrameBuffer.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKMesh.h" />
@@ -191,6 +191,7 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKBuffer.h" />
     <ClInclude Include="source\equinox\resources\ResourceManager.h" />
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h" />
+    <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
     <ClInclude Include="source\equinox\window\WinWindow.h" />
     <ClInclude Include="source\equinox\window\Window.h" />
   </ItemGroup>

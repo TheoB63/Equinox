@@ -1,8 +1,8 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/core/Math.h"
 
-#include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>
 
