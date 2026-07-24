@@ -125,7 +125,7 @@ namespace Equinox
                 glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
                 glDeleteShader(shader);
 
-                EQN_CORE_ERROR("Shader compilation failed: {0}", infoLog.data());
+                EQN_CORE_ERROR("Shader compilation failed:\n{0}", infoLog.data());
                 return;
             }
 

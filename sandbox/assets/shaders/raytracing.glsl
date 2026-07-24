@@ -1,4 +1,8 @@
-﻿#type vertex
+﻿//===================================
+// Raytracing Demo for Luth ~hekbas
+//===================================
+
+#type vertex
 #version 450 core
 
 layout(location = 0) in vec4 a_Position;
@@ -11,10 +15,6 @@ void main()
     gl_Position = a_Position;
     v_TexCoord = a_TexCoord;
 }
-
-
-
-
 
 
 #type fragment
@@ -37,15 +37,16 @@ uniform float u_exposure;
 uniform float u_gamma;
 
 #define MAX_LIGHTS 4
+#define MAX_SPHERES 6
 #define PI 3.141592653589793
 #define EPSILON 0.001
 
 struct Camera {
-    vec3 origin;
-    vec3 direction;
-    vec3 lookAt;
+    vec3 position;
+    vec3 target;
     float fov;
-    bool useLookAt;
+    float orbitRadius;
+    float orbitSpeed;
 };
 
 struct AmbientLight {
@@ -54,10 +55,11 @@ struct AmbientLight {
     float intensity;
 };
 
-struct PointLight {
-    vec3 position;
+struct Cloud {
     vec3 color;
-    float intensity;
+    float density;
+    float speed;
+    float scale;
 };
 
 struct Fog {
@@ -66,6 +68,12 @@ struct Fog {
     float density;
     float start;
     float end;
+};
+
+struct PointLight {
+    vec3 position;
+    vec3 color;
+    float intensity;
 };
 
 struct Material {
@@ -83,6 +91,12 @@ struct HitInfo {
     vec3 normal;
     Material mat;
     bool hit;
+};
+
+struct Sphere {
+    vec3 position;
+    float r;
+    Material mat;
 };
 
 struct ShadingData {
@@ -119,12 +133,12 @@ ShadingData GetDefaultShadingData() {
 // Scene uniforms
 uniform Camera u_camera;
 uniform AmbientLight u_ambientLight;
+uniform Cloud u_cloud;
+uniform Fog u_fog;
 uniform PointLight u_pointLights[MAX_LIGHTS];
 uniform int u_numPointLights;
-uniform Fog u_fog;
 uniform Material u_floorMaterial;
-uniform vec3 u_spherePositions[3];
-uniform Material u_sphereMaterials[3];
+uniform Sphere u_spheres[MAX_SPHERES];
 
 // Random
 float pcg1d(float v) {
@@ -148,9 +162,34 @@ float hash(float v) {
 float hash(vec2 v) {
     return fract(sin(dot(v, vec2(12.9898, 78.233))) * 43758.5453);
 }
+float hash(vec3 v) {
+    return fract(sin(dot(v, vec3(127.1, 311.7, 74.7))) * 43758.5453);
+}
 float getSeed(int v) {
     vec2 fragCoord = gl_FragCoord.xy * (float(v + 1) * 0.618);
     return hash(fragCoord + u_time);
+}
+float CloudNoise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f*f*(3.0-2.0*f); // Smoothstep
+    
+    // Front face (z=0)
+    float frontZ0 = mix(
+        mix(hash(i+vec3(0,0,0)), hash(i+vec3(1,0,0)), f.x),
+        mix(hash(i+vec3(0,1,0)), hash(i+vec3(1,1,0)), f.x),
+        f.y
+    );
+    
+    // Back face (z=1)
+    float backZ1 = mix(
+        mix(hash(i+vec3(0,0,1)), hash(i+vec3(1,0,1)), f.x),
+        mix(hash(i+vec3(0,1,1)), hash(i+vec3(1,1,1)), f.x),
+        f.y
+    );
+    
+    // Interpolate between front and back faces
+    return mix(frontZ0, backZ1, f.z);
 }
 
 float SphereIntersect(vec3 ro, vec3 rd, vec3 center, float radius)
@@ -199,18 +238,18 @@ HitInfo SceneIntersect(vec3 ro, vec3 rd)
     }
 
     // Spheres
-    for(int i = 0; i < 3; i++) {
-        float tSphere = SphereIntersect(ro, rd, u_spherePositions[i], 1.0);
+    for(int i = 0; i < MAX_SPHERES; i++) {
+        float tSphere = SphereIntersect(ro, rd, u_spheres[i].position,  u_spheres[i].r);
         if (tSphere > 0.0 && tSphere < hit.t) {
             hit.t = tSphere;
             hit.position = ro + rd * hit.t;
-            hit.normal = normalize(hit.position - u_spherePositions[i]);
-            hit.mat.albedo = u_sphereMaterials[i].albedo;
-            hit.mat.emissive = u_sphereMaterials[i].emissive;
-            hit.mat.roughness = u_sphereMaterials[i].roughness;
-            hit.mat.metallic = u_sphereMaterials[i].metallic;
-            hit.mat.ior = u_sphereMaterials[i].ior;
-            hit.mat.transparency = u_sphereMaterials[i].transparency;
+            hit.normal = normalize(hit.position - u_spheres[i].position);
+            hit.mat.albedo = u_spheres[i].mat.albedo;
+            hit.mat.emissive = u_spheres[i].mat.emissive;
+            hit.mat.roughness = u_spheres[i].mat.roughness;
+            hit.mat.metallic = u_spheres[i].mat.metallic;
+            hit.mat.ior = u_spheres[i].mat.ior;
+            hit.mat.transparency = u_spheres[i].mat.transparency;
             hit.hit = true;
         }
     }
@@ -224,7 +263,7 @@ HitInfo SceneIntersect(vec3 ro, vec3 rd)
 // - cosθ: Dot product between view and half vectors
 // Info: https://odederell3d.blog/2018/09/18/fresnel-reflections/
 vec3 FresnelSchlick(float cosTheta, vec3 F0) {
-    return F0 + (vec3(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
+    return F0 + (vec3(1.0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
 // Normal Distribution Function (NDF) using Trowbridge-Reitz GGX
@@ -342,32 +381,32 @@ vec3 CalculateEmissiveGlow(vec3 ro, vec3 rd) {
     const float glowStrength = 64.0;
     const float glowFalloff = 8.5;
     
-    for(int i = 0; i < 3; i++) {
-        if(length(u_sphereMaterials[i].emissive) > 0.0) {
-            // Sphere data
-            vec3 center = u_spherePositions[i];
-            float radius = 1.0;
-            vec3 emissive = u_sphereMaterials[i].emissive;
+    for(int i = 0; i < MAX_SPHERES; i++) {
+        if(length(u_spheres[i].mat.emissive) <= 0.0) continue;
+
+        // Sphere data
+        vec3 center = u_spheres[i].position;
+        float radius = 1.0;
+        vec3 emissive = u_spheres[i].mat.emissive;
+        
+        // Calculate closest point on ray to sphere center
+        vec3 oc = ro - center;
+        float tca = dot(oc, rd);
+        float d2 = dot(oc, oc) - tca * tca;
+        float radius2 = radius * radius;
+        
+        // If ray passes near sphere
+        if(d2 < radius2 * glowRadius) {
+            // Estimate glow
+            float dist = sqrt(d2);
+            float glowIntensity = glowStrength * 
+                pow(1.0 - smoothstep(0.0, radius * glowRadius, dist), glowFalloff);
             
-            // Calculate closest point on ray to sphere center
-            vec3 oc = ro - center;
-            float tca = dot(oc, rd);
-            float d2 = dot(oc, oc) - tca * tca;
-            float radius2 = radius * radius;
-            
-            // If ray passes near sphere
-            if(d2 < radius2 * glowRadius) {
-                // Estimate glow
-                float dist = sqrt(d2);
-                float glowIntensity = glowStrength * 
-                    pow(1.0 - smoothstep(0.0, radius * glowRadius, dist), glowFalloff);
-                
-                // Add jittered samples for softer look
-                for(int s = 0; s < glowSamples; s++) {
-                    vec3 jitter = normalize(pcg3d(vec3(s, glowIntensity, u_time)));
-                    glow += emissive * glowIntensity * 0.1 * 
-                        pow(1.0 - dist/(radius * glowRadius), 2.0);
-                }
+            // Add jittered samples for softer look
+            for(int s = 0; s < glowSamples; s++) {
+                vec3 jitter = normalize(pcg3d(vec3(s, glowIntensity, u_time)));
+                glow += emissive * glowIntensity * 0.1 * 
+                    pow(1.0 - dist/(radius * glowRadius), 2.0);
             }
         }
     }
@@ -412,58 +451,57 @@ void CalculateLighting(inout vec3 throughput, HitInfo hit, vec3 viewDir)
         vec3 radiance = u_pointLights[i].color * u_pointLights[i].intensity * shadow * attenuation * NdotL;
 
         // Fresnel
-        vec3 F = FresnelSchlick(max(dot(L, H), 0.0), F0);
+        vec3 F = FresnelSchlick(NdotV, F0);
         
-        // Diffuse (Lambert)
+        // Diffuse
         vec3 kD = (vec3(1.0) - F) * (1.0 - hit.mat.metallic);
         vec3 diffuse = kD * albedo * radiance / PI;
 
-        // Specular (Cook-Torrance)
+        // Specular
         float D = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
         vec3 specular = (D * G * F) / (4.0 * NdotV * NdotL + EPSILON) * radiance;
 
-        sd.fresnel += F * throughput;
+        if(i == 0) sd.fresnel = F;
         sd.radiance += radiance * throughput;
         sd.diffuse += diffuse * throughput;
         sd.specular += specular * throughput;
-        throughput *= F;
     }
 
     // Emissive
-    for(int i = 0; i < u_spherePositions.length(); i++) {
-        //if(u_sphereMaterials[i].emissive == vec3(0.0)) continue;
+    for(int i = 0; i < u_spheres.length(); i++) {
+        if(u_spheres[i].mat.emissive == vec3(0.0)) continue;
 
-        vec3 L = normalize(u_spherePositions[i] - hit.position);
+        vec3 L = normalize(u_spheres[i].position - hit.position);
         vec3 H = normalize(V + L);
-        float distance = length(u_spherePositions[i] - hit.position);
+        float distance = length(u_spheres[i].position - hit.position);
         float attenuation = 1.0 / (distance * distance);
-        float shadow = SoftShadowSARS(hit.position, hit.normal, u_spherePositions[i], u_softShadowFactor);
+        float shadow = SoftShadowSARS(hit.position, hit.normal, u_spheres[i].position, u_softShadowFactor);
         
         float NdotL = max(dot(N, L), 0.0);
         float NdotV = max(dot(N, V), 0.0);
         float HdotV = max(dot(H, V), 0.0);
 
-        vec3 radiance = u_sphereMaterials[i].emissive * 400.0 * shadow * attenuation * NdotL;
+        vec3 radiance = u_spheres[i].mat.emissive * 400.0 * shadow * attenuation * NdotL;
 
         // Fresnel
         vec3 F = FresnelSchlick(max(dot(L, H), 0.0), F0);
         
-        // Diffuse (Lambert)
+        // Diffuse
         vec3 kD = (vec3(1.0) - F) * (1.0 - hit.mat.metallic);
         vec3 diffuse = kD * albedo * radiance / PI;
 
-        // Specular (Cook-Torrance)
+        // Specular
         float D = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, L, roughness);
         vec3 specular = (D * G * F) / (4.0 * NdotV * NdotL + EPSILON) * radiance;
 
-        sd.fresnel += F * throughput;
         sd.radiance += radiance * throughput;
         sd.diffuse += diffuse * throughput;
         sd.specular += specular * throughput;
-        throughput *= F;
     }
+
+    throughput *= sd.fresnel;
 }
 
 void GetSurfaceData(HitInfo hit, vec3 rd) {
@@ -479,12 +517,28 @@ void GetSurfaceData(HitInfo hit, vec3 rd) {
 
 void CalculateDepth(HitInfo hit) {
     if(hit.hit) {
-        float distance = length(sd.worldPos - u_camera.origin);
+        float distance = length(sd.worldPos - u_camera.position);
         float distRatio = 4.0 * distance / u_fog.end;
         sd.depth = 1 - exp(-distRatio*u_fog.density * distRatio*u_fog.density);
     } else {
         sd.depth = 1.0;
     }    
+}
+
+// Generates Fractal Brownian Motion noise by combining multiple noise octaves
+// - p: Input position/coordinate
+// - octaves: Number of noise layers to combine (more = finer detail)
+float fbm(vec3 p, int octaves) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    float frequency = 1.0;
+    
+    for(int i = 0; i < octaves; i++) {
+        value += amplitude * CloudNoise(p * frequency);
+        amplitude *= 0.5;
+        frequency *= 2.0;
+    }
+    return value;
 }
 
 vec3 GetAmbientColor(vec3 rayDir) {
@@ -494,8 +548,27 @@ vec3 GetAmbientColor(vec3 rayDir) {
         u_ambientLight.skyColor * u_ambientLight.intensity,
         horizonMix
     );
+
+    // Cloud parameters
+    float cloudTime = u_time * u_cloud.speed;
+    vec3 cloudPos = rayDir * u_cloud.scale + vec3(cloudTime, 0, cloudTime*0.5);
     
-    return skyColor;
+    // Generate cloud pattern
+    float cloudPattern = fbm(cloudPos, 3);
+    cloudPattern = smoothstep(0.4, 0.6, cloudPattern);
+    
+    // Add turbulence
+    vec3 turbPos = cloudPos + vec3(cloudTime*0.2, cloudTime*0.1, 0);
+    float turbulence = fbm(turbPos * 2.0, 2);
+    cloudPattern *= mix(0.8, 1.2, turbulence);
+    
+    // Horizon fade and density control
+    float cloudFactor = cloudPattern * u_cloud.density * horizonMix;
+    cloudFactor = clamp(cloudFactor, 0.0, 1.0);
+    
+    // Final cloud color
+    vec3 cloudColor = mix(skyColor, u_cloud.color, 0.8);
+    return mix(skyColor, cloudColor, cloudFactor);
 }
 
 void TraceRay(vec3 ro, vec3 rd)
@@ -522,9 +595,19 @@ void TraceRay(vec3 ro, vec3 rd)
             sd.finalColor += throughput * ambient;
             break;
         }
-        
-        ro = hit.position + hit.normal * EPSILON;
-        rd = reflect(rd, hit.normal);
+
+        if (hit.mat.transparency < 0.5) {
+            ro = hit.position + hit.normal * EPSILON;
+            rd = reflect(rd, hit.normal);
+        }
+        else {
+            // Check for sphere back hit
+            bool isBack = dot(rd, hit.normal) > 0.0 ? true : false;
+            vec3 N = isBack ? -hit.normal : hit.normal;
+            float eta = isBack ? hit.mat.ior : 1/hit.mat.ior;
+            ro = hit.position - N * EPSILON;
+            rd = refract(normalize(rd), normalize(N), eta);
+        }
     }
     sd.finalColor += sd.diffuse + sd.specular + sd.emissive + emissiveGlow;
 
@@ -538,28 +621,26 @@ vec3 GetVisualizationColor()
     switch(u_displayMode) {
         case 1: return sd.rayDir;
         case 2: return sd.albedo;
-        case 3: return sd.worldPos;
-        case 4: return (sd.normal + 1.0) / 2.0; //suave :3
+        case 3: return (sd.worldPos + 10.0) / 20.0; // Maps -10m to +10m to 0-1 range
+        case 4: return (sd.normal + 1.0) / 2.0;     // Suave :3
         case 5: return sd.fresnel;
         case 6: return sd.radiance;
         case 7: return sd.diffuse;
         case 8: return sd.specular;
         case 9: return sd.emissive;
         case 10: return vec3(sd.depth);
-        default: return sd.finalColor; // 0
+        default: return sd.finalColor; // case 0
     }
 }
 
-vec3 TraceAndVisualize(mat3 camBasis, vec2 uv)
-{
-    vec3 ro = u_camera.origin;
-    vec3 rd = normalize(camBasis * vec3(uv, -1.0));  
+vec3 TraceAndVisualize(mat3 camBasis, vec2 uv, vec3 ro) {
+    vec3 rd = normalize(camBasis * vec3(uv, 1.0));
+    vec3 worldRd = camBasis * rd;
     TraceRay(ro, rd);
     return GetVisualizationColor();
 }
 
-vec3 SampleWithSSAA(mat3 camBasis, float focalScale)
-{
+vec3 SampleWithSSAA(mat3 camBasis, float focalScale, vec3 ro) {
     vec3 color = vec3(0);
     const int AA = u_SSAA;
     
@@ -568,7 +649,7 @@ vec3 SampleWithSSAA(mat3 camBasis, float focalScale)
             vec2 offset = vec2(x, y) / float(AA) - 0.5;
             vec2 uv = (v_TexCoord - 0.5 + offset/u_resolution) * 
                      vec2(u_resolution.x/u_resolution.y, 1.0) * focalScale;
-            color += TraceAndVisualize(camBasis, uv);
+            color += TraceAndVisualize(camBasis, uv, ro);
         }
     }
     return color / float(AA*AA);
@@ -587,29 +668,38 @@ vec3 PostProcessing(vec3 color)
     return color;
 }
 
-mat3 GetCameraBasis(vec3 forward) {
+mat3 GetCameraBasis(vec3 cameraPos, vec3 target) {
+    vec3 forward = normalize(target - cameraPos);
     vec3 worldUp = vec3(0.0, 1.0, 0.0);
-    vec3 right = normalize(cross(forward, worldUp));
-    vec3 up = normalize(cross(right, forward));
+    vec3 right = normalize(cross(worldUp, forward));
+    vec3 up = normalize(cross(forward, right));
     return mat3(right, up, forward);
 }
 
 void main()
 {
-    vec3 color;
-    float aspectRatio = u_resolution.x / u_resolution.y;
+    // Camera Orbit
+    float angle = u_time * u_camera.orbitSpeed;
+    vec3 cameraPos = vec3(
+        u_camera.orbitRadius * cos(angle),
+        u_camera.position.y,
+        u_camera.orbitRadius * sin(angle)
+    );
 
-    // Camera
-    vec3 camForward = u_camera.useLookAt == true ?
-        normalize(u_camera.lookAt - u_camera.origin) : normalize(u_camera.direction);
-    mat3 camBasis = GetCameraBasis(camForward); 
+    // Camera Basis Matrix
+    mat3 camBasis = GetCameraBasis(cameraPos, u_camera.target);
+
+    // UV aspect/fov
+    float aspectRatio = u_resolution.x / u_resolution.y;
     float focalScale = tan(radians(u_camera.fov) * 0.5);
-    
+
+    // Trace the ray
+    vec3 color;
     if(u_SSAA > 1) {
-        color = SampleWithSSAA(camBasis, focalScale);
+        color = SampleWithSSAA(camBasis, focalScale, cameraPos);
     } else {
         vec2 uv = (v_TexCoord - 0.5) * vec2(aspectRatio, 1.0) * focalScale;
-        color = TraceAndVisualize(camBasis, uv);
+        color = TraceAndVisualize(camBasis, uv, cameraPos);
     }
     
     FragColor = vec4(PostProcessing(color), 1.0);
