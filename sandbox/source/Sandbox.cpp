@@ -40,7 +40,7 @@ namespace Equinox
 		char** testArgv = argv;
 
 		if (argc < 2) { // No argument
-			std::vector<std::string> args = { "Sandbox", "--opengl" };
+			std::vector<std::string> args = { "Sandbox", "--vulkan" };
 			EquinoxTest::CreateTestArgs(args, testArgc, testArgv);
 
 			EQN_CORE_WARN("No arguments provided");

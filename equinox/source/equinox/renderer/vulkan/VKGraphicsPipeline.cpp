@@ -27,7 +27,8 @@ namespace Equinox
 
     VKGraphicsPipeline::VKGraphicsPipeline(VkDevice device, VkExtent2D swapchainExtent, VkRenderPass renderPass,
         const std::vector<VkVertexInputBindingDescription>& bindingDescriptions,
-        const std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
+        const std::vector<VkVertexInputAttributeDescription>& attributeDescriptions,
+        VkDescriptorSetLayout descriptorSetLayout)
         : m_Device(device)
     {
         // 1. Load shader code
@@ -123,8 +124,8 @@ namespace Equinox
         // 10. Pipeline layout
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pSetLayouts = nullptr;
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
