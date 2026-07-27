@@ -6,12 +6,14 @@
 // TEST
 #include <equinox/resources/ShaderLibrary.h>
 #include <equinox/resources/ResourceManager.h>
-#include <equinox/renderer/Texture.h>
-#include <equinox/renderer/Model.h>
+#include <equinox/resources/Loaders.h>
 
 #include <equinox/renderer/Renderer.h>
 #include <equinox/renderer/Buffer.h>
 #include <equinox/renderer/Shader.h>
+#include <equinox/renderer/Texture.h>
+#include <equinox/renderer/Model.h>
+
 #include <equinox/renderer/openGL/GLRendererAPI.h>
 #include <equinox/renderer/openGL/GLBuffer.h>
 #include <equinox/renderer/openGL/GLMesh.h>

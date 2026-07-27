@@ -159,6 +159,7 @@
     <ClInclude Include="source\equinox\core\EquinoxTypes.h" />
     <ClInclude Include="source\equinox\core\Log.h" />
     <ClInclude Include="source\equinox\core\Math.h" />
+    <ClInclude Include="source\equinox\core\ThreadPool.h" />
     <ClInclude Include="source\equinox\core\Time.h" />
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\events\AppEvent.h" />
@@ -194,7 +195,7 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKSync.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKTexture.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKVertexArray.h" />
-    <ClInclude Include="source\equinox\resources\ResourceLoader.h" />
+    <ClInclude Include="source\equinox\resources\Loaders.h" />
     <ClInclude Include="source\equinox\resources\ResourceManager.h" />
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h" />
     <ClInclude Include="source\equinox\renderer\Model.h" />
@@ -236,7 +237,6 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKSync.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKTexture.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp" />
-    <ClCompile Include="source\equinox\resources\ResourceLoader.cpp" />
     <ClCompile Include="source\equinox\resources\ResourceManager.cpp" />
     <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp" />
     <ClCompile Include="source\equinox\renderer\Model.cpp" />
