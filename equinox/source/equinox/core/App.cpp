@@ -25,6 +25,7 @@ namespace Equinox
 	{
 		// Create Window and initialize
 		WindowSpec ws = ParseCommandLineArgs(argc, argv);
+		ws.VSync = false;
 
 		m_Window = Window::Create(ws);
 		Input::SetWindow(m_Window->GetNativeWindow());

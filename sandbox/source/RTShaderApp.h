@@ -2,18 +2,9 @@
 
 #include <Equinox.h>
 
-#include <imgui.h>
-
-// TEST
-#include <equinox/resources/ShaderLibrary.h>
-#include <equinox/resources/ResourceManager.h>
-
-#include <equinox/renderer/Renderer.h>
-#include <equinox/renderer/Shader.h>
 #include <memory>
 #include <random>
-
-// TEST GL
+#include <imgui.h>
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>

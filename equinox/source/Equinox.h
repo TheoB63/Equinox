@@ -1,6 +1,7 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/core/Math.h"
 #include "equinox/core/App.h"
 #include "equinox/core/Log.h"
 #include "equinox/core/Time.h"

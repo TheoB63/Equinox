@@ -184,6 +184,7 @@
     </ClInclude>
     <ClInclude Include="source\equinox\core\ThreadPool.h" />
     <ClInclude Include="source\equinox\resources\Loaders.h" />
+    <ClInclude Include="source\equinox\resources\TextureCache.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -292,5 +293,6 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\resources\TextureCache.cpp" />
   </ItemGroup>
 </Project>

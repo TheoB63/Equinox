@@ -4,16 +4,6 @@
 #include <imgui.h>
 
 // TEST
-#include <equinox/resources/ShaderLibrary.h>
-#include <equinox/resources/ResourceManager.h>
-#include <equinox/resources/Loaders.h>
-
-#include <equinox/renderer/Renderer.h>
-#include <equinox/renderer/Buffer.h>
-#include <equinox/renderer/Shader.h>
-#include <equinox/renderer/Texture.h>
-#include <equinox/renderer/Model.h>
-
 #include <equinox/renderer/openGL/GLRendererAPI.h>
 #include <equinox/renderer/openGL/GLBuffer.h>
 #include <equinox/renderer/openGL/GLMesh.h>
@@ -33,8 +23,9 @@ namespace Equinox
         InitUniformBuffer();
         LoadShader();
 
-        Model model(ResourceManager::GetPath(Resource::Model, "grimoire/MimicBook.fbx"));
-        std::vector<std::shared_ptr<GLMesh>> meshes;
+        //Model model(ResourceManager::GetPath(Resource::Model, "grimoire/MimicBook.fbx"));
+        Model model(ResourceManager::GetPath(Resource::Model, "mf/mf.fbx"));
+        //Model model(ResourceManager::GetPath(Resource::Model, "potion/potion.fbx"));
 
         for (const auto& meshData : model.GetMeshes()) {
             const auto& material = model.GetMaterials()[meshData.MaterialIndex];
@@ -43,6 +34,7 @@ namespace Equinox
             auto texture = material.Textures.empty()
                 ? std::make_shared<GLTexture>(ResourceManager::GetPath(Resource::Texture, "container.jpg"))
                 : std::make_shared<GLTexture>(material.Textures[0].path);
+            EQN_CORE_TRACE(" - Loaded texture {0}", texture->GetPath().string());
 
             // Create buffers
             auto vb = std::make_shared<GLVertexBuffer>(meshData.Vertices.data(),
@@ -55,10 +47,8 @@ namespace Equinox
             auto ib = std::make_shared<GLIndexBuffer>(meshData.Indices.data(),
                 meshData.Indices.size());
 
-            meshes.push_back(std::make_shared<GLMesh>(vb, ib, texture));
+            Renderer::SubmitMesh(Mesh::Create(vb, ib, texture));
         }
-
-        Renderer::SubmitMesh(meshes[0]);
     }
 
     void OpenGLApp::OnUpdate()
@@ -67,17 +57,17 @@ namespace Equinox
         Mat4 model = glm::rotate(
             Mat4(1.0f),
             Time::GetTime() * glm::radians(45.0f),
-            Vec3(0.0f, 0.0f, 1.0f)
+            Vec3(0.0f, 1.0f, 0.0f)
         );
         Mat4 view = glm::lookAt(
-            Vec3(2.5f, 2.5f, 2.5f),
+            Vec3(30.0f, 20.0f, 30.0f),
             Vec3(0.0f, 0.0f, 0.0f),
-            Vec3(0.0f, 0.0f, 1.0f)
+            Vec3(0.0f, 1.0f, 0.0f)
         );
         Mat4 proj = glm::perspective(
             glm::radians(45.0f),
             16.0f / 9.0f,
-            0.1f, 10.0f
+            0.1f, 100.0f
         );
 
         UpdateUniforms(model, view, proj);

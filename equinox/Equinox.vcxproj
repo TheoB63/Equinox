@@ -199,6 +199,7 @@
     <ClInclude Include="source\equinox\resources\ResourceManager.h" />
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h" />
     <ClInclude Include="source\equinox\renderer\Model.h" />
+    <ClInclude Include="source\equinox\resources\TextureCache.h" />
     <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
     <ClInclude Include="source\equinox\utils\ImageUtils.h" />
     <ClInclude Include="source\equinox\window\WinWindow.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="source\equinox\resources\ResourceManager.cpp" />
     <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp" />
     <ClCompile Include="source\equinox\renderer\Model.cpp" />
+    <ClCompile Include="source\equinox\resources\TextureCache.cpp" />
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp" />
     <ClCompile Include="source\equinox\window\WinWindow.cpp" />
     <ClCompile Include="source\equinox\window\Window.cpp" />
