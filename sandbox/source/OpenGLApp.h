@@ -24,6 +24,7 @@ namespace Equinox
     struct GLVertex {
         glm::vec2 pos;
         glm::vec3 color;
+        glm::vec2 texCoord;
     };
 
     class OpenGLApp : public App

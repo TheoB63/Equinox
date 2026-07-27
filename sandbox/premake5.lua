@@ -24,6 +24,7 @@ project "Sandbox"
    {
       "source",
       "%{wks.location}/equinox/source",
+      "%{wks.location}/equinox/extern/source",
       IncludeDir["glad"],
       IncludeDir["glfw"],
       IncludeDir["glm"],

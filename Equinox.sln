@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36518.9 d17.14
-MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EquinoxApp", "EquinoxApp", "{B617F20C-A210-115F-CB42-F6E3B79AF06A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EquinoxApp", "EquinoxApp\EquinoxApp.vcxproj", "{8F1AE14C-7BD2-229A-E4D9-FBF5D0B0BD8A}"
@@ -25,7 +23,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "equinox\extern\img
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sandbox", "Sandbox", "{7B785F31-E738-DB67-B073-24E51CF31F44}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandbox", "sandbox\Sandbox.vcxproj", "{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandbox", "Sandbox\Sandbox.vcxproj", "{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{DD376B17-49ED-E30C-D2E1-DDE33E96DA10}"
 EndProject
@@ -107,8 +105,5 @@ Global
 		{0098A80F-6CAC-D0C0-352E-7420A101CDF1} = {DA06EF15-C695-78DF-6FB4-8CDA5B228985}
 		{F4C124E3-60A1-A37E-69B9-2E55D5170AE0} = {7B785F31-E738-DB67-B073-24E51CF31F44}
 		{8A6487C2-F643-065E-FF5B-91346BBA6CBF} = {DD376B17-49ED-E30C-D2E1-DDE33E96DA10}
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {9079E0E3-4CD6-4C54-8888-E8FF24AC4CF3}
 	EndGlobalSection
 EndGlobal

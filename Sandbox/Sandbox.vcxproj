@@ -78,7 +78,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -98,7 +98,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -121,7 +121,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -140,6 +140,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\OpenGLApp.h" />
+    <ClInclude Include="source\RTShaderApp.h" />
+    <ClInclude Include="source\VulkanApp.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="source\OpenGLApp.cpp" />
     <ClCompile Include="source\RTShaderApp.cpp" />
     <ClCompile Include="source\Sandbox.cpp" />
@@ -149,14 +154,6 @@
     <ProjectReference Include="..\Equinox\Equinox.vcxproj">
       <Project>{EE9549D3-5A75-C86E-638D-5345CFEB2ED0}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="source\OpenGLApp.h" />
-    <ClInclude Include="source\RTShaderApp.h" />
-    <ClInclude Include="source\VulkanApp.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\shaders\triangle.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

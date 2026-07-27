@@ -1,6 +1,7 @@
 #include <Equinox.h>
 #include <Equinox/core/EntryPoint.h>
 
+#include "OpenGLApp.h"
 #include "VulkanApp.h"
 #include "RTShaderApp.h"
 
@@ -40,27 +41,30 @@ namespace Equinox
 		char** testArgv = argv;
 
 		if (argc < 2) { // No argument
-			std::vector<std::string> args = { "Sandbox", "--vulkan" };
+			std::vector<std::string> args = { "Sandbox", "--opengl" };
 			EquinoxTest::CreateTestArgs(args, testArgc, testArgv);
 
 			EQN_CORE_WARN("No arguments provided");
-			EQN_CORE_WARN("Valid Args: {} [--opengl|--vulkan]", argv[0]);
+			EQN_CORE_WARN("Valid Args: {} [--opengl|--vulkan|--rt]", argv[0]);
 			EQN_CORE_WARN("Initializing default {}", args[1]);
 		}
 
 		std::string appType = testArgv[1];
 		if (appType == "--opengl") {
-			return new RTShaderApp(testArgc, testArgv);
+			return new OpenGLApp(testArgc, testArgv);
 		}
 		else if (appType == "--vulkan") {
 			return new VulkanApp(testArgc, testArgv);
 		}
+		else if (appType == "--rt") {
+			return new RTShaderApp(testArgc, testArgv);
+		}
 		else {  // Invalid argument
-			std::vector<std::string> args = { "Sandbox", "--vulkan" };
+			std::vector<std::string> args = { "Sandbox", "--opengl" };
 			EquinoxTest::CreateTestArgs(args, testArgc, testArgv);
-			EQN_CORE_WARN("Unknown argument: '{}'. Valid Args: [--opengl|--vulkan]", appType);
-			EQN_CORE_WARN("Initializing default [--vulkan]");
-			return new VulkanApp(testArgc, testArgv);
+			EQN_CORE_WARN("Unknown argument: '{}'. Valid Args: [--opengl|--vulkan|--rt]", appType);
+			EQN_CORE_WARN("Initializing default [--opengl]");
+			return new OpenGLApp(testArgc, testArgv);
 		}
 	}
 }

@@ -28,6 +28,9 @@
     <Filter Include="equinox\resources">
       <UniqueIdentifier>{18DDA302-84F3-A198-CD6A-2DBA39C07220}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\utils">
+      <UniqueIdentifier>{0E1214FE-7AD2-8F34-430D-D9B1AF8CD410}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\window">
       <UniqueIdentifier>{55337CC4-4101-70CA-2A95-E0F016024C2F}</UniqueIdentifier>
     </Filter>
@@ -45,6 +48,9 @@
       <Filter>equinox\core</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\Log.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\core\Math.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\Timestep.h">
@@ -71,6 +77,12 @@
     <ClInclude Include="source\equinox\input\Input.h">
       <Filter>equinox\input</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\Buffer.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\Mesh.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\Renderer.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
@@ -80,11 +92,29 @@
     <ClInclude Include="source\equinox\renderer\Shader.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\VertexArray.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\openGL\GLBuffer.h">
+      <Filter>equinox\renderer\openGL</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\openGL\GLMesh.h">
+      <Filter>equinox\renderer\openGL</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\openGL\GLRendererAPI.h">
       <Filter>equinox\renderer\openGL</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\openGL\GLShader.h">
       <Filter>equinox\renderer\openGL</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\openGL\GLVertexArray.h">
+      <Filter>equinox\renderer\openGL</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKBuffer.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKCommandPool.h">
+      <Filter>equinox\renderer\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\vulkan\VKCommon.h">
       <Filter>equinox\renderer\vulkan</Filter>
@@ -92,7 +122,13 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKDevice.h">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKFrameBuffer.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKMesh.h">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\vulkan\VKRenderPass.h">
@@ -104,11 +140,20 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKSwapChain.h">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKSync.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\vulkan\VKVertexArray.h">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\resources\ResourceManager.h">
       <Filter>equinox\resources</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h">
       <Filter>equinox\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\utils\CustomFormatters.h">
+      <Filter>equinox\utils</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\window\WinWindow.h">
       <Filter>equinox\window</Filter>
@@ -116,20 +161,10 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKCommandPool.h" />
-    <ClInclude Include="source\equinox\renderer\vulkan\VKFrameBuffer.h" />
-    <ClInclude Include="source\equinox\renderer\vulkan\VKSync.h" />
-    <ClInclude Include="source\equinox\renderer\openGL\GLBuffer.h" />
-    <ClInclude Include="source\equinox\renderer\vulkan\VKBuffer.h" />
-    <ClInclude Include="source\equinox\renderer\VertexArray.h" />
-    <ClInclude Include="source\equinox\renderer\openGL\GLVertexArray.h" />
-    <ClInclude Include="source\equinox\renderer\vulkan\VKVertexArray.h" />
-    <ClInclude Include="source\equinox\renderer\Buffer.h" />
-    <ClInclude Include="source\equinox\renderer\Mesh.h" />
-    <ClInclude Include="source\equinox\renderer\vulkan\VKMesh.h" />
-    <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
-    <ClInclude Include="source\equinox\core\Math.h" />
-    <ClInclude Include="source\equinox\renderer\openGL\GLMesh.h" />
+    <ClInclude Include="source\equinox\renderer\Texture.h" />
+    <ClInclude Include="source\equinox\renderer\openGL\GLTexture.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKTexture.h" />
+    <ClInclude Include="source\equinox\utils\ImageUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -145,6 +180,9 @@
     <ClCompile Include="source\equinox\input\Input.cpp">
       <Filter>equinox\input</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\Buffer.cpp">
+      <Filter>equinox\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\renderer\Renderer.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
@@ -154,13 +192,34 @@
     <ClCompile Include="source\equinox\renderer\Shader.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\VertexArray.cpp">
+      <Filter>equinox\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\openGL\GLBuffer.cpp">
+      <Filter>equinox\renderer\openGL</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\renderer\openGL\GLRendererAPI.cpp">
       <Filter>equinox\renderer\openGL</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\openGL\GLShader.cpp">
       <Filter>equinox\renderer\openGL</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\openGL\GLVertexArray.cpp">
+      <Filter>equinox\renderer\openGL</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\vulkan\VKBuffer.cpp">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\vulkan\VKCommandPool.cpp">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\vulkan\VKCommon.cpp">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\renderer\vulkan\VKDevice.cpp">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\vulkan\VKFrameBuffer.cpp">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.cpp">
@@ -175,6 +234,12 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKSwapChain.cpp">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\vulkan\VKSync.cpp">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp">
+      <Filter>equinox\renderer\vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\resources\ResourceManager.cpp">
       <Filter>equinox\resources</Filter>
     </ClCompile>
@@ -187,15 +252,10 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKCommandPool.cpp" />
-    <ClCompile Include="source\equinox\renderer\vulkan\VKFrameBuffer.cpp" />
-    <ClCompile Include="source\equinox\renderer\vulkan\VKSync.cpp" />
-    <ClCompile Include="source\equinox\renderer\openGL\GLBuffer.cpp" />
-    <ClCompile Include="source\equinox\renderer\VertexArray.cpp" />
-    <ClCompile Include="source\equinox\renderer\openGL\GLVertexArray.cpp" />
-    <ClCompile Include="source\equinox\renderer\vulkan\VKCommon.cpp" />
-    <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp" />
-    <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
-    <ClCompile Include="source\equinox\renderer\vulkan\VKBuffer.cpp" />
+    <ClCompile Include="source\equinox\renderer\Mesh.cpp" />
+    <ClCompile Include="source\equinox\renderer\Texture.cpp" />
+    <ClCompile Include="source\equinox\renderer\openGL\GLTexture.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKTexture.cpp" />
+    <ClCompile Include="source\equinox\utils\ImageUtils.cpp" />
   </ItemGroup>
 </Project>

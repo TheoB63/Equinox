@@ -1,6 +1,7 @@
 #pragma once
 
 #include "equinox/renderer/Buffer.h"
+#include "equinox/renderer/Texture.h"
 
 #include <memory>
 
@@ -15,7 +16,8 @@ namespace Equinox
 
         static std::shared_ptr<Mesh> Create(
             const std::shared_ptr<VertexBuffer>& vb,
-            const std::shared_ptr<IndexBuffer>& ib = nullptr
+            const std::shared_ptr<IndexBuffer>& ib = nullptr,
+            const std::shared_ptr<Texture>& texture = nullptr
         );
     };
 }
