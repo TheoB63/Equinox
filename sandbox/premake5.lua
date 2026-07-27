@@ -25,6 +25,8 @@ project "Sandbox"
       "source",
       "%{wks.location}/equinox/source",
       "%{wks.location}/equinox/extern/source",
+      "%{wks.location}/equinox/extern/config-headers",
+      IncludeDir["assimp"],
       IncludeDir["glad"],
       IncludeDir["glfw"],
       IncludeDir["glm"],

@@ -1,7 +1,5 @@
 #include "eqnpch.h"
 #include "equinox/core/App.h"
-#include "equinox/core/Log.h"
-#include "equinox/core/Timestep.h"
 
 #include "equinox/window/Window.h"
 #include "equinox/input/Input.h"
@@ -45,20 +43,14 @@ namespace Equinox
 
 		while (m_Running)
 		{
-			f32 time = Timestep::GetTime();
-			f32 dt = time - m_LastFrameTime;
-			m_LastFrameTime = time;
+			Time::Update();
 
-			// Update window first
 			m_Window->OnUpdate();
 
-			// User-defined update
-			OnUpdate(dt);
+			OnUpdate();
 
-			// Draw Frame
-			if (!m_Window->IsMinimized()) {
+			if (!m_Window->IsMinimized())
 				Renderer::DrawFrame();
-			}
 
 			// Render UI
 			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
@@ -70,6 +62,7 @@ namespace Equinox
 
 			m_Window->SwapBuffers();
 			Renderer::Clear();
+			Renderer::SetClearColor({ 0.15, 0.15, 0.15, 1.0 });
 		}
 		OnShutdown();
 	}

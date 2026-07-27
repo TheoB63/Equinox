@@ -1,8 +1,12 @@
 #include "eqnpch.h"
-#include "ResourceManager.h"
+#include "equinox/resources/ResourceManager.h"
+#include "equinox/renderer/Renderer.h"
+#include "equinox/renderer/RendererAPI.h"
 
-#include <fstream>
-#include <iostream>
+//#include "equinox/renderer/Material.h"
+#include "equinox/renderer/Model.h"
+//#include "equinox/renderer/vulkan/VKMesh.h"
+
 #include <regex>
 
 namespace Equinox

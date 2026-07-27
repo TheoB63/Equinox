@@ -10,6 +10,9 @@
     <Filter Include="code\AssetLib\Assbin">
       <UniqueIdentifier>{D5570B1C-C1E6-94E5-6A05-A9E05673A58B}</UniqueIdentifier>
     </Filter>
+    <Filter Include="code\AssetLib\Blender">
+      <UniqueIdentifier>{519A25D9-BD06-E1D3-86FA-7831F225033C}</UniqueIdentifier>
+    </Filter>
     <Filter Include="code\AssetLib\Collada">
       <UniqueIdentifier>{C5D69C2D-3143-5828-FA36-F08566627A90}</UniqueIdentifier>
     </Filter>
@@ -56,6 +59,36 @@
     </ClInclude>
     <ClInclude Include="source\assimp\code\AssetLib\Assbin\AssbinLoader.h">
       <Filter>code\AssetLib\Assbin</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderBMesh.h">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderCustomData.h">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderDNA.h">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderDNA.inl">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderIntermediate.h">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderLoader.h">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderModifier.h">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderScene.h">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderSceneGen.h">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\Blender\BlenderTessellator.h">
+      <Filter>code\AssetLib\Blender</Filter>
     </ClInclude>
     <ClInclude Include="source\assimp\code\AssetLib\Collada\ColladaExporter.h">
       <Filter>code\AssetLib\Collada</Filter>
@@ -349,6 +382,27 @@
     </ClCompile>
     <ClCompile Include="source\assimp\code\AssetLib\Assbin\AssbinLoader.cpp">
       <Filter>code\AssetLib\Assbin</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\Blender\BlenderBMesh.cpp">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\Blender\BlenderCustomData.cpp">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\Blender\BlenderDNA.cpp">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\Blender\BlenderLoader.cpp">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\Blender\BlenderModifier.cpp">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\Blender\BlenderScene.cpp">
+      <Filter>code\AssetLib\Blender</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\Blender\BlenderTessellator.cpp">
+      <Filter>code\AssetLib\Blender</Filter>
     </ClCompile>
     <ClCompile Include="source\assimp\code\AssetLib\Collada\ColladaExporter.cpp">
       <Filter>code\AssetLib\Collada</Filter>

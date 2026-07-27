@@ -27,12 +27,9 @@ namespace Equinox
 		LoadShader();
 	}
 
-	void RTShaderApp::OnUpdate(f32 dt)
+	void RTShaderApp::OnUpdate()
 	{
-		static float time = 0;
-		time += dt;
-
-		UpdateUniforms(time);
+		UpdateUniforms(Time::GetTime());
 	}
 
 	void RTShaderApp::OnUIRender()

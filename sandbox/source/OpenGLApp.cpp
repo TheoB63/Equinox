@@ -7,6 +7,7 @@
 #include <equinox/resources/ShaderLibrary.h>
 #include <equinox/resources/ResourceManager.h>
 #include <equinox/renderer/Texture.h>
+#include <equinox/renderer/Model.h>
 
 #include <equinox/renderer/Renderer.h>
 #include <equinox/renderer/Buffer.h>
@@ -14,6 +15,7 @@
 #include <equinox/renderer/openGL/GLRendererAPI.h>
 #include <equinox/renderer/openGL/GLBuffer.h>
 #include <equinox/renderer/openGL/GLMesh.h>
+
 #include <memory>
 
 // TEST OPENGL
@@ -29,46 +31,44 @@ namespace Equinox
         InitUniformBuffer();
         LoadShader();
 
-        std::vector<GLVertex> vertices = {
-            // Positions     // Colors           // UVs
-            {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},  // Bottom-left
-            {{ 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},  // Bottom-right
-            {{ 0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // Top-right
-            {{-0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}   // Top-left
-        };
+        Model model(ResourceManager::GetPath(Resource::Model, "grimoire/MimicBook.fbx"));
+        std::vector<std::shared_ptr<GLMesh>> meshes;
 
-        const std::vector<uint32_t> indices = {
-            0, 1, 2, 2, 3, 0
-        };
+        for (const auto& meshData : model.GetMeshes()) {
+            const auto& material = model.GetMaterials()[meshData.MaterialIndex];
 
-        BufferLayout layout = {
-            { ShaderDataType::Float2, "inPosition" },
-            { ShaderDataType::Float3, "inColor"    },
-            { ShaderDataType::Float2, "inTexCoord" }
-        };
+            // Load texture
+            auto texture = material.Textures.empty()
+                ? std::make_shared<GLTexture>(ResourceManager::GetPath(Resource::Texture, "container.jpg"))
+                : std::make_shared<GLTexture>(material.Textures[0].path);
 
-        auto texture = Texture::Create("container.jpg");
-        auto vkRenderer = static_cast<GLRendererAPI*>(Renderer::GetRendererAPI());
-        auto vb = std::make_shared<GLVertexBuffer>(vertices.data(), sizeof(GLVertex) * vertices.size());
-        vb->SetLayout(layout);
-        auto ib = std::make_shared<GLIndexBuffer>(indices.data(), indices.size());
-        auto mesh = Mesh::Create(vb, ib, texture);
+            // Create buffers
+            auto vb = std::make_shared<GLVertexBuffer>(meshData.Vertices.data(),
+                meshData.Vertices.size() * sizeof(Vertex));
+            vb->SetLayout({ { ShaderDataType::Float3, "a_Position" },
+                            { ShaderDataType::Float3, "a_Normal"   },
+                            { ShaderDataType::Float2, "a_TexCoord" } }
+            );
 
-        Renderer::SubmitMesh(mesh);
+            auto ib = std::make_shared<GLIndexBuffer>(meshData.Indices.data(),
+                meshData.Indices.size());
+
+            meshes.push_back(std::make_shared<GLMesh>(vb, ib, texture));
+        }
+
+        Renderer::SubmitMesh(meshes[0]);
     }
 
-    void OpenGLApp::OnUpdate(f32 dt)
+    void OpenGLApp::OnUpdate()
     {
-        static float time = 0;
-        time += dt;
 
         Mat4 model = glm::rotate(
             Mat4(1.0f),
-            time * glm::radians(90.0f),
+            Time::GetTime() * glm::radians(45.0f),
             Vec3(0.0f, 0.0f, 1.0f)
         );
         Mat4 view = glm::lookAt(
-            Vec3(2.0f, 2.0f, 2.0f),
+            Vec3(2.5f, 2.5f, 2.5f),
             Vec3(0.0f, 0.0f, 0.0f),
             Vec3(0.0f, 0.0f, 1.0f)
         );
