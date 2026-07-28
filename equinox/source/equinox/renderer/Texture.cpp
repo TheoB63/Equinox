@@ -10,7 +10,7 @@ namespace Equinox
     std::shared_ptr<Texture> Texture::Create(const fs::path& path)
     {
         // Validate path through ResourceManager
-        const fs::path fullPath = ResourceManager::GetPath(Resource::Texture, path);
+        const fs::path fullPath = ResourceManager::GetPath(Resource::Model, path);
 
         if (!ResourceManager::ValidateResourcePath(fullPath)) {
             EQN_CORE_ERROR("Texture creation failed: Invalid path {}", fullPath);

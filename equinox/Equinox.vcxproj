@@ -170,6 +170,7 @@
     <ClInclude Include="source\equinox\input\Input.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Camera.h" />
+    <ClInclude Include="source\equinox\renderer\Material.h" />
     <ClInclude Include="source\equinox\renderer\Mesh.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
     <ClInclude Include="source\equinox\renderer\RendererAPI.h" />
@@ -195,7 +196,9 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKSync.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKTexture.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKVertexArray.h" />
-    <ClInclude Include="source\equinox\resources\Loaders.h" />
+    <ClInclude Include="source\equinox\resources\Resources.h" />
+    <ClInclude Include="source\equinox\resources\MaterialLibrary.h" />
+    <ClInclude Include="source\equinox\resources\ModelLibrary.h" />
     <ClInclude Include="source\equinox\resources\ResourceManager.h" />
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h" />
     <ClInclude Include="source\equinox\renderer\Model.h" />
@@ -238,6 +241,8 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKSync.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKTexture.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp" />
+    <ClCompile Include="source\equinox\resources\MaterialLibrary.cpp" />
+    <ClCompile Include="source\equinox\resources\ModelLibrary.cpp" />
     <ClCompile Include="source\equinox\resources\ResourceManager.cpp" />
     <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp" />
     <ClCompile Include="source\equinox\renderer\Model.cpp" />

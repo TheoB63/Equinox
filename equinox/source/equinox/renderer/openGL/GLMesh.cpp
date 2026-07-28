@@ -1,14 +1,15 @@
 #include "eqnpch.h"
 #include "equinox/renderer/openGL/GLMesh.h"
+#include "equinox/resources/TextureCache.h"
 
 namespace Equinox
 {
     GLMesh::GLMesh(const std::shared_ptr<GLVertexBuffer>& vertexBuffer,
         const std::shared_ptr<GLIndexBuffer>& indexBuffer,
-        const std::shared_ptr<GLTexture>& texture)
+        const std::shared_ptr<Material> material)
         : m_VertexBuffer(vertexBuffer),
         m_IndexBuffer(indexBuffer),
-        m_Texture(texture)
+        m_Material(material)
     {
         CreateVAO();
     }
@@ -20,7 +21,27 @@ namespace Equinox
 
     void GLMesh::Draw() const
     {
-        if (m_Texture) m_Texture->Bind(0);
+        int slot = 0;
+        std::string texType;
+
+        for (const auto& texInfo : m_Material->GetTextures()) {
+            switch (texInfo.type) {
+            case TextureType::Diffuse:   slot = 0; texType = "u_UVIndexDiffuse";   break;
+            case TextureType::Normal:    slot = 1; texType = "u_UVIndexNormal";    break;
+            case TextureType::Emissive:  slot = 2; texType = "u_UVIndexEmissive";  break;
+            case TextureType::Metalness: slot = 3; texType = "u_UVIndexMetallic";  break;
+            case TextureType::Roughness: slot = 4; texType = "u_UVIndexRoughness"; break;
+            case TextureType::Specular:  slot = 5; texType = "u_UVIndexSpecular";  break;
+            default:
+                EQN_CORE_ERROR("TextureType not supported!");
+            }
+
+            if (const auto texture = TextureCache::GetTexture(texInfo.path)) {
+                texture->Bind(slot);
+            }
+            m_Material->GetShader()->SetInt(texType, texInfo.uvIndex);
+        }
+
         glBindVertexArray(m_VAO);
         if (m_IndexBuffer)
         {

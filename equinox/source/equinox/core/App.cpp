@@ -31,7 +31,7 @@ namespace Equinox
 		Input::SetWindow(m_Window->GetNativeWindow());
 		Renderer::Init(ws.rendererAPI, m_Window->GetNativeWindow());
 		Editor::Init(m_Window->GetNativeWindow());
-		ResourceManager::Initialize();
+		ResourceManager::Init();
 	}
 
 	App::~App()
@@ -63,7 +63,6 @@ namespace Equinox
 
 			m_Window->SwapBuffers();
 			Renderer::Clear();
-			Renderer::SetClearColor({ 0.15, 0.15, 0.15, 1.0 });
 		}
 		OnShutdown();
 	}

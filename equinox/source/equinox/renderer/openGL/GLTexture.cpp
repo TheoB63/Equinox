@@ -9,19 +9,27 @@ namespace Equinox
 	GLTexture::GLTexture(const fs::path& path)
 		: m_Path(ResourceManager::GetPath(Resource::Texture, path))
 	{
+		EQN_CORE_INFO("Creating texture from path: {0}", m_Path.string());
 		LoadFromFile();
 	}
 
-	GLTexture::GLTexture(uint32_t width, uint32_t height, TextureFormat format) {}
+	GLTexture::GLTexture(uint32_t width, uint32_t height, TextureFormat format)
+	{
+		EQN_CORE_INFO("Creating empty texture ({0}x{1}, format {2})", width, height, static_cast<int>(format));
+		// TODO: Implementation for empty texture creation should be added here
+	}
 
-	GLTexture::~GLTexture() {}
+	GLTexture::~GLTexture()
+	{
+		EQN_CORE_TRACE("Destroying GLTexture (ID: {0}, '{1}')", m_TextureID, m_Path.filename().string());
+		// TODO: Add glDeleteTextures if necessary
+	}
 
 	void GLTexture::LoadFromFile()
 	{
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(false);
-		stbi_uc* data = stbi_load(m_Path.string().c_str(),
-			&width, &height, &channels, 0);
+		stbi_uc* data = stbi_load(m_Path.string().c_str(), &width, &height, &channels, 0);
 
 		if (data)
 		{
@@ -40,40 +48,49 @@ namespace Equinox
 				dataFormat = GL_RGB;
 			}
 
+			if (internalFormat == 0)
+			{
+				EQN_CORE_ERROR("Unsupported number of channels ({0}) in texture '{1}'", channels, m_Path.filename().string());
+				stbi_image_free(data);
+				return;
+			}
+
 			CreateInternal(internalFormat);
 
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
-			glGenerateTextureMipmap(m_RendererID);
+			glTextureSubImage2D(m_TextureID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
+			glGenerateTextureMipmap(m_TextureID);
 
+			EQN_CORE_INFO("Successfully loaded texture '{0}' ({1}x{2}, {3} channels)", m_Path.filename().string(), width, height, channels);
 			stbi_image_free(data);
+		}
+		else
+		{
+			EQN_CORE_ERROR("Failed to load texture from '{0}': {1}", m_Path.string(), stbi_failure_reason());
 		}
 	}
 
 	void GLTexture::CreateInternal(GLenum internalFormat)
 	{
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+		glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
+		EQN_CORE_TRACE("Created OpenGL texture with ID: {0}", m_TextureID);
 
-		// Calculate mip levels
 		m_MipLevels = static_cast<int>(std::floor(std::log2(std::max(m_Width, m_Height)))) + 1;
 
-		// Allocate storage with mip levels (increased 33%)
-		glTextureStorage2D(m_RendererID,
-			m_MipLevels,
-			internalFormat,
-			m_Width,
-			m_Height
-		);
+		glTextureStorage2D(m_TextureID, m_MipLevels, internalFormat, m_Width, m_Height);
+		EQN_CORE_TRACE("Allocated texture storage for ID {0}: {1}x{2}, format {3}, mip levels {4}",
+			m_TextureID, m_Width, m_Height, internalFormat, m_MipLevels);
 
-		// Set mipmapped filtering
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTextureParameteri(m_TextureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTextureParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		EQN_CORE_TRACE("Set texture parameters for ID {0}: min/mag filter, wrap S/T", m_TextureID);
 	}
 
 	void GLTexture::Bind(uint32_t slot) const
 	{
+		//EQN_CORE_TRACE("Binding texture ID {0} to slot {1}", m_TextureID, slot);
 		glActiveTexture(GL_TEXTURE0 + slot);
-		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+		glBindTexture(GL_TEXTURE_2D, m_TextureID);
 	}
 }

@@ -6,6 +6,8 @@
 #include "equinox/renderer/openGL/GLTexture.h"
 
 #include <glad/glad.h>
+#include <vector>
+#include <memory>
 
 namespace Equinox
 {
@@ -14,7 +16,7 @@ namespace Equinox
 	public:
 		GLMesh(const std::shared_ptr<GLVertexBuffer>& vertexBuffer,
 			const std::shared_ptr<GLIndexBuffer>& indexBuffer,
-			const std::shared_ptr<GLTexture>& texture);
+			const std::shared_ptr<Material> material);
 
 		void Bind() const override;
 		void Draw() const override;
@@ -26,6 +28,6 @@ namespace Equinox
 		GLuint m_VAO;
 		std::shared_ptr<GLVertexBuffer> m_VertexBuffer;
 		std::shared_ptr<GLIndexBuffer> m_IndexBuffer;
-		std::shared_ptr<GLTexture> m_Texture;
+		std::shared_ptr<Material> m_Material;
 	};
 }

@@ -10,7 +10,7 @@ namespace Equinox
     class TextureCache
     {
     public:
-        static std::shared_ptr<Texture> GetTexture(const fs::path& path)
+        /*inline static std::shared_ptr<Texture> GetTexture(const fs::path& path)
         {
             static std::unordered_map<fs::path, std::weak_ptr<Texture>> cache;
 
@@ -20,9 +20,20 @@ namespace Equinox
             auto newTex = Texture::Create(path);
             weak = newTex;
             return newTex;
+        }*/
+
+        inline static std::shared_ptr<Texture> GetTexture(const fs::path& path)
+        {
+            static std::unordered_map<fs::path, std::shared_ptr<Texture>> cache;
+
+            auto& weak = cache[path];
+            if (weak) return weak;
+
+            auto newTex = Texture::Create(path);
+            if (!newTex) return nullptr;
+
+            weak = newTex;
+            return newTex;
         }
-
-    private:
-
     };
 }

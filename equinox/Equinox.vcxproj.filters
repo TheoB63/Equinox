@@ -183,8 +183,11 @@
       <Filter>equinox\window</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\ThreadPool.h" />
-    <ClInclude Include="source\equinox\resources\Loaders.h" />
+    <ClInclude Include="source\equinox\resources\Resources.h" />
     <ClInclude Include="source\equinox\resources\TextureCache.h" />
+    <ClInclude Include="source\equinox\renderer\Material.h" />
+    <ClInclude Include="source\equinox\resources\MaterialLibrary.h" />
+    <ClInclude Include="source\equinox\resources\ModelLibrary.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -294,5 +297,7 @@
       <Filter>equinox\window</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\resources\TextureCache.cpp" />
+    <ClCompile Include="source\equinox\resources\MaterialLibrary.cpp" />
+    <ClCompile Include="source\equinox\resources\ModelLibrary.cpp" />
   </ItemGroup>
 </Project>
