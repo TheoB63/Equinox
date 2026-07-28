@@ -11,6 +11,7 @@
 #include <fstream>
 #include <memory>
 #include <algorithm>
+#include <regex>
 
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/Log.h"

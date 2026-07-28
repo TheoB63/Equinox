@@ -4,6 +4,7 @@
 #include "equinox/window/WinWindow.h"
 
 #include "equinox/editor/panels/InspectorPanel.h"
+#include "equinox/editor/panels/HierarchyPanel.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -40,6 +41,7 @@ namespace Equinox
 
         // Set Panels
         AddPanel(new InspectorPanel());
+        AddPanel(new HierarchyPanel(new Scene));
 	}
 
 	void Editor::Shutdown()

@@ -189,6 +189,11 @@
     <ClInclude Include="source\equinox\resources\MaterialLibrary.h" />
     <ClInclude Include="source\equinox\resources\ModelLibrary.h" />
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
+    <ClInclude Include="source\equinox\core\UUID.h" />
+    <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
+    <ClInclude Include="source\equinox\scene\Components.h" />
+    <ClInclude Include="source\equinox\scene\Entity.h" />
+    <ClInclude Include="source\equinox\scene\Scene.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -300,5 +305,9 @@
     <ClCompile Include="source\equinox\resources\TextureCache.cpp" />
     <ClCompile Include="source\equinox\resources\MaterialLibrary.cpp" />
     <ClCompile Include="source\equinox\resources\ModelLibrary.cpp" />
+    <ClCompile Include="source\equinox\core\UUID.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
+    <ClCompile Include="source\equinox\scene\Entity.cpp" />
+    <ClCompile Include="source\equinox\scene\Scene.cpp" />
   </ItemGroup>
 </Project>
