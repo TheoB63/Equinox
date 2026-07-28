@@ -1,6 +1,9 @@
 #include "eqnpch.h"
 #include "equinox/editor/Editor.h"
 #include "equinox/renderer/Renderer.h"
+#include "equinox/window/WinWindow.h"
+
+#include "equinox/editor/panels/InspectorPanel.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -10,36 +13,54 @@ namespace Equinox
 {
 	void Editor::Init(void* window)
 	{
-		IMGUI_CHECKVERSION();
-		s_Context = ImGui::CreateContext();
+        EQN_CORE_INFO("Initializing Equinox Editor");
+
+        IMGUI_CHECKVERSION();
+        EQN_CORE_TRACE(" - Initialized ImGui context for OpenGL");
+        s_Context = ImGui::CreateContext();
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        EQN_CORE_TRACE(" - Enabled ImGui docking support");
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+        EQN_CORE_TRACE(" - Enabled ImGui multi-viewport support");
+
 		SetCustomStyle();
 
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 		{
+            EQN_CORE_TRACE(" - Initialized ImGui GLFW/OpenGL3 backend");
 			ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow*>(window), true);
 			ImGui_ImplOpenGL3_Init("#version 460");
-			EQN_CORE_INFO("Initialized ImGui context for OpenGL");
 		}
 		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
 			EQN_CORE_WARN("ImGui not yet implemented for Vulkan");
 		}
+
+        // Set Panels
+        AddPanel(new InspectorPanel());
 	}
 
 	void Editor::Shutdown()
 	{
+        EQN_CORE_TRACE("Cleaning up {} panels", s_Panels.size());
+        s_Panels.clear();
+
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 		{
+            EQN_CORE_TRACE("Shutting down ImGui OpenGL backend");
 			ImGui_ImplOpenGL3_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
 			ImGui::DestroyContext();
 		}
 		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
+            EQN_CORE_WARN("Skipping Vulkan ImGui shutdown (not implemented)");
 		}
 
 		s_Context = nullptr;
-		EQN_CORE_INFO("Shutdown ImGui context");
+		EQN_CORE_INFO("Editor system shutdown completed");
 	}
 
 	void Editor::BeginFrame()
@@ -57,15 +78,65 @@ namespace Equinox
 
 	void Editor::EndFrame()
 	{
+        ImGuiIO& io = ImGui::GetIO();
+
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 		{
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+            // Handle multi-viewport updates
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                GLFWwindow* backup_current_context = glfwGetCurrentContext();
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+                glfwMakeContextCurrent(backup_current_context);
+            }
 		}
 		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
 		}
 	}
+
+    void Editor::Render()
+    {
+        // Create dockspace
+        static bool dockspaceOpen = true;
+        static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
+
+        // Fullscreen parent window for dockspace
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiWindowFlags hostWindowFlags =
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoDocking |
+            ImGuiWindowFlags_NoBringToFrontOnFocus |
+            ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("DockSpaceHost", &dockspaceOpen, hostWindowFlags);
+        ImGui::PopStyleVar(3);
+
+        // Create dockspace
+        ImGuiID dockspaceID = ImGui::GetID("MainDockSpace");
+        ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockspaceFlags);
+
+        // Render all panels
+        for (auto& panel : s_Panels)
+            panel->OnRender();
+
+        ImGui::End();
+    }
 
 	bool Editor::WantCaptureMouse()
 	{
@@ -76,6 +147,13 @@ namespace Equinox
 	{
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}
+
+    void Editor::AddPanel(Panel* panel)
+    {
+        EQN_CORE_ASSERT(panel, "Tried to add null panel");
+        s_Panels.emplace_back(panel);
+        EQN_CORE_INFO("Added new panel (total: {})", s_Panels.size());
+    }
 
     void Editor::SetCustomStyle()
     {
@@ -141,7 +219,7 @@ namespace Equinox
         colors[ImGuiCol_TabUnfocused] = ImVec4(0.15f, 0.15f, 0.15f, 0.86f);
         colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.18f, 0.18f, 0.18f, 0.86f);
         colors[ImGuiCol_DockingPreview] = ImVec4(0.90f, 0.90f, 0.90f, 0.70f);
-        colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+        colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
         colors[ImGuiCol_PlotLines] = ImVec4(0.90f, 0.90f, 0.90f, 1.00f);
         colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
         colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);

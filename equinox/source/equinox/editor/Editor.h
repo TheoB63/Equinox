@@ -2,10 +2,20 @@
 
 #include "equinox/core/EquinoxTypes.h"
 
+#include <memory>
+#include <imgui.h>
+
 struct ImGuiContext;
 
 namespace Equinox
 {
+    class Panel
+    {
+    public:
+        virtual ~Panel() = default;
+        virtual void OnRender() = 0;
+    };
+
     class Editor
     {
     public:
@@ -14,13 +24,16 @@ namespace Equinox
 
         static void BeginFrame();
         static void EndFrame();
+        static void Render();
 
         static bool WantCaptureMouse();
         static bool WantCaptureKeyboard();
 
+        static void AddPanel(Panel* panel);
         static void SetCustomStyle();
 
     private:
         static inline ImGuiContext* s_Context = nullptr;
+        static inline std::vector<std::unique_ptr<Panel>> s_Panels;
     };
 }

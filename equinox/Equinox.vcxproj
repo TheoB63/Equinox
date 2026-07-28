@@ -168,6 +168,7 @@
     <ClInclude Include="source\equinox\events\KeyEvent.h" />
     <ClInclude Include="source\equinox\events\MouseEvent.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
+    <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Camera.h" />
     <ClInclude Include="source\equinox\renderer\Material.h" />

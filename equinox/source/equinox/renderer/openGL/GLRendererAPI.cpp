@@ -23,9 +23,9 @@ namespace Equinox
 		SetClearColor({ 0.15, 0.15, 0.15, 1.0 });
 
 		EQN_CORE_INFO("OpenGL Renderer initialized");
-		EQN_CORE_INFO(" - Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
-		EQN_CORE_INFO(" - Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-		EQN_CORE_INFO(" - Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+		EQN_CORE_TRACE(" - Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+		EQN_CORE_TRACE(" - Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+		EQN_CORE_TRACE(" - Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 	}
 
 	void GLRendererAPI::Shutdown()

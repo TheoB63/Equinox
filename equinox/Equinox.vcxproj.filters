@@ -188,6 +188,7 @@
     <ClInclude Include="source\equinox\renderer\Material.h" />
     <ClInclude Include="source\equinox\resources\MaterialLibrary.h" />
     <ClInclude Include="source\equinox\resources\ModelLibrary.h" />
+    <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
