@@ -11,6 +11,7 @@
 #include <fstream>
 #include <memory>
 #include <algorithm>
+#include <random>
 #include <regex>
 
 #include "equinox/core/EquinoxTypes.h"

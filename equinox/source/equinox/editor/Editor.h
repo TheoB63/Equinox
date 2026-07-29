@@ -13,6 +13,7 @@ namespace Equinox
     {
     public:
         virtual ~Panel() = default;
+        virtual void OnInit() = 0;
         virtual void OnRender() = 0;
     };
 
@@ -30,7 +31,10 @@ namespace Equinox
         static bool WantCaptureKeyboard();
 
         static void AddPanel(Panel* panel);
+
         static void SetCustomStyle();
+        static void SetupBubblegumStyle();
+        static void SetRandomStyle();
 
     private:
         static inline ImGuiContext* s_Context = nullptr;

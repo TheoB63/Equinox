@@ -19,6 +19,23 @@ namespace Equinox
             return m_Scene->Registry().emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
         }
 
+        template<typename T, typename... Args>
+        T& AddOrReplaceComponent(Args&&... args)
+        {
+            EQN_CORE_ASSERT(*this, "Invalid entity!");
+            auto& registry = m_Scene->Registry();
+
+            if (registry.all_of<T>(m_EntityHandle)) 
+            {
+                registry.replace<T>(m_EntityHandle, std::forward<Args>(args)...);
+            }
+            else 
+            {
+                registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
+            }
+            return registry.get<T>(m_EntityHandle);
+        }
+
         template<typename T>
         T& GetComponent() const
         {
@@ -34,16 +51,25 @@ namespace Equinox
         }
 
         template<typename T>
+        void RemoveComponent() 
+        {
+            EQN_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
+            m_Scene->Registry().remove<T>(m_EntityHandle);
+        }
+
+        template<typename T>
         bool HasComponent() const
         {
             return m_Scene->Registry().all_of<T>(m_EntityHandle);
         }
 
         template<typename T>
-        void RemoveComponent()
+        void CopyComponentIfExists(Entity dest) 
         {
-            EQN_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
-            m_Scene->Registry().remove<T>(m_EntityHandle);
+            if (HasComponent<T>()) 
+            {
+                dest.AddOrReplaceComponent<T>(GetComponent<T>());
+            }
         }
 
         bool IsValid() const
@@ -53,14 +79,13 @@ namespace Equinox
 
         std::string GetName() const;
         void SetName(const std::string& name);
-        void BeginRename() { m_IsRenaming = true; }
-        bool IsRenaming() const { return m_IsRenaming; }
 
         void SetParent(Entity parent);
         Entity GetParent() const;
         void RemoveParent() { SetParent({}); }
         bool HasParent() const { return GetParent().operator bool(); }
         bool IsDescendantOf(Entity potentialAncestor) const;
+        bool IsAncestorOf(Entity potentialDescendant) const;
 
         std::vector<Entity> GetChildren() const;
 
@@ -76,6 +101,7 @@ namespace Equinox
     private:
         entt::entity m_EntityHandle{ entt::null };
         Scene* m_Scene = nullptr;
-        bool m_IsRenaming = false;
+        bool isVisible = true;
+        bool isActive = true;
     };
 }

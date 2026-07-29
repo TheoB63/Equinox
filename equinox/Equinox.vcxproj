@@ -223,6 +223,7 @@
     <ClCompile Include="source\equinox\core\UUID.cpp" />
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Mesh.cpp" />

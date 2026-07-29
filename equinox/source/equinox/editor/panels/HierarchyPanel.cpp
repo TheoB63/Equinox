@@ -7,217 +7,329 @@
 
 namespace Equinox
 {
-    HierarchyPanel::HierarchyPanel(Scene* context)
-        : m_Context(context)
-    {
-        EQN_CORE_INFO("Created Hierarchy panel");
-    }
+	HierarchyPanel::HierarchyPanel(Scene* context)
+		: m_Context(context)
+	{
+		EQN_CORE_INFO("Created Hierarchy panel");
+	}
 
-    void HierarchyPanel::OnRender()
-    {
-        if (ImGui::Begin("Hierarchy"))
-        {
-            // Header with search and create button
-            ImGui::AlignTextToFramePadding();
+	void HierarchyPanel::OnInit()
+	{
+	}
 
-            if (ImGui::Button("+"))
-                m_ShowCreateMenu = true;
+	void HierarchyPanel::OnRender()
+	{
+		if (ImGui::Begin("Hierarchy"))
+		{
+			// Header with search and create button
+			ImGui::AlignTextToFramePadding();
 
-            ImGui::SameLine();
-            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            ImGui::InputTextWithHint("##Search", "Search...", m_SearchFilter, IM_ARRAYSIZE(m_SearchFilter));
+			ImVec2 buttonPos;
+			if (ImGui::Button("+")) {
+				buttonPos = { ImGui::GetItemRectMin().x, ImGui::GetItemRectMin().y + ImGui::GetFrameHeight() };
+				m_ShowCreateMenu = true;
+			}
 
-            // Entity list
-            ImGui::Separator();
-            ImGui::BeginChild("EntityList");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+			ImGui::InputTextWithHint("##Search", "Search...", m_SearchFilter, IM_ARRAYSIZE(m_SearchFilter));
 
-            m_Context->EachEntity([&](Entity entity) {
-                if (!entity.HasParent() && EntityMatchesFilter(entity)) {
-                    DrawEntityNode(entity);
-                }
-                });
+			// Entity list
+			ImGui::Separator();
+			if (ImGui::BeginChild("EntityList"))
+			{
+				m_Context->EachEntity([&](Entity entity)
+					{
+						if (!entity.HasParent() && EntityMatchesFilter(entity))
+						{
+							DrawEntityNode(entity);
+						}
+					});
 
-            // Handle drag drop target
-            if (ImGui::BeginDragDropTarget()) {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) {
-                    Entity droppedEntity = *(Entity*)payload->Data;
-                    EQN_CORE_INFO("Dropped entity {} onto hierarchy root", droppedEntity.GetName());
-                    droppedEntity.RemoveParent();
-                }
-                ImGui::EndDragDropTarget();
-            }
+				// Handle drag drop target
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
+					{
+						Entity droppedEntity = *(Entity*)payload->Data;
+						EQN_CORE_INFO("Dropped entity {0} onto hierarchy root", droppedEntity.GetName());
+						droppedEntity.RemoveParent();
+					}
+					ImGui::EndDragDropTarget();
+				}
+			}
 
-            ImGui::EndChild();
+			ImGui::EndChild();
 
-            // Context menus
-            if (ImGui::BeginPopupContextWindow()) {
-                DrawEntityCreateMenu();
-                ImGui::EndPopup();
-            }
+			// Context menus
+			if (ImGui::BeginPopupContextWindow())
+			{
+				DrawEntityCreateMenu();
+				ImGui::EndPopup();
+			}
 
-            if (m_ShowCreateMenu) {
-                ImGui::OpenPopup("CreateEntityMenu");
-                m_ShowCreateMenu = false;
-            }
+			if (m_ShowCreateMenu)
+			{
+				ImGui::SetNextWindowPos(buttonPos);
+				ImGui::OpenPopup("CreateEntityMenu");
+				m_ShowCreateMenu = false;
+			}
 
-            if (ImGui::BeginPopup("CreateEntityMenu")) {
-                DrawEntityCreateMenu();
-                ImGui::EndPopup();
-            }
+			if (ImGui::BeginPopup("CreateEntityMenu"))
+			{
+				DrawEntityCreateMenu();
+				ImGui::EndPopup();
+			}
 
-            ProcessKeyboardShortcuts();
-        }
+			ProcessKeyboardShortcuts();
+		}
 
-        ImGui::End();
-    }
+		ImGui::End();
+	}
 
-    void HierarchyPanel::SetSelectedEntity(Entity entity)
-    {
-        if (m_Selection != entity) {
-            // Clear selection if entity is invalid
-            if (!entity) {
-                EQN_CORE_TRACE("Cleared selection");
-                m_Selection = {};
-                return;
-            }
+	void HierarchyPanel::SetSelectedEntity(Entity entity)
+	{
+		if (m_Selection != entity)
+		{
+			// Clear selection if entity is invalid
+			if (!entity)
+			{
+				EQN_CORE_TRACE("Cleared selection");
+				m_Selection = {};
+				return;
+			}
 
-            // Ensure entity still exists in registry
-            if (!m_Context->Registry().valid(entity)) {
-                EQN_CORE_WARN("Tried to select invalid entity");
-                m_Selection = {};
-                return;
-            }
+			// Ensure entity still exists in registry
+			if (!m_Context->Registry().valid(entity))
+			{
+				EQN_CORE_WARN("Tried to select invalid entity");
+				m_Selection = {};
+				return;
+			}
 
-            EQN_CORE_TRACE("Changed selection to {0}", entity.GetName());
-            m_Selection = entity;
-        }
-    }
+			EQN_CORE_TRACE("Changed selection to {0}", entity.GetName());
+			m_Selection = entity;
+		}
+	}
 
-    void HierarchyPanel::DrawEntityNode(Entity entity)
-    {
-        auto name = entity.GetName();
-        ImGuiTreeNodeFlags flags =
-            ImGuiTreeNodeFlags_OpenOnArrow |
-            ImGuiTreeNodeFlags_SpanAvailWidth |
-            (m_Selection == entity ? ImGuiTreeNodeFlags_Selected : 0) |
-            (entity.GetChildren().empty() ? ImGuiTreeNodeFlags_Leaf : 0);
+	void HierarchyPanel::DrawEntityNode(Entity entity)
+	{
+		if (!entity.IsValid()) return;
+		const std::string name = entity.GetName();
+		bool isRenaming = (m_RenamingEntity == entity);
 
-        ImGui::PushID(entity.GetComponent<ID>().m_ID);
-        bool isOpen = ImGui::TreeNodeEx((void*)(uint64_t)entity, flags, "%s", name.c_str());
-        ImGui::PopID();
+		ImGuiTreeNodeFlags flags =
+			ImGuiTreeNodeFlags_DefaultOpen |
+			ImGuiTreeNodeFlags_OpenOnArrow |
+			(m_Selection == entity ? ImGuiTreeNodeFlags_Selected : 0) |
+			(entity.GetChildren().empty() ? ImGuiTreeNodeFlags_Leaf : 0);
 
-        // Handle selection
-        if (ImGui::IsItemClicked()) {
-            SetSelectedEntity(entity);
-        }
+		ImGui::PushID(static_cast<int>(entity.GetComponent<ID>().m_ID));
 
-        // Drag and drop
-        if (ImGui::BeginDragDropSource()) {
-            ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(Entity));
-            ImGui::Text("Move %s", name.c_str());
-            m_DraggedEntity = entity;
-            ImGui::EndDragDropSource();
-        }
+		// Split arrow and text into separate interactable areas
+		bool isOpen = ImGui::TreeNodeEx("##TreeNodeArrow", flags);
 
-        if (ImGui::BeginDragDropTarget()) {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) {
-                Entity child = *(Entity*)payload->Data;
-                child.SetParent(entity);
-            }
-            ImGui::EndDragDropTarget();
-        }
+		// Handle arrow interactions
+		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+		{
+			SetSelectedEntity(entity);
+		}
 
-        // Context menu
-        if (ImGui::BeginPopupContextItem()) {
-            DrawEntityContextMenu(entity);
-            ImGui::EndPopup();
-        }
+		// Text label (separate interactable area)
+		ImGui::SameLine();
 
-        // Children recursion
-        if (isOpen) {
-            for (const auto& child : entity.GetChildren()) {
-                DrawEntityNode(child);
-            }
-            ImGui::TreePop();
-        }
-    }
+		if (isRenaming)
+		{
+			// Rename input field
+			bool finish = false;
+			bool cancel = false;
+			ImGuiInputTextFlags flags =
+				ImGuiInputTextFlags_EnterReturnsTrue |
+				ImGuiInputTextFlags_AutoSelectAll;
+			ImGui::SetKeyboardFocusHere();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+			if (ImGui::InputText("##Rename", m_RenameBuffer, sizeof(m_RenameBuffer), flags))
+			{
+				finish = true;
+			}
 
-    void HierarchyPanel::DrawEntityContextMenu(Entity entity)
-    {
-        if (ImGui::MenuItem("Rename"))
-            entity.BeginRename();
+			// Handle Escape key
+			if (ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Escape))
+			{
+				cancel = true;
+			}
 
-        if (ImGui::MenuItem("Delete")) {
-            if (m_Selection == entity)
-                SetSelectedEntity({});
-            m_Context->DestroyEntity(entity);
-            EQN_CORE_INFO("Deleted entity {0}", entity.GetName());
-        }
+			// Finalize renaming
+			if (finish || cancel)
+			{
+				if (finish && !cancel)
+				{
+					// Validate and apply new name
+					std::string newName(m_RenameBuffer);
+					if (newName.empty()) newName = m_OriginalName;
+					entity.GetComponent<Tag>().m_Tag = newName;
+				}
+				else if (cancel)
+				{
+					// Restore original name
+					entity.GetComponent<Tag>().m_Tag = m_OriginalName;
+				}
+				m_RenamingEntity = {};
+				m_OriginalName.clear();
+			}
+		}
+		else
+		{
+			// Clickable text label
+			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 25.0f));
+			if (ImGui::Selectable(name.c_str(), m_Selection == entity,
+				ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SpanAllColumns))
+			{
+				SetSelectedEntity(entity);
 
-        ImGui::Separator();
+				// Handle double-click on text only
+				if (ImGui::IsMouseDoubleClicked(0))
+				{
+					m_RenamingEntity = entity;
+					strncpy_s(m_RenameBuffer, name.c_str(), sizeof(m_RenameBuffer));
+				}
+			}
+			ImGui::PopStyleVar();
 
-        if (ImGui::MenuItem("Create Child")) {
-            auto child = m_Context->CreateEntity("Child Entity");
-            child.SetParent(entity);
-            EQN_CORE_INFO("Created child entity {0}", child.GetName());
-        }
+			// Drag and drop on text area
+			HandleDragDrop(entity, name);
+		}
 
-        if (ImGui::MenuItem("Duplicate")) {
-            auto duplicate = m_Context->DuplicateEntity(entity);
-            EQN_CORE_INFO("Duplicated entity {0}", duplicate.GetName());
-        }
-    }
+		// Context menu (works on both areas)
+		if (ImGui::BeginPopupContextItem()) 
+		{
+			if (ImGui::MenuItem("Rename")) 
+			{
+				m_RenamingEntity = entity;
+				strncpy_s(m_RenameBuffer, name.c_str(), sizeof(m_RenameBuffer));
+			}
+			DrawEntityContextMenu(entity);
+			ImGui::EndPopup();
+		}
 
-    void HierarchyPanel::DrawEntityCreateMenu()
-    {
-        if (ImGui::MenuItem("Empty Entity")) {
-            auto entity = m_Context->CreateEntity("New Entity");
-        }
+		// Child nodes
+		if (isOpen)
+		{
+			for (auto child : entity.GetChildren())
+			{
+				DrawEntityNode(child);
+			}
+			ImGui::TreePop();
+		}
 
-        if (ImGui::BeginMenu("3D Objects")) {
-            if (ImGui::MenuItem("Cube")) { /* Create mesh entity */ }
-            if (ImGui::MenuItem("Sphere")) { /* Create mesh entity */ }
-            ImGui::EndMenu();
-        }
+		ImGui::PopID();
+	}
 
-        if (ImGui::MenuItem("Camera")) {
-            auto camera = m_Context->CreateEntity("Camera");
-            //camera.AddComponent<CameraComponent>();
-            EQN_CORE_INFO("Created camera entity");
-        }
-    }
+	void HierarchyPanel::DrawEntityContextMenu(Entity entity)
+	{
+		if (ImGui::MenuItem("Delete"))
+		{
+			if (m_Selection == entity)
+				SetSelectedEntity({});
+			m_Context->DestroyEntity(entity);
+			EQN_CORE_INFO("Deleted entity {0}", entity.GetName());
+		}
 
-    void HierarchyPanel::ProcessKeyboardShortcuts()
-    {
-        if (ImGui::IsWindowFocused()) {
-            // Delete key
-            if (ImGui::IsKeyPressed(ImGuiKey_Delete) && m_Selection) {
-                m_Context->DestroyEntity(m_Selection);
-                SetSelectedEntity({});
-                EQN_CORE_INFO("Deleted selected entity");
-            }
+		ImGui::Separator();
 
-            // Ctrl+D for duplicate
-            if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_D)) {
-                if (m_Selection) {
-                    auto duplicate = m_Context->DuplicateEntity(m_Selection);
-                    EQN_CORE_INFO("Duplicated entity {0}", duplicate.GetName());
-                }
-            }
-        }
-    }
+		if (ImGui::MenuItem("Create Child"))
+		{
+			auto child = m_Context->CreateEntity("Child Entity");
+			child.SetParent(entity);
+			EQN_CORE_INFO("Created child entity {0}", child.GetName());
+		}
 
-    bool HierarchyPanel::EntityMatchesFilter(Entity entity)
-    {
-        if (strlen(m_SearchFilter) == 0) return true;
+		if (ImGui::MenuItem("Duplicate"))
+		{
+			auto duplicate = m_Context->DuplicateEntity(entity);
+			EQN_CORE_INFO("Duplicated entity {0}", duplicate.GetName());
+		}
+	}
 
-        // Case-insensitive search
-        std::string entityName = entity.GetName();
-        std::string filter = m_SearchFilter;
+	void HierarchyPanel::DrawEntityCreateMenu()
+	{
+		if (ImGui::MenuItem("Empty Entity"))
+		{
+			auto entity = m_Context->CreateEntity("New Entity");
+		}
 
-        std::transform(entityName.begin(), entityName.end(), entityName.begin(), ::tolower);
-        std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
+		if (ImGui::BeginMenu("3D Objects"))
+		{
+			if (ImGui::MenuItem("Cube")) { /* Create mesh entity */ }
+			if (ImGui::MenuItem("Sphere")) { /* Create mesh entity */ }
+			ImGui::EndMenu();
+		}
 
-        return entityName.find(filter) != std::string::npos;
-    }
+		if (ImGui::MenuItem("Camera"))
+		{
+			auto camera = m_Context->CreateEntity("Camera");
+			//camera.AddComponent<CameraComponent>();
+			EQN_CORE_INFO("Created camera entity");
+		}
+	}
+
+	void HierarchyPanel::HandleDragDrop(Entity entity, const std::string& name)
+	{
+		if (ImGui::BeginDragDropSource()) 
+		{
+			ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(Entity));
+			ImGui::Text("Move %s", name.c_str());
+			ImGui::EndDragDropSource();
+		}
+
+		if (ImGui::BeginDragDropTarget()) 
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) 
+			{
+				Entity child = *(Entity*)payload->Data;
+				if (!child.IsAncestorOf(entity)) 
+				{
+					child.SetParent(entity);
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+	}
+
+	void HierarchyPanel::ProcessKeyboardShortcuts()
+	{
+		if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
+		{
+			// [SUPR] Delete
+			if (ImGui::IsKeyPressed(ImGuiKey_Delete) && m_Selection)
+			{
+				m_Context->DestroyEntity(m_Selection);
+				SetSelectedEntity({});
+				EQN_CORE_INFO("Deleted selected entity");
+			}
+
+			// [Ctrl+D] Duplicate
+			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_D))
+			{
+				if (m_Selection)
+				{
+					auto duplicate = m_Context->DuplicateEntity(m_Selection);
+				}
+			}
+		}
+	}
+
+	bool HierarchyPanel::EntityMatchesFilter(Entity entity)
+	{
+		if (strlen(m_SearchFilter) == 0) return true;
+
+		// Case-insensitive search
+		std::string entityName = entity.GetName();
+		std::string filter = m_SearchFilter;
+
+		std::transform(entityName.begin(), entityName.end(), entityName.begin(), ::tolower);
+		std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
+
+		return entityName.find(filter) != std::string::npos;
+	}
 }

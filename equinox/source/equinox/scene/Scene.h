@@ -15,7 +15,7 @@ namespace Equinox
 
 		Entity CreateEntity(const std::string& name = "Entity");
 		void DestroyEntity(Entity entity);
-		Entity DuplicateEntity(Entity original);
+		Entity DuplicateEntity(Entity original, bool skipParentAddition = false);
 
 		entt::registry& Registry() { return m_Registry; }
 		const entt::registry& Registry() const { return m_Registry; }
@@ -34,7 +34,7 @@ namespace Equinox
 		auto GetAllEntitiesWith() { return m_Registry.view<Components...>(); }
 
 	private:
-		std::string GenerateUniqueName(const std::string& originalName);
+		std::string GenerateUniqueName(Entity entity);
 
 	private:
 		entt::registry m_Registry;

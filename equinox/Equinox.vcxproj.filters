@@ -309,5 +309,6 @@
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\scene\Entity.cpp" />
     <ClCompile Include="source\equinox\scene\Scene.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
   </ItemGroup>
 </Project>
