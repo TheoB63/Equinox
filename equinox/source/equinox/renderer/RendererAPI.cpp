@@ -10,7 +10,7 @@ namespace Equinox
 
     std::unique_ptr<RendererAPI> RendererAPI::Create(API api)
     {
-        EQN_CORE_INFO("Initialized {0} renderer", APIToString(api));
+        EQN_CORE_INFO("Initializing {0} renderer...", APIToString(api));
         s_API = api;
 
         switch (api)

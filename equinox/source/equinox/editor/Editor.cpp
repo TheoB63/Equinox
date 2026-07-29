@@ -27,7 +27,7 @@ namespace Equinox
         EQN_CORE_TRACE(" - Enabled ImGui multi-viewport support");
 
 		SetCustomStyle();
-        //SetupBubblegumStyle();
+        //SetBubblegumStyle();
         //SetRandomStyle();
 
 		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
@@ -42,8 +42,8 @@ namespace Equinox
 		}
 
         // Set Panels
-        AddPanel(new InspectorPanel());
         AddPanel(new HierarchyPanel(new Scene));
+        AddPanel(new InspectorPanel());
 
         // Init all panels
         for (auto& panel : s_Panels)
@@ -160,7 +160,6 @@ namespace Equinox
     {
         EQN_CORE_ASSERT(panel, "Tried to add null panel");
         s_Panels.emplace_back(panel);
-        EQN_CORE_INFO("Added new panel (total: {})", s_Panels.size());
     }
 
     void Editor::SetCustomStyle()
@@ -253,7 +252,7 @@ namespace Equinox
         style.GrabMinSize = 12;
     }
 
-    void Editor::SetupBubblegumStyle()
+    void Editor::SetBubblegumStyle()
     {
         ImGuiStyle& style = ImGui::GetStyle();
 

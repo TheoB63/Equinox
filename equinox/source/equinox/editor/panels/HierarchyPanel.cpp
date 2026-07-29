@@ -109,6 +109,10 @@ namespace Equinox
 
 			EQN_CORE_TRACE("Changed selection to {0}", entity.GetName());
 			m_Selection = entity;
+			if (auto* inspector = Editor::GetPanel<InspectorPanel>())
+			{
+				inspector->SetSelectedEntity(entity);
+			}
 		}
 	}
 

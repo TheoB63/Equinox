@@ -210,6 +210,7 @@
     <ClInclude Include="source\equinox\scene\Entity.h" />
     <ClInclude Include="source\equinox\scene\Scene.h" />
     <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
+    <ClInclude Include="source\equinox\utils\CustomImGui.h" />
     <ClInclude Include="source\equinox\utils\ImageUtils.h" />
     <ClInclude Include="source\equinox\window\WinWindow.h" />
     <ClInclude Include="source\equinox\window\Window.h" />

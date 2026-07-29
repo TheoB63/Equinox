@@ -20,7 +20,8 @@ namespace Equinox
 		Entity entity = { m_Registry.create(), this };
 		entity.AddComponent<ID>();
 		entity.AddComponent<Tag>(name);
-		EQN_CORE_INFO("Created entity: {0}", name);
+		entity.AddComponent<Transform>();
+		EQN_CORE_TRACE("Created entity: {0}", name);
 		return entity;
 	}
 
@@ -50,7 +51,7 @@ namespace Equinox
 
 		// Finally destroy the entity itself
 		m_Registry.destroy(entity);
-		EQN_CORE_INFO("Destroyed entity: {0}", entity.GetName());
+		EQN_CORE_TRACE("Destroyed entity: {0}", entity.GetName());
 	}
 
 	Entity Scene::DuplicateEntity(Entity original, bool skipParentAddition)
@@ -62,7 +63,7 @@ namespace Equinox
 
 		// Copy all components except hierarchy-related ones
 		//original.CopyComponentIfExists<Tag>(duplicate);
-		//original.CopyComponentIfExists<Transform>(duplicate);
+		original.CopyComponentIfExists<Transform>(duplicate);
 		// Add other component copies here...
 
 		// Handle parent relationship if not skipped
@@ -103,7 +104,7 @@ namespace Equinox
 			}
 		}
 
-		EQN_CORE_INFO("Duplicated {0} '{1}'",
+		EQN_CORE_TRACE("Duplicated {0} '{1}'",
 			original.HasComponent<Children>() ? "hierarchy" : "entity",
 			original.GetName());
 		return duplicate;

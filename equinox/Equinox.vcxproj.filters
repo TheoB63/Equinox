@@ -194,6 +194,7 @@
     <ClInclude Include="source\equinox\scene\Components.h" />
     <ClInclude Include="source\equinox\scene\Entity.h" />
     <ClInclude Include="source\equinox\scene\Scene.h" />
+    <ClInclude Include="source\equinox\utils\CustomImGui.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "equinox/editor/Editor.h"
+#include "equinox/editor/panels/InspectorPanel.h"
+
 #include "equinox/scene/Entity.h"
 #include "equinox/scene/Scene.h"
 
@@ -17,6 +19,7 @@ namespace Equinox
         void SetContext(Scene* scene);
 
         Entity GetSelectedEntity() const { return m_Selection; }
+        Entity* GetSelectedEntity() { return &m_Selection; }
         void SetSelectedEntity(Entity entity);
 
     private:
@@ -27,6 +30,7 @@ namespace Equinox
         void ProcessKeyboardShortcuts();
         bool EntityMatchesFilter(Entity entity);
 
+    private:
         Scene* m_Context = nullptr;
         Entity m_Selection;
         Entity m_DraggedEntity;

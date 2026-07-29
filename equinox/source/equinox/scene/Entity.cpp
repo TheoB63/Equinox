@@ -1,6 +1,5 @@
 #include "eqnpch.h"
 #include "equinox/scene/Entity.h"
-#include "equinox/scene/Scene.h"
 #include "equinox/scene/Components.h"
 
 namespace Equinox
