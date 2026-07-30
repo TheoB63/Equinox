@@ -4,6 +4,7 @@
 #include "equinox/window/Window.h"
 #include "equinox/input/Input.h"
 #include "equinox/editor/Editor.h"
+#include "equinox/editor/panels/ScenePanel.h"
 #include "equinox/resources/ResourceManager.h"
 
 #include "equinox/events/Event.h"
@@ -51,7 +52,13 @@ namespace Equinox
 			OnUpdate();
 
 			if (!m_Window->IsMinimized())
+			{
+				auto sceneFb = Editor::GetPanel<ScenePanel>()->GetFramebuffer();
+				Renderer::BindFramebuffer(sceneFb);
+				Renderer::Clear();
 				Renderer::DrawFrame();
+				Renderer::BindFramebuffer(nullptr);
+			}
 
 			// Render UI
 			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)

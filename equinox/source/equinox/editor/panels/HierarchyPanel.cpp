@@ -1,6 +1,7 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/scene/Components.h"
+#include "equinox/utils/ImGuiUtils.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>

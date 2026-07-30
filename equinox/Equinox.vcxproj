@@ -164,6 +164,8 @@
     <ClInclude Include="source\equinox\core\UUID.h" />
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
+    <ClInclude Include="source\equinox\editor\panels\ScenePanel.h" />
+    <ClInclude Include="source\equinox\editor\panels\TestPanel.h" />
     <ClInclude Include="source\equinox\events\AppEvent.h" />
     <ClInclude Include="source\equinox\events\Event.h" />
     <ClInclude Include="source\equinox\events\EventBus.h" />
@@ -173,6 +175,7 @@
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Camera.h" />
+    <ClInclude Include="source\equinox\renderer\Framebuffer.h" />
     <ClInclude Include="source\equinox\renderer\Material.h" />
     <ClInclude Include="source\equinox\renderer\Mesh.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
@@ -210,7 +213,7 @@
     <ClInclude Include="source\equinox\scene\Entity.h" />
     <ClInclude Include="source\equinox\scene\Scene.h" />
     <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
-    <ClInclude Include="source\equinox\utils\CustomImGui.h" />
+    <ClInclude Include="source\equinox\utils\ImGuiUtils.h" />
     <ClInclude Include="source\equinox\utils\ImageUtils.h" />
     <ClInclude Include="source\equinox\window\WinWindow.h" />
     <ClInclude Include="source\equinox\window\Window.h" />
@@ -225,8 +228,11 @@
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
+    <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Mesh.cpp" />
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
     <ClCompile Include="source\equinox\renderer\RendererAPI.cpp" />

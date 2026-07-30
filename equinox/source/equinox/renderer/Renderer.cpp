@@ -23,6 +23,12 @@ namespace Equinox
 		}
 	}
 
+	// Forwarding commands
+	void Renderer::BindFramebuffer(const std::shared_ptr<Framebuffer>& framebuffer) 
+	{
+		s_RendererAPI->BindFramebuffer(framebuffer);
+	}
+
 	void Renderer::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 	{
 		s_RendererAPI->SetViewport(x, y, w, h);

@@ -37,6 +37,25 @@ namespace Equinox
 		m_Meshes.clear();
 	}
 
+	void GLRendererAPI::BindFramebuffer(const std::shared_ptr<Framebuffer>& framebuffer)
+	{
+		if (framebuffer)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->GetRendererID());
+			Renderer::SetViewport(0, 0, framebuffer->GetWidth(), framebuffer->GetHeight());
+		}
+		else 
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+	}
+
+	void GLRendererAPI::SetViewport(u32 x, u32 y, u32 width, u32 height)
+	{
+		glViewport(x, y, width, height);
+		EQN_GL_CHECK_ERROR();
+	}
+
 	void GLRendererAPI::SetClearColor(const glm::vec4& color)
 	{
 		m_ClearColor = color;
@@ -47,12 +66,6 @@ namespace Equinox
 	void GLRendererAPI::Clear()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		EQN_GL_CHECK_ERROR();
-	}
-
-	void GLRendererAPI::SetViewport(u32 x, u32 y, u32 width, u32 height)
-	{
-		glViewport(x, y, width, height);
 		EQN_GL_CHECK_ERROR();
 	}
 

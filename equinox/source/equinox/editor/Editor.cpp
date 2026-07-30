@@ -5,6 +5,7 @@
 
 #include "equinox/editor/panels/InspectorPanel.h"
 #include "equinox/editor/panels/HierarchyPanel.h"
+#include "equinox/editor/panels/ScenePanel.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -44,6 +45,7 @@ namespace Equinox
         // Set Panels
         AddPanel(new HierarchyPanel(new Scene));
         AddPanel(new InspectorPanel());
+        AddPanel(new ScenePanel());
 
         // Init all panels
         for (auto& panel : s_Panels)

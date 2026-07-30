@@ -4,7 +4,7 @@
 
 #include "equinox/scene/Components.h"
 
-#include "equinox/utils/CustomImGui.h"
+#include "equinox/utils/ImGuiUtils.h"
 
 
 namespace Equinox
@@ -99,29 +99,81 @@ namespace Equinox
 					}
 				});
 
-			DrawComponent<Transform>("Transform", m_SelectedEntity, [](Entity entity, Transform& transform) {
-				// Position control
-				ImGui::Text("Position"); ImGui::SameLine();
-				ImGui::PushItemWidth(-1);
-				ImGui::DragFloat3("##Position", glm::value_ptr(transform.m_Position), 0.1f);
+			DrawComponent<Transform>("Transform", m_SelectedEntity, [](Entity entity, Transform& transform)
+				{
+					// Position control
+					ImGui::Text("Position"); ImGui::SameLine();
+					ImGui::PushItemWidth(-1);
+					ImGui::DragFloat3("##Position", glm::value_ptr(transform.m_Position), 0.1f);
 
-				// Rotation control (Euler angles)
-				ImGui::Text("Rotation"); ImGui::SameLine();
-				glm::vec3 rotationDegrees = transform.m_Rotation;
-				if (ImGui::DragFloat3("##Rotation", glm::value_ptr(rotationDegrees), 0.5f)) {
-					transform.m_Rotation = rotationDegrees;
-				}
+					// Rotation control (Euler angles)
+					ImGui::Text("Rotation"); ImGui::SameLine();
+					glm::vec3 rotationDegrees = transform.m_Rotation;
+					if (ImGui::DragFloat3("##Rotation", glm::value_ptr(rotationDegrees), 0.5f))
+					{
+						transform.m_Rotation = rotationDegrees;
+					}
 
-				// Scale control
-				ImGui::Text("Scale"); ImGui::SameLine(); ImGui::Dummy({ 15, 0 }); ImGui::SameLine();
-				ImGui::DragFloat3("##Scale", glm::value_ptr(transform.m_Scale), 0.1f);
+					// Scale control
+					ImGui::Text("Scale"); ImGui::SameLine(); ImGui::Dummy({ 15, 0 }); ImGui::SameLine();
+					ImGui::DragFloat3("##Scale", glm::value_ptr(transform.m_Scale), 0.1f);
 
-				// Reset buttons
-				if (ImGui::Button("Reset Transform")) {
-					transform.m_Position = { 0,0,0 };
-					transform.m_Rotation = { 0,0,0 };
-					transform.m_Scale = { 1,1,1 };
-				}
+					// Reset buttons
+					if (ImGui::Button("Reset Transform"))
+					{
+						transform.m_Position = { 0,0,0 };
+						transform.m_Rotation = { 0,0,0 };
+						transform.m_Scale = { 1,1,1 };
+					}
+				});
+
+			DrawComponent<Component::Camera>("Camera", m_SelectedEntity, [](Entity e, Component::Camera& camera)
+				{
+					// Projection type combo box
+					const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
+					const char* currentProjectionType = projectionTypeStrings[(int)camera.Projection];
+
+					if (ImGui::BeginCombo("Projection", currentProjectionType))
+					{
+						for (int i = 0; i < 2; i++)
+						{
+							bool isSelected = currentProjectionType == projectionTypeStrings[i];
+							if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
+							{
+								camera.Projection = (Component::Camera::ProjectionType)i;
+								camera.RecalculateProjection();
+							}
+							if (isSelected)
+							{
+								ImGui::SetItemDefaultFocus();
+							}
+						}
+						ImGui::EndCombo();
+					}
+
+					// Perspective settings
+					if (camera.Projection == Component::Camera::ProjectionType::Perspective)
+					{
+						bool changed = false;
+						changed |= ImGui::DragFloat("Vertical FOV", &camera.VerticalFOV, 0.1f, 1.0f, 180.0f);
+						changed |= ImGui::DragFloat("Near Clip", &camera.NearClip, 0.01f, 0.01f, camera.FarClip);
+						changed |= ImGui::DragFloat("Far Clip", &camera.FarClip, 0.1f, camera.NearClip, 10000.0f);
+
+						if (changed) camera.RecalculateProjection();
+					}
+					// Orthographic settings
+					else
+					{
+						bool changed = false;
+						changed |= ImGui::DragFloat("Size", &camera.OrthographicSize, 0.1f, 0.1f, 100.0f);
+						changed |= ImGui::DragFloat("Near", &camera.OrthographicNear, 0.01f);
+						changed |= ImGui::DragFloat("Far", &camera.OrthographicFar, 0.01f);
+
+						if (changed) camera.RecalculateProjection();
+					}
+
+					// Aspect ratio (could be auto-calculated from viewport)
+					ImGui::DragFloat("Aspect Ratio", &camera.AspectRatio, 0.01f, 0.1f, 10.0f);
 				});
 
 			// Add Component button
@@ -143,6 +195,11 @@ namespace Equinox
 					if (!m_SelectedEntity.HasComponent<Children>() && ImGui::MenuItem("Children"))
 					{
 						m_SelectedEntity.AddOrReplaceComponent<Children>();
+						ImGui::CloseCurrentPopup();
+					}
+					if (!m_SelectedEntity.HasComponent<Camera>() && ImGui::MenuItem("Camera"))
+					{
+						m_SelectedEntity.AddOrReplaceComponent<Camera>();
 						ImGui::CloseCurrentPopup();
 					}
 					// Add more components here as needed

@@ -106,6 +106,8 @@ namespace Equinox
 		}
 	}
 
+	void VKRendererAPI::BindFramebuffer(const std::shared_ptr<Framebuffer>& framebuffer) {}
+
 	void VKRendererAPI::SetViewport(u32 x, u32 y, u32 width, u32 height) {}
 
 	void VKRendererAPI::SetClearColor(const glm::vec4& color) {}

@@ -194,7 +194,10 @@
     <ClInclude Include="source\equinox\scene\Components.h" />
     <ClInclude Include="source\equinox\scene\Entity.h" />
     <ClInclude Include="source\equinox\scene\Scene.h" />
-    <ClInclude Include="source\equinox\utils\CustomImGui.h" />
+    <ClInclude Include="source\equinox\utils\ImGuiUtils.h" />
+    <ClInclude Include="source\equinox\editor\panels\TestPanel.h" />
+    <ClInclude Include="source\equinox\editor\panels\ScenePanel.h" />
+    <ClInclude Include="source\equinox\renderer\Framebuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -311,5 +314,8 @@
     <ClCompile Include="source\equinox\scene\Entity.cpp" />
     <ClCompile Include="source\equinox\scene\Scene.cpp" />
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
+    <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
   </ItemGroup>
 </Project>

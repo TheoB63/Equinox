@@ -2,6 +2,7 @@
 
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/Math.h"
+#include "equinox/renderer/Framebuffer.h"
 #include "equinox/renderer/Mesh.h"
 
 #include <memory>
@@ -22,6 +23,8 @@ namespace Equinox
 
 		virtual void Init() = 0;
 		virtual void Shutdown() = 0;
+
+		virtual void BindFramebuffer(const std::shared_ptr<Framebuffer>& framebuffer) = 0;
 
 		virtual void SetViewport(u32 x, u32 y, u32 width, u32 height) = 0;
 		virtual void SetClearColor(const glm::vec4& color) = 0;
