@@ -198,6 +198,7 @@
     <ClInclude Include="source\equinox\editor\panels\TestPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ScenePanel.h" />
     <ClInclude Include="source\equinox\renderer\Framebuffer.h" />
+    <ClInclude Include="source\equinox\editor\panels\ProjectPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -317,5 +318,6 @@
     <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\ProjectPanel.cpp" />
   </ItemGroup>
 </Project>

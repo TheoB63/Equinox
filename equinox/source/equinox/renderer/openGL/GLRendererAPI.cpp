@@ -21,6 +21,7 @@ namespace Equinox
 		EnableBlending(true);
 		SetBlendFunction(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		SetClearColor({ 0.15, 0.15, 0.15, 1.0 });
+		//SetClearColor({ 1.00, 0.95, 0.97, 1.0 });
 
 		EQN_CORE_INFO("OpenGL Renderer initialized");
 		EQN_CORE_TRACE(" - Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));

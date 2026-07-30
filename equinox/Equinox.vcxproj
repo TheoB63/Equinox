@@ -164,6 +164,7 @@
     <ClInclude Include="source\equinox\core\UUID.h" />
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
+    <ClInclude Include="source\equinox\editor\panels\ProjectPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ScenePanel.h" />
     <ClInclude Include="source\equinox\editor\panels\TestPanel.h" />
     <ClInclude Include="source\equinox\events\AppEvent.h" />
@@ -228,6 +229,7 @@
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\ProjectPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
