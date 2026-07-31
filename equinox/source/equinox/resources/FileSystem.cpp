@@ -1,125 +1,171 @@
 #include "eqnpch.h"
 #include "equinox/resources/FileSystem.h"
-#include "equinox/resources/ModelLibrary.h"
-#include "equinox/resources/MaterialLibrary.h"
-#include "equinox/resources/ShaderLibrary.h"
-#include "equinox/renderer/Renderer.h"
-#include "equinox/renderer/RendererAPI.h"
-#include "equinox/renderer/Material.h"
-#include "equinox/renderer/Model.h"
-//#include "equinox/renderer/vulkan/VKMesh.h"
+#include "equinox/resources/MetaFile.h"
+#include "equinox/resources/libraries/ModelLibrary.h"
+#include "equinox/resources/libraries/MaterialLibrary.h"
+#include "equinox/resources/libraries/ShaderLibrary.h"
 
 #include <regex>
 
 namespace Equinox
 {
-    fs::path FileSystem::s_EngineRoot;
-    fs::path FileSystem::s_ProjectRoot;
-    fs::path FileSystem::s_AssetsRoot;
+	fs::path FileSystem::s_EngineRoot;
+	fs::path FileSystem::s_ProjectRoot;
+	fs::path FileSystem::s_AssetsRoot;
 
-    void FileSystem::Init(const fs::path& engineRoot)
-    {
-        s_EngineRoot = engineRoot.empty() ? fs::current_path() : engineRoot;
-        s_ProjectRoot = fs::current_path();
-        s_AssetsRoot = s_ProjectRoot / "assets";
-        EnsureBaseStructure();
-    }
+	void FileSystem::Init(const fs::path& engineRoot)
+	{
+		s_EngineRoot = engineRoot.empty() ? fs::current_path() : engineRoot;
+		s_ProjectRoot = fs::current_path();
+		s_AssetsRoot = s_ProjectRoot / "assets";
+		EnsureBaseStructure();
+	}
 
-    fs::path FileSystem::GetPath(Resource type, const fs::path& name, bool addExtension)
-    {
-        const auto& info = GetTypeInfo().at(type);
-        fs::path path = s_ProjectRoot / "assets" / info.directory / name;
+	fs::path FileSystem::GetPath(ResourceType  type, const fs::path& name, bool addExtension)
+	{
+		const auto& info = GetTypeInfo().at(type);
+		fs::path path = s_ProjectRoot / "assets" / info.directory / name;
 
-        if (addExtension && !name.has_extension() && !info.extension.empty())
-        {
-            path += info.extension;
-        }
+		if (addExtension && !name.has_extension() && !info.extension.empty())
+		{
+			path += info.extension;
+		}
 
-        return path.lexically_normal();
-    }
+		return path.lexically_normal();
+	}
 
-    fs::path FileSystem::EnginePath(const fs::path& relative) 
-    {
-        return (s_EngineRoot / relative).lexically_normal();
-    }
+	fs::path FileSystem::EnginePath(const fs::path& relative)
+	{
+		return (s_EngineRoot / relative).lexically_normal();
+	}
 
-    fs::path FileSystem::ProjectPath(const fs::path& relative)
-    {
-        return (s_ProjectRoot / relative).lexically_normal();
-    }
+	fs::path FileSystem::ProjectPath(const fs::path& relative)
+	{
+		return (s_ProjectRoot / relative).lexically_normal();
+	}
 
-    fs::path FileSystem::AssetsPath(const fs::path& relative)
-    {
-        return (s_AssetsRoot / relative).lexically_normal();
-    }
+	fs::path FileSystem::AssetsPath(const fs::path& relative)
+	{
+		return (s_AssetsRoot / relative).lexically_normal();
+	}
 
-    // Platform-specific implementations
-    fs::path FileSystem::PlatformAssetsPath()
-    {
+	// Platform-specific implementations
+	fs::path FileSystem::PlatformAssetsPath()
+	{
 #if defined(_WIN32)
-        return GetPath(Resource::Config, "windows");
+		return GetPath(ResourceType::Config, "windows");
 #elif defined(__APPLE__)
-        return GetPath(Resource::Config, "macos");
+		return GetPath(ResourceType::Config, "macos");
 #else
-        return GetPath(Resource::Config, "linux");
+		return GetPath(ResourceType::Config, "linux");
 #endif
-    }
+	}
 
-    fs::path FileSystem::SaveGamePath()
-    {
+	fs::path FileSystem::SaveGamePath()
+	{
 #if defined(_WIN32)
-        return ProjectPath("SavedGames");
+		return ProjectPath("SavedGames");
 #else
-        return ProjectPath(".saves");
+		return ProjectPath(".saves");
 #endif
-    }
+	}
 
-    fs::path FileSystem::LogPath() 
-    {
-        return ProjectPath("Logs");
-    }
+	fs::path FileSystem::LogPath()
+	{
+		return ProjectPath("Logs");
+	}
 
-    bool FileSystem::Exists(const fs::path& path)
-    {
-        return fs::exists(path);
-    }
+	bool FileSystem::Exists(const fs::path& path)
+	{
+		return fs::exists(path);
+	}
 
-    size_t FileSystem::FileSize(const fs::path& path) 
-    {
-        return fs::exists(path) ? fs::file_size(path) : 0;
-    }
+	size_t FileSystem::FileSize(const fs::path& path)
+	{
+		return fs::exists(path) ? fs::file_size(path) : 0;
+	}
 
-    bool FileSystem::Validate(const fs::path& path) 
-    {
-        return Exists(path) && path.extension() != ".tmp";
-    }
+	bool FileSystem::Validate(const fs::path& path)
+	{
+		return Exists(path) && path.extension() != ".tmp";
+	}
 
-    void FileSystem::CreateDirectories(const fs::path& path)
-    {
-        fs::create_directories(path);
-    }
+	ResourceType FileSystem::ClassifyFileType(const fs::path& path)
+	{
+		static const std::unordered_map<std::string, ResourceType> extensionMap =
+		{
+			{ ".fbx",  ResourceType::Model    },
+			{ ".obj",  ResourceType::Model    },
+			{ ".gltf", ResourceType::Model    },
+			{ ".png",  ResourceType::Texture  },
+			{ ".jpg",  ResourceType::Texture  },
+			{ ".tga",  ResourceType::Texture  },
+			{ ".mat",  ResourceType::Material },
+			{ ".glsl", ResourceType::Shader   },
+			{ ".ttf",  ResourceType::Font     },
+			{ ".ini",  ResourceType::Config   }
+		};
 
-    void FileSystem::EnsureBaseStructure()
-    {
-        for (const auto& [type, info] : GetTypeInfo()) 
-        {
-            CreateDirectories(s_ProjectRoot / "assets" / info.directory);
-        }
-        CreateDirectories(SaveGamePath());
-        CreateDirectories(LogPath());
-    }
+		std::string ext = path.extension().string();
+		std::transform(ext.begin(), ext.end(), ext.begin(),
+			[](unsigned char c) { return std::tolower(c); });
 
-    const std::unordered_map<Resource, FileSystem::ResourceTypeInfo>& FileSystem::GetTypeInfo()
-    {
-        static const std::unordered_map<Resource, ResourceTypeInfo> typeInfo =
-        {
-            {Resource::Model,    {"models",    ".fbx"}},
-            {Resource::Texture,  {"textures",  ".png"}},
-            {Resource::Material, {"materials", ".mat"}},
-            {Resource::Shader,   {"shaders",   ".glsl"}},
-            {Resource::Font,     {"fonts",     ".ttf"}},
-            {Resource::Config,   {"config",    ".json"}}
-        };
-        return typeInfo;
-    }
+		auto it = extensionMap.find(ext);
+		return (it != extensionMap.end()) ? it->second : ResourceType::Unknown;
+	}
+
+	void FileSystem::CreateDirectories(const fs::path& path)
+	{
+		fs::create_directories(path);
+	}
+
+	void FileSystem::EnsureBaseStructure()
+	{
+		for (const auto& [type, info] : GetTypeInfo())
+		{
+			CreateDirectories(s_ProjectRoot / "assets" / info.directory);
+		}
+		CreateDirectories(SaveGamePath());
+		CreateDirectories(LogPath());
+	}
+
+	/*fs::path FileSystem::GetMetaPath(const fs::path& assetPath) 
+	{
+			return assetPath.parent_path() / (assetPath.filename().string() + ".meta");
+	}*/
+
+	/*MetaFile FileSystem::GetOrCreateMeta(const fs::path& assetPath)
+	{
+		fs::path metaPath = GetMetaPath(assetPath);
+
+		if (!fs::exists(metaPath)) 
+		{
+			Resource resType = ClassifyFileType(assetPath);
+			MetaFile meta;
+			meta.CreateNew(assetPath, resType);
+			meta.Save();
+			return meta;
+		}
+
+		return MetaFile(assetPath);
+	}*/
+
+	//void FileSystem::SyncMetaFiles()
+	//{
+	//    // TODO: Scan Assets directory and ensure every file has a valid .meta
+	//}
+
+	const std::unordered_map<ResourceType, FileSystem::ResourceTypeInfo>& FileSystem::GetTypeInfo()
+	{
+		static const std::unordered_map<ResourceType, ResourceTypeInfo> typeInfo = 
+		{
+			{ ResourceType::Model,    { "models",    ".fbx"  } },
+			{ ResourceType::Texture,  { "textures",  ".png"  } },
+			{ ResourceType::Material, { "materials", ".mat"  } },
+			{ ResourceType::Shader,   { "shaders",   ".glsl" } },
+			{ ResourceType::Font,     { "fonts",     ".ttf"  } },
+			{ ResourceType::Config,   { "config",    ".json" } }
+		};
+		return typeInfo;
+	}
 }

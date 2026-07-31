@@ -8,7 +8,7 @@
 #include <equinox/renderer/openGL/GLMesh.h>
 
 #include <equinox/resources/Resources.h>
-#include <equinox/resources/TextureCache.h>
+#include <equinox/resources/libraries/TextureCache.h>
 
 #include <memory>
 
@@ -129,14 +129,14 @@ namespace Equinox
 
     void OpenGLApp::LoadShader()
     {
-        std::filesystem::path shaderPath = FileSystem::GetPath(Resource::Shader, "triangle.glsl");
+        /*std::filesystem::path shaderPath = FileSystem::GetPath(ResourceType::Shader, "triangle.glsl");
         shader = Shader::Create(shaderPath.generic_string());
         shader->Bind();
         shader->SetInt("u_TexDiffuse", 0);
         shader->SetInt("u_TexNormal", 1);
         shader->SetInt("u_TexMetallic", 2);
         shader->SetInt("u_TexRoughness", 3);
-        shader->SetInt("u_TexSpecular", 4);
+        shader->SetInt("u_TexSpecular",  4);*/
     }
 
     void OpenGLApp::InitScreenQuad()

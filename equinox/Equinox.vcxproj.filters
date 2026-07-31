@@ -164,7 +164,7 @@
     <ClInclude Include="source\equinox\resources\FileSystem.h">
       <Filter>equinox\resources</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\resources\ShaderLibrary.h">
+    <ClInclude Include="source\equinox\resources\libraries\ShaderLibrary.h">
       <Filter>equinox\resources</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\Model.h">
@@ -184,10 +184,10 @@
     </ClInclude>
     <ClInclude Include="source\equinox\core\ThreadPool.h" />
     <ClInclude Include="source\equinox\resources\Resources.h" />
-    <ClInclude Include="source\equinox\resources\TextureCache.h" />
+    <ClInclude Include="source\equinox\resources\libraries\TextureCache.h" />
     <ClInclude Include="source\equinox\renderer\Material.h" />
-    <ClInclude Include="source\equinox\resources\MaterialLibrary.h" />
-    <ClInclude Include="source\equinox\resources\ModelLibrary.h" />
+    <ClInclude Include="source\equinox\resources\libraries\MaterialLibrary.h" />
+    <ClInclude Include="source\equinox\resources\libraries\ModelLibrary.h" />
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
     <ClInclude Include="source\equinox\core\UUID.h" />
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
@@ -200,6 +200,10 @@
     <ClInclude Include="source\equinox\renderer\Framebuffer.h" />
     <ClInclude Include="source\equinox\editor\panels\ProjectPanel.h" />
     <ClInclude Include="source\equinox\events\FileDropEvent.h" />
+    <ClInclude Include="source\equinox\editor\panels\ResourcePanel.h" />
+    <ClInclude Include="source\equinox\resources\MetaFile.h" />
+    <ClInclude Include="source\equinox\resources\Resource.h" />
+    <ClInclude Include="source\equinox\resources\ResourceDB.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -293,7 +297,7 @@
     <ClCompile Include="source\equinox\resources\FileSystem.cpp">
       <Filter>equinox\resources</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp">
+    <ClCompile Include="source\equinox\resources\libraries\ShaderLibrary.cpp">
       <Filter>equinox\resources</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\Model.cpp">
@@ -308,9 +312,9 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\resources\TextureCache.cpp" />
-    <ClCompile Include="source\equinox\resources\MaterialLibrary.cpp" />
-    <ClCompile Include="source\equinox\resources\ModelLibrary.cpp" />
+    <ClCompile Include="source\equinox\resources\libraries\TextureCache.cpp" />
+    <ClCompile Include="source\equinox\resources\libraries\MaterialLibrary.cpp" />
+    <ClCompile Include="source\equinox\resources\libraries\ModelLibrary.cpp" />
     <ClCompile Include="source\equinox\core\UUID.cpp" />
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\scene\Entity.cpp" />
@@ -320,5 +324,8 @@
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ProjectPanel.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
+    <ClCompile Include="source\equinox\resources\MetaFile.cpp" />
+    <ClCompile Include="source\equinox\resources\ResourceDB.cpp" />
   </ItemGroup>
 </Project>

@@ -41,3 +41,5 @@ namespace Equinox
         static inline std::unordered_map<std::string, MaterialRecord> s_Materials;
     };
 }
+
+//Resurces::Load<T>(...)

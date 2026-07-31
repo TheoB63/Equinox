@@ -1,6 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/renderer/openGL/GLMesh.h"
-#include "equinox/resources/TextureCache.h"
+#include "equinox/resources/libraries/TextureCache.h"
 
 namespace Equinox
 {

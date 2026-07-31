@@ -1,6 +1,6 @@
 #include "eqnpch.h"
-#include "equinox/resources/MaterialLibrary.h"
-#include "equinox/resources/ShaderLibrary.h"
+#include "equinox/resources/libraries/MaterialLibrary.h"
+#include "equinox/resources/libraries/ShaderLibrary.h"
 
 namespace Equinox
 {

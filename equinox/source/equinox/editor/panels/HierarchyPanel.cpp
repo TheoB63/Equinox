@@ -273,7 +273,7 @@ namespace Equinox
 		if (ImGui::MenuItem("Camera"))
 		{
 			auto camera = m_Context->CreateEntity("Camera");
-			//camera.AddComponent<CameraComponent>();
+			camera.AddComponent<Camera>();
 			EQN_CORE_INFO("Created camera entity");
 		}
 	}

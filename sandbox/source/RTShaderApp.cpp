@@ -75,10 +75,10 @@ namespace Equinox
 
 	void RTShaderApp::LoadShader()
 	{
-		std::filesystem::path shaderPath = FileSystem::GetPath(Resource::Shader, "raytracing.glsl");
+		/*std::filesystem::path shaderPath = FileSystem::GetPath(ResourceType::Shader, "raytracing.glsl");
 		shader = Shader::Create(shaderPath.generic_string());
 		shader->Bind();
-		InitUniforms();
+		InitUniforms();*/
 	}
 
 	void RTShaderApp::SetVariables()

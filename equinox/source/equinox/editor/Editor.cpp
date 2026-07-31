@@ -8,6 +8,7 @@
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/editor/panels/InspectorPanel.h"
 #include "equinox/editor/panels/ProjectPanel.h"
+#include "equinox/editor/panels/ResourcePanel.h"
 #include "equinox/editor/panels/ScenePanel.h"
 
 #include <imgui.h>
@@ -49,6 +50,7 @@ namespace Equinox
 		AddPanel(new HierarchyPanel(new Scene));
 		AddPanel(new InspectorPanel());
 		AddPanel(new ProjectPanel());
+		AddPanel(new ResourcePanel());
 		AddPanel(new ScenePanel());
 
 		// Init all panels
@@ -262,7 +264,7 @@ namespace Equinox
 	{
 		// Font
 		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF(FileSystem::GetPath(Resource::Font, "BubbleGum.ttf").string().c_str(), 16.0f);
+		io.Fonts->AddFontFromFileTTF(FileSystem::GetPath(ResourceType::Font, "BubbleGum.ttf").string().c_str(), 16.0f);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 

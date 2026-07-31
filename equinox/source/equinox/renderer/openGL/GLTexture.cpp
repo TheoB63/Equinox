@@ -1,5 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/renderer/openGL/GLTexture.h"
+#include "equinox/resources/FileSystem.h"
 #include "equinox/utils/ImageUtils.h"
 
 #include <glad/glad.h>
@@ -7,7 +8,7 @@
 namespace Equinox
 {
 	GLTexture::GLTexture(const fs::path& path)
-		: m_Path(FileSystem::GetPath(Resource::Texture, path))
+		: m_Path(FileSystem::GetPath(ResourceType::Texture, path))
 	{
 		EQN_CORE_INFO("Creating texture from path: {0}", m_Path.string());
 		LoadFromFile();

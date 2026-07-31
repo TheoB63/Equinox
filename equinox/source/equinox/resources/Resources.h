@@ -1,32 +1,36 @@
 #pragma once
 
+#include "equinox/core/UUID.h"
+#include "equinox/resources/MetaFile.h"
+#include "equinox/resources/Resource.h"
+#include "equinox/resources/ResourceDB.h"
 #include "equinox/resources/FileSystem.h"
-#include "equinox/resources/ModelLibrary.h"
-#include "equinox/resources/MaterialLibrary.h"
-#include "equinox/resources/ShaderLibrary.h"
-#include "equinox/resources/TextureCache.h"
 
-#include "equinox/renderer/Mesh.h"
-#include "equinox/renderer/Model.h"
-#include "equinox/renderer/Material.h"
-#include "equinox/renderer/Shader.h"
-#include "equinox/renderer/Texture.h"
+#include "equinox/resources/libraries/ModelLibrary.h"
+#include "equinox/resources/libraries/MaterialLibrary.h"
+#include "equinox/resources/libraries/ShaderLibrary.h"
+#include "equinox/resources/libraries/TextureCache.h"
 
 #include <regex>
 
 namespace Equinox
 {
+	class Model;
+	class Material;
+	class Shader;
+	class Texture;
+
 	class Resources
 	{
 	public:
 		// Primary template for resource loading
 		template<typename T>
-		static std::shared_ptr<T> Load(const std::string& path)
+		static std::shared_ptr<T> Load(const fs::path& path)
 		{
 			return Loader<T>::Load(FileSystem::GetPath(GetType<T>(), path));
 		}
 
-		// Resource discovery
+		// Resource search
 		template<typename T>
 		static std::vector<fs::path> Find(const std::string& pattern = "*", bool recursive = false)
 		{
@@ -54,7 +58,7 @@ namespace Equinox
 		template<typename T> struct TypeMap;
 
 		template<typename T>
-		static Resource GetType() { return TypeMap<T>::value; }
+		static ResourceType  GetType() { return TypeMap<T>::value; }
 
 		// Resource loader implementations
 		template<typename T>
@@ -63,7 +67,7 @@ namespace Equinox
 			static std::shared_ptr<T> Load(const fs::path& path) = delete;
 		};
 
-		// Resource discovery implementation
+		// Resource search  implementation
 		static std::vector<fs::path> FindResources(const fs::path& directory,
 			const std::string& pattern,
 			bool recursive)
@@ -98,25 +102,25 @@ namespace Equinox
 	template<>
 	struct Resources::TypeMap<Model>
 	{
-		static constexpr Resource value = Resource::Model;
+		static constexpr ResourceType  value = ResourceType::Model;
 	};
 
 	template<>
 	struct Resources::TypeMap<Material>
 	{
-		static constexpr Resource value = Resource::Material;
+		static constexpr ResourceType  value = ResourceType::Material;
 	};
 
 	template<>
 	struct Resources::TypeMap<Shader>
 	{
-		static constexpr Resource value = Resource::Shader;
+		static constexpr ResourceType  value = ResourceType::Shader;
 	};
 
 	template<>
 	struct Resources::TypeMap<Texture>
 	{
-		static constexpr Resource value = Resource::Texture;
+		static constexpr ResourceType  value = ResourceType::Texture;
 	};
 
 	template<>

@@ -5,7 +5,7 @@
 #include <imgui.h>
 
 // TEST 
-#include <equinox/resources/ShaderLibrary.h>
+#include <equinox/resources/libraries/ShaderLibrary.h>
 #include <equinox/resources/FileSystem.h>
 
 #include <equinox/renderer/Renderer.h>

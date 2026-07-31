@@ -3,6 +3,7 @@
 #include "equinox/renderer/Material.h"
 #include "equinox/renderer/Mesh.h"
 #include "equinox/renderer/openGL/GLMesh.h"
+#include "equinox/resources/Resource.h"
 
 #include <memory>
 #include <vector>
@@ -27,7 +28,7 @@ namespace Equinox
 		uint32_t materialIndex = 0;
 	};
 
-	class Model
+	class Model : public Resource
 	{
 	public:
 		Model(const fs::path& path);

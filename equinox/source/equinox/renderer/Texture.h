@@ -1,7 +1,6 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
-#include "equinox/resources/FileSystem.h"
 #include "equinox/utils/ImageUtils.h"
 
 #include <memory>
