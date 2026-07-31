@@ -1,7 +1,7 @@
 #pragma once
 
 #include "equinox/editor/Editor.h"
-#include "equinox/resources/ResourceManager.h"
+#include "equinox/resources/FileSystem.h"
 
 namespace Equinox
 {

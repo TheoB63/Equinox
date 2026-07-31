@@ -7,7 +7,7 @@
 namespace Equinox
 {
 	GLTexture::GLTexture(const fs::path& path)
-		: m_Path(ResourceManager::GetPath(Resource::Texture, path))
+		: m_Path(FileSystem::GetPath(Resource::Texture, path))
 	{
 		EQN_CORE_INFO("Creating texture from path: {0}", m_Path.string());
 		LoadFromFile();

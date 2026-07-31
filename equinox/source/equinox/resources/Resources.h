@@ -1,6 +1,6 @@
 #pragma once
 
-#include "equinox/resources/ResourceManager.h"
+#include "equinox/resources/FileSystem.h"
 #include "equinox/resources/ModelLibrary.h"
 #include "equinox/resources/MaterialLibrary.h"
 #include "equinox/resources/ShaderLibrary.h"
@@ -12,174 +12,146 @@
 #include "equinox/renderer/Shader.h"
 #include "equinox/renderer/Texture.h"
 
-//#include <assimp/Importer.hpp>
-//#include <assimp/scene.h>
-//#include <assimp/postprocess.h>
-//#include <json/json.hpp>
-//#include <filesystem>
-//#include <memory>
+#include <regex>
 
 namespace Equinox
 {
-    class Resources
-    {
-    public:
-        template<typename T>
-        inline static std::shared_ptr<T> Load(const std::string& path);
+	class Resources
+	{
+	public:
+		// Primary template for resource loading
+		template<typename T>
+		static std::shared_ptr<T> Load(const std::string& path)
+		{
+			return Loader<T>::Load(FileSystem::GetPath(GetType<T>(), path));
+		}
 
-        template<>
-        inline static std::shared_ptr<Model> Load(const std::string& path)
-        {
-            return ModelLibrary::LoadOrGet((ResourceManager::GetPath(Resource::Model, path)));
-        }
+		// Resource discovery
+		template<typename T>
+		static std::vector<fs::path> Find(const std::string& pattern = "*", bool recursive = false)
+		{
+			const fs::path searchDir = FileSystem::GetPath(GetType<T>(), "", false);
+			return FindResources(searchDir, pattern, recursive);
+		}
 
-        template<>
-        inline static std::shared_ptr<Material> Load(const std::string& path)
-        {
-            return MaterialLibrary::LoadOrGet(ResourceManager::GetPath(Resource::Material, path));
-        }
+		// Library management
+		static void InitLibraries()
+		{
+			ModelLibrary::Init();
+			MaterialLibrary::Init();
+			ShaderLibrary::Init();
+		}
 
-        template<>
-        inline static std::shared_ptr<Shader> Load(const std::string& path)
-        {
-            return ShaderLibrary::LoadOrGet(ResourceManager::GetPath(Resource::Shader, path).string());
-        }
+		static void ShutdownLibraries()
+		{
+			ModelLibrary::Shutdown();
+			MaterialLibrary::Shutdown();
+			ShaderLibrary::Shutdown();
+		}
 
-        template<>
-        inline static std::shared_ptr<Texture> Load(const std::string& path)
-        {
-            return TextureCache::GetTexture(path);
-        }
-    };
+	private:
+		// Resource type mapping
+		template<typename T> struct TypeMap;
 
-    // OLD LOADER ======================================================
-    template<typename T>
-    struct Loader
-    {
-        static_assert(sizeof(T) == 0, "No loader specialization for this type");
-        static std::shared_ptr<T> Load(const fs::path& path) = delete;
-        static std::shared_ptr<T> GetFallback() = delete;
-        static size_t CalculateMemoryUsage(const std::shared_ptr<T>& resource) = delete;
-    };
+		template<typename T>
+		static Resource GetType() { return TypeMap<T>::value; }
 
-    template<>
-    struct Loader<Texture>
-    {
-        static std::shared_ptr<Texture> Load(const fs::path& path)
-        {
-            return std::make_shared<GLTexture>(path);
-        }
+		// Resource loader implementations
+		template<typename T>
+		struct Loader
+		{
+			static std::shared_ptr<T> Load(const fs::path& path) = delete;
+		};
 
-        static std::shared_ptr<Texture> GetFallback() 
-        {
-            static auto fallback = CreateFallbackTexture();
-            return fallback;
-        }
+		// Resource discovery implementation
+		static std::vector<fs::path> FindResources(const fs::path& directory,
+			const std::string& pattern,
+			bool recursive)
+		{
+			std::vector<fs::path> results;
+			const std::regex re(pattern);
 
-        static size_t CalculateMemoryUsage(const std::shared_ptr<Texture>& tex) 
-        {
-            return tex ? tex->GetWidth() * tex->GetHeight() * 4 : 0; // RGBA8
-        }
+			if (recursive)
+			{
+				auto iterator = fs::recursive_directory_iterator(directory);
+				for (const auto& entry : iterator)
+				{
+					if (entry.is_regular_file() && std::regex_match(entry.path().filename().string(), re))
+						results.push_back(entry.path());
+				}
+			}
+			else
+			{
+				auto iterator = fs::directory_iterator(directory);
+				for (const auto& entry : iterator)
+				{
+					if (entry.is_regular_file() && std::regex_match(entry.path().filename().string(), re))
+						results.push_back(entry.path());
+				}
+			}
 
-    private:
-        static std::shared_ptr<Texture> CreateFallbackTexture() 
-        {
-            auto tex = std::make_shared<GLTexture>(1, 1, TextureFormat::RGBA8);
-            const uint32_t white = 0xFFFFFFFF;
-            //tex->SetData(&white, sizeof(uint32_t));
-            return tex;
-        }
-    };
+			return results;
+		}
+	};
 
-    template<>
-    struct Loader<Model>
-    {
-        static std::shared_ptr<Model> Load(const fs::path& path)
-        {
-            return std::make_shared<Model>(path);
-        }
+	// Template specializations ---------------------------------------------------
+	template<>
+	struct Resources::TypeMap<Model>
+	{
+		static constexpr Resource value = Resource::Model;
+	};
 
-        static std::shared_ptr<Model> GetFallback()
-        {
-            static auto fallback = CreateFallbackModel();
-            return fallback;
-        }
+	template<>
+	struct Resources::TypeMap<Material>
+	{
+		static constexpr Resource value = Resource::Material;
+	};
 
-        static size_t CalculateMemoryUsage(const std::shared_ptr<Model>& model)
-        {
-            size_t total = 0;
-            if (model)
-            {
-                for (const auto& mesh : model->GetMeshes()) 
-                {
-                    total += mesh.vertices.size() * sizeof(Vertex);
-                    total += mesh.indices.size() * sizeof(uint32_t);
-                }
-            }
-            return total;
-        }
+	template<>
+	struct Resources::TypeMap<Shader>
+	{
+		static constexpr Resource value = Resource::Shader;
+	};
 
-    private:
-        static std::shared_ptr<Model> CreateFallbackModel() 
-        {
-            auto model = std::make_shared<Model>("");
+	template<>
+	struct Resources::TypeMap<Texture>
+	{
+		static constexpr Resource value = Resource::Texture;
+	};
 
-            MeshData cube;
-            // Add cube vertices and indices
-            const std::array vertices = 
-            {
-                Vertex{{-0.5f, -0.5f, 0.0f}, {0,0,1}, {0,0}},
-                // ... complete cube data
-            };
-            const std::array indices = { 0,1,2,2,3,0 };
+	template<>
+	struct Resources::Loader<Model>
+	{
+		static std::shared_ptr<Model> Load(const fs::path& path)
+		{
+			return ModelLibrary::LoadOrGet(path);
+		}
+	};
 
-            cube.vertices.assign(vertices.begin(), vertices.end());
-            cube.indices.assign(indices.begin(), indices.end());
+	template<>
+	struct Resources::Loader<Material>
+	{
+		static std::shared_ptr<Material> Load(const fs::path& path)
+		{
+			return MaterialLibrary::LoadOrGet(path);
+		}
+	};
 
-            //model->AddMesh(cube);
-            return model;
-        }
-    };
+	template<>
+	struct Resources::Loader<Shader>
+	{
+		static std::shared_ptr<Shader> Load(const fs::path& path)
+		{
+			return ShaderLibrary::LoadOrGet(path.string());
+		}
+	};
 
-    template<>
-    struct Loader<Shader>
-    {
-        static std::shared_ptr<Shader> Load(const fs::path& path) 
-        {
-            return Shader::Create(path.string());
-        }
-
-        static std::shared_ptr<Shader> GetFallback() 
-        {
-            static auto fallback = CreateFallbackShader();
-            return fallback;
-        }
-
-        static size_t CalculateMemoryUsage(const std::shared_ptr<Shader>&) 
-        {
-            return 4096; // Estimated shader memory
-        }
-
-    private:
-        static std::shared_ptr<Shader> CreateFallbackShader() 
-        {
-            const char* vs = R"glsl(
-                #version 330 core
-                layout(location=0) in vec3 aPos;
-                void main()
-                {
-                    gl_Position = vec4(aPos, 1.0);
-                })glsl";
-
-            const char* fs = R"glsl(
-                #version 330 core
-                out vec4 FragColor;
-                void main()
-                {
-                    FragColor = vec4(1,0,1,1); // Magenta
-                })glsl";
-
-            return Shader::Create(vs, fs);
-        }
-    };
+	template<>
+	struct Resources::Loader<Texture>
+	{
+		static std::shared_ptr<Texture> Load(const fs::path& path)
+		{
+			return TextureCache::GetTexture(path);
+		}
+	};
 }

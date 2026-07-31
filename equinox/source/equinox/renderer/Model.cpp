@@ -1,5 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/renderer/Model.h"
+#include "equinox/resources/Resources.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -139,7 +140,7 @@ namespace Equinox
 						default: continue; // Skip unsupported types
 					}
 					fs::path name = path.C_Str();
-					auto result = ResourceManager::FindResources(Resource::Model, name.filename().stem().string() + ".*", true);
+					auto result = Resources::Find<Model>(name.filename().stem().string() + ".*", true);
 					if (!result.empty()) texInfo.path = result[0];
 					material.AddTexture(texInfo);
 				}

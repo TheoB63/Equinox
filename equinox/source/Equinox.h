@@ -11,8 +11,11 @@
 #include "equinox/input/Input.h"
 #include "equinox/editor/Editor.h"
 
-#include "equinox/resources/ResourceManager.h"
+#include "equinox/resources/FileSystem.h"
+#include "equinox/resources/MaterialLibrary.h"
+#include "equinox/resources/ModelLibrary.h"
 #include "equinox/resources/ShaderLibrary.h"
+#include "equinox/resources/TextureCache.h"
 
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/Buffer.h"

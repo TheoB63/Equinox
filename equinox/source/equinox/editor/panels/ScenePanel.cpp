@@ -7,7 +7,10 @@
 
 namespace Equinox
 {
-	ScenePanel::ScenePanel() {}
+	ScenePanel::ScenePanel()
+	{
+		EQN_CORE_INFO("Created Scene panel");
+	}
 
 	void ScenePanel::OnInit()
 	{
@@ -32,10 +35,7 @@ namespace Equinox
 
 			// Render framebuffer to viewport
 			uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-			ImGui::Image(textureID,
-				ToImVec2(m_ViewportSize),
-				ImVec2(0, 1),
-				ImVec2(1, 0));
+			ImGui::Image(textureID, ToImVec2(m_ViewportSize), ImVec2(0, 1), ImVec2(1, 0));
 
 			// Handle viewport focus
 			m_IsFocused = ImGui::IsWindowFocused();

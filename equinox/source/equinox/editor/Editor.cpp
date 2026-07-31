@@ -3,7 +3,7 @@
 #include "equinox/renderer/Renderer.h"
 #include "equinox/window/WinWindow.h"
 
-#include "equinox/resources/ResourceManager.h"
+#include "equinox/resources/FileSystem.h"
 
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/editor/panels/InspectorPanel.h"
@@ -262,7 +262,7 @@ namespace Equinox
 	{
 		// Font
 		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF(ResourceManager::GetPath(Resource::Font, "BubbleGum.ttf").string().c_str(), 16.0f);
+		io.Fonts->AddFontFromFileTTF(FileSystem::GetPath(Resource::Font, "BubbleGum.ttf").string().c_str(), 16.0f);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 

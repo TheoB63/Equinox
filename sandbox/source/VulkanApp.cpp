@@ -5,7 +5,7 @@
 
 // TEST
 #include <equinox/resources/ShaderLibrary.h>
-#include <equinox/resources/ResourceManager.h>
+#include <equinox/resources/FileSystem.h>
 
 #include <equinox/renderer/Renderer.h>
 #include <equinox/renderer/Buffer.h>

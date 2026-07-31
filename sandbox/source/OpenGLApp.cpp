@@ -25,10 +25,10 @@ namespace Equinox
         InitUniformBuffer();
         //LoadShader();
 
-        //std::shared_ptr model = Resources::Load<Model>("mf/mf_f2.fbx");
+        std::shared_ptr model = Resources::Load<Model>("mf/mf_f2.fbx");
         //std::shared_ptr model = Resources::Load<Model>("xeno/XenoRaven.fbx");
         //std::shared_ptr model = Resources::Load<Model>("lagiacrus/LagiacrusHead.fbx");
-        std::shared_ptr model = Resources::Load<Model>("AK/RAINIER_AK.fbx");
+        //std::shared_ptr model = Resources::Load<Model>("AK/RAINIER_AK.fbx");
 
         std::shared_ptr shader = Resources::Load<Shader>("triangle.glsl");
         shader->Bind();
@@ -129,7 +129,7 @@ namespace Equinox
 
     void OpenGLApp::LoadShader()
     {
-        std::filesystem::path shaderPath = ResourceManager::GetPath(Resource::Shader, "triangle.glsl");
+        std::filesystem::path shaderPath = FileSystem::GetPath(Resource::Shader, "triangle.glsl");
         shader = Shader::Create(shaderPath.generic_string());
         shader->Bind();
         shader->SetInt("u_TexDiffuse", 0);

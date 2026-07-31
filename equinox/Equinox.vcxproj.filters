@@ -161,7 +161,7 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKVertexArray.h">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\resources\ResourceManager.h">
+    <ClInclude Include="source\equinox\resources\FileSystem.h">
       <Filter>equinox\resources</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h">
@@ -199,6 +199,7 @@
     <ClInclude Include="source\equinox\editor\panels\ScenePanel.h" />
     <ClInclude Include="source\equinox\renderer\Framebuffer.h" />
     <ClInclude Include="source\equinox\editor\panels\ProjectPanel.h" />
+    <ClInclude Include="source\equinox\events\FileDropEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -289,7 +290,7 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp">
       <Filter>equinox\renderer\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\resources\ResourceManager.cpp">
+    <ClCompile Include="source\equinox\resources\FileSystem.cpp">
       <Filter>equinox\resources</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp">

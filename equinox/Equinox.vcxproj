@@ -170,6 +170,7 @@
     <ClInclude Include="source\equinox\events\AppEvent.h" />
     <ClInclude Include="source\equinox\events\Event.h" />
     <ClInclude Include="source\equinox\events\EventBus.h" />
+    <ClInclude Include="source\equinox\events\FileDropEvent.h" />
     <ClInclude Include="source\equinox\events\KeyEvent.h" />
     <ClInclude Include="source\equinox\events\MouseEvent.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
@@ -206,7 +207,7 @@
     <ClInclude Include="source\equinox\resources\Resources.h" />
     <ClInclude Include="source\equinox\resources\MaterialLibrary.h" />
     <ClInclude Include="source\equinox\resources\ModelLibrary.h" />
-    <ClInclude Include="source\equinox\resources\ResourceManager.h" />
+    <ClInclude Include="source\equinox\resources\FileSystem.h" />
     <ClInclude Include="source\equinox\resources\ShaderLibrary.h" />
     <ClInclude Include="source\equinox\renderer\Model.h" />
     <ClInclude Include="source\equinox\resources\TextureCache.h" />
@@ -261,7 +262,7 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp" />
     <ClCompile Include="source\equinox\resources\MaterialLibrary.cpp" />
     <ClCompile Include="source\equinox\resources\ModelLibrary.cpp" />
-    <ClCompile Include="source\equinox\resources\ResourceManager.cpp" />
+    <ClCompile Include="source\equinox\resources\FileSystem.cpp" />
     <ClCompile Include="source\equinox\resources\ShaderLibrary.cpp" />
     <ClCompile Include="source\equinox\renderer\Model.cpp" />
     <ClCompile Include="source\equinox\resources\TextureCache.cpp" />

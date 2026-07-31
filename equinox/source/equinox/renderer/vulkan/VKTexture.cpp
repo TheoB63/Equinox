@@ -3,12 +3,12 @@
 #include "equinox/renderer/vulkan/VKCommon.h"
 #include "equinox/renderer/vulkan/VKBuffer.h"
 #include "equinox/renderer/vulkan/VKCommandPool.h"
-#include "equinox/resources/ResourceManager.h"
+#include "equinox/resources/FileSystem.h"
 
 namespace Equinox
 {
     VKTexture::VKTexture(const fs::path& path)
-        : m_Path(ResourceManager::GetPath(Resource::Texture, path))
+        : m_Path(FileSystem::GetPath(Resource::Texture, path))
     {
         /*int width, height, channels;
         stbi_uc* pixels = stbi_load(m_Path.string().c_str(),
