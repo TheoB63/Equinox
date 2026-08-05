@@ -15,19 +15,24 @@ namespace Equinox
         s_UuidToPath.clear();
         s_PathToUuid.clear();
 
-        for (const auto& entry : fs::recursive_directory_iterator(projectRoot)) {
+        for (const auto& entry : fs::recursive_directory_iterator(projectRoot))
+        {
             auto path = entry.path();
-            if (path.extension() == ".meta") {
-                if (exists(path)) {
+            if (path.extension() == ".meta") 
+            {
+                if (exists(path)) 
+                {
                     ProcessMetaFile(path);
                 }
-                else {
+                else 
+                {
                     // Orphan .meta, delete?
                 }
             }
-            else {
+            else 
+            {
                 auto type = FileSystem::ClassifyFileType(path);
-                if (type != ResourceType::Unknown) continue;
+                if (type == ResourceType::Unknown) continue;
 
                 MetaFile::Create(path, type);
                 ProcessMetaFile(path);
@@ -44,7 +49,8 @@ namespace Equinox
     UUID ResourceDB::GetUuidForPath(const fs::path& assetPath)
     {
         auto it = s_PathToUuid.find(assetPath);
-        if (it != s_PathToUuid.end()) {
+        if (it != s_PathToUuid.end()) 
+        {
             return it->second;
         }
 
@@ -52,9 +58,11 @@ namespace Equinox
         fs::path metaPath = assetPath;
         metaPath += ".meta";
 
-        if (exists(metaPath)) {
+        if (exists(metaPath))
+        {
             MetaFile meta(UUID(0));
-            if (meta.Load(metaPath)) {
+            if (meta.Load(metaPath))
+            {
                 RegisterAsset(assetPath, meta.GetUUID());
                 return meta.GetUUID();
             }
@@ -74,7 +82,8 @@ namespace Equinox
 
     void ResourceDB::UnregisterAsset(const fs::path& path)
     {
-        if (auto it = s_PathToUuid.find(path); it != s_PathToUuid.end()) {
+        if (auto it = s_PathToUuid.find(path); it != s_PathToUuid.end())
+        {
             s_UuidToPath.erase(it->second);
             s_PathToUuid.erase(it);
         }
@@ -85,12 +94,14 @@ namespace Equinox
         std::vector<UUID> dependencies;
         fs::path assetPath = ResolveUuid(uuid);
 
-        if (!assetPath.empty()) {
+        if (!assetPath.empty()) 
+        {
             fs::path metaPath = assetPath;
             metaPath += ".meta";
 
             MetaFile meta(uuid);
-            if (meta.Load(metaPath)) {
+            if (meta.Load(metaPath)) 
+            {
                 dependencies = meta.GetDependencies();
             }
         }
@@ -100,22 +111,26 @@ namespace Equinox
 
     void ResourceDB::ProcessMetaFile(const fs::path& metaPath)
     {
-        try {
+        try 
+        {
             // Get corresponding asset path
             fs::path assetPath = metaPath;
             assetPath.replace_extension("");
 
-            if (!exists(assetPath)) {
+            if (!exists(assetPath))
+            {
                 // Orphaned meta file
                 return;
             }
 
             MetaFile meta(UUID(0));
-            if (meta.Load(metaPath)) {
+            if (meta.Load(metaPath)) 
+            {
                 RegisterAsset(assetPath, meta.GetUUID());
             }
         }
-        catch (...) {
+        catch (...) 
+        {
             // Invalid meta file
         }
     }

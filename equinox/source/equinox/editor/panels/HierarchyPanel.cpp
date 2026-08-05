@@ -1,6 +1,11 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/HierarchyPanel.h"
+#include "equinox/editor/panels/ProjectPanel.h"
 #include "equinox/scene/Components.h"
+#include "equinox/resources/Resources.h"
+#include "equinox/resources/FileSystem.h"
+#include "equinox/resources/ResourceDB.h"
+#include "equinox/renderer/Renderer.h"
 #include "equinox/utils/ImGuiUtils.h"
 
 #include <imgui.h>
@@ -25,11 +30,7 @@ namespace Equinox
 			// Header with search and create button
 			ImGui::AlignTextToFramePadding();
 
-			ImVec2 buttonPos;
-			if (ImGui::Button("+")) {
-				buttonPos = { ImGui::GetItemRectMin().x, ImGui::GetItemRectMin().y + ImGui::GetFrameHeight() };
-				m_ShowCreateMenu = true;
-			}
+			ButtonDropdown("+", "hierarchy_+", [this]() { DrawEntityCreateMenu(); });
 
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
@@ -59,7 +60,6 @@ namespace Equinox
 					ImGui::EndDragDropTarget();
 				}
 			}
-
 			ImGui::EndChild();
 
 			// Context menus
@@ -69,20 +69,10 @@ namespace Equinox
 				ImGui::EndPopup();
 			}
 
-			if (m_ShowCreateMenu)
-			{
-				ImGui::SetNextWindowPos(buttonPos);
-				ImGui::OpenPopup("CreateEntityMenu");
-				m_ShowCreateMenu = false;
-			}
-
-			if (ImGui::BeginPopup("CreateEntityMenu"))
-			{
-				DrawEntityCreateMenu();
-				ImGui::EndPopup();
-			}
-
 			ProcessKeyboardShortcuts();
+
+			// Create Entities from dropped stuff
+			ProcessDropResource();
 		}
 
 		ImGui::End();
@@ -108,7 +98,7 @@ namespace Equinox
 				return;
 			}
 
-			EQN_CORE_TRACE("Changed selection to {0}", entity.GetName());
+			//EQN_CORE_TRACE("Changed selection to {0}", entity.GetName());
 			m_Selection = entity;
 			if (auto* inspector = Editor::GetPanel<InspectorPanel>())
 			{
@@ -274,7 +264,6 @@ namespace Equinox
 		{
 			auto camera = m_Context->CreateEntity("Camera");
 			camera.AddComponent<Camera>();
-			EQN_CORE_INFO("Created camera entity");
 		}
 	}
 
@@ -336,5 +325,43 @@ namespace Equinox
 		std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
 
 		return entityName.find(filter) != std::string::npos;
+	}
+
+	void HierarchyPanel::ProcessDropResource()
+	{
+		if (ImGui::BeginDragDropTarget()) 
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ASSET_UUID))
+			{
+				const UUID assetUuid = *static_cast<const UUID*>(payload->Data);
+				auto path = ResourceDB::ResolveUuid(assetUuid);
+				auto assetType = FileSystem::ClassifyFileType(path);
+				std::shared_ptr<Model> model;
+
+				switch (assetType)
+				{
+				case Equinox::ResourceType::Model: 
+				{
+					model = Resources::Load<Model>(path);
+					model->SetName(path.filename().stem().string());
+					auto parent = m_Context->CreateEntity(model->GetName());
+					parent.AddComponent<Children>();
+
+					for (const auto& mesh : model->GetMeshes()) 
+					{
+						auto child = m_Context->CreateEntity(mesh.name);
+						child.AddComponent<Parent>();
+						child.SetParent(parent);
+						parent.GetChildren().push_back(child);
+
+						child.AddComponent<MeshRenderer>();
+					}
+					break;
+				}
+				default: break;
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
 	}
 }

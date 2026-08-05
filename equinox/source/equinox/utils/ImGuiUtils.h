@@ -20,7 +20,6 @@ namespace Equinox
         return { vec.x, vec.y };
     }
 
-    // Optional: Operator overloads for convenience
     inline glm::vec2 operator*(const glm::vec2& lhs, const ImVec2& rhs)
     {
         return { lhs.x * rhs.x, lhs.y * rhs.y };

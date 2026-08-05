@@ -150,6 +150,11 @@ namespace Equinox::Component
             return ProjectionMatrix * glm::inverse(transform);
         }
     };
+
+    struct MeshRenderer
+    {
+        std::string name;
+    };
 }
 
 namespace Equinox { using namespace Equinox::Component; }

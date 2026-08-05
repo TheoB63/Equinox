@@ -176,6 +176,19 @@ namespace Equinox
 					ImGui::DragFloat("Aspect Ratio", &camera.AspectRatio, 0.01f, 0.1f, 10.0f);
 				});
 
+			DrawComponent<MeshRenderer>("Mesh Renderer", m_SelectedEntity, [](Entity entity, MeshRenderer& meshRenderer)
+				{
+					// Mesh
+					ImGui::Text("Mesh");
+					ImGui::SameLine();
+					ImGui::Text("TODO_MESH_REF");
+
+					// Material
+					ImGui::Text("Material");
+					ImGui::SameLine();
+					ImGui::Text("TODO_MATERIAL_SELECT");
+				});
+
 			// Add Component button
 			ImGui::Separator();
 			ImGui::Dummy({ 0, 4 });
@@ -200,6 +213,11 @@ namespace Equinox
 					if (!m_SelectedEntity.HasComponent<Camera>() && ImGui::MenuItem("Camera"))
 					{
 						m_SelectedEntity.AddOrReplaceComponent<Camera>();
+						ImGui::CloseCurrentPopup();
+					}
+					if (!m_SelectedEntity.HasComponent<MeshRenderer>() && ImGui::MenuItem("Mesh Renderer")) 
+					{
+						m_SelectedEntity.AddOrReplaceComponent<MeshRenderer>();
 						ImGui::CloseCurrentPopup();
 					}
 					// Add more components here as needed

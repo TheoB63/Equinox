@@ -49,6 +49,10 @@ namespace Equinox
             settings["optimization_level"] = 3;
             break;
 
+        case ResourceType::Directory:
+            settings["is_folder"] = true;
+            break;
+
         default:
             break;
         }

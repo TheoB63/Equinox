@@ -5,8 +5,9 @@
 #include "equinox/renderer/openGL/GLMesh.h"
 #include "equinox/resources/Resource.h"
 
-#include <memory>
+#include <string>
 #include <vector>
+#include <memory>
 #include <filesystem>
 #include <assimp/scene.h>
 
@@ -26,6 +27,7 @@ namespace Equinox
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 		uint32_t materialIndex = 0;
+		std::string name;
 	};
 
 	class Model : public Resource

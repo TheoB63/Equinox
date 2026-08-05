@@ -30,6 +30,8 @@ namespace Equinox
         void ProcessKeyboardShortcuts();
         bool EntityMatchesFilter(Entity entity);
 
+        void ProcessDropResource();
+
     private:
         Scene* m_Context = nullptr;
         Entity m_Selection;
