@@ -39,14 +39,14 @@ namespace Equinox
 		}
 
 		// Library management
-		static void InitLibraries()
+		static void Init()
 		{
 			ModelLibrary::Init();
 			MaterialLibrary::Init();
 			ShaderLibrary::Init();
 		}
 
-		static void ShutdownLibraries()
+		static void Shutdown()
 		{
 			ModelLibrary::Shutdown();
 			MaterialLibrary::Shutdown();
@@ -155,7 +155,7 @@ namespace Equinox
 	{
 		static std::shared_ptr<Texture> Load(const fs::path& path)
 		{
-			return TextureCache::GetTexture(path);
+			return TextureCache::LoadOrGet(path);
 		}
 	};
 }

@@ -24,7 +24,7 @@ namespace Equinox
 		Renderer::Init(ws.rendererAPI, m_Window->GetNativeWindow());
 		FileSystem::Init();
 		ResourceDB::Init(FileSystem::AssetsPath());
-		Resources::InitLibraries();
+		Resources::Init();
 		Editor::Init(m_Window->GetNativeWindow());
 
 		// Subscribe to events

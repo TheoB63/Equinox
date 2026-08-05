@@ -8,8 +8,6 @@
 
 namespace Equinox
 {
-    namespace fs = std::filesystem;
-
     enum class TextureType
     {
         Diffuse,

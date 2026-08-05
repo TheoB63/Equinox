@@ -153,7 +153,7 @@ namespace Equinox::Component
 
     struct MeshRenderer
     {
-        std::string name;
+        std::string m_Name;
     };
 }
 

@@ -70,7 +70,7 @@ namespace Equinox
 
 		// Collect resources from libraries
 		if (m_ShowModels) AddModelEntries();
-		//if (m_ShowTextures) AddTextureEntries();
+		if (m_ShowTextures) AddTextureEntries();
 		//if (m_ShowMaterials) AddMaterialEntries();
 		//if (m_ShowShaders) AddShaderEntries();
 
@@ -114,31 +114,31 @@ namespace Equinox
 
 	void ResourcePanel::AddModelEntries()
 	{
-		for (const auto& model : ModelLibrary::GetAllModels())
+		for (const auto& [uuid, model] : ModelLibrary::GetAllModels())
 		{
 			m_FilteredResources.push_back({
-				model->GetName(),
-				model->GetUUID(),
+				model.Model->GetName(),
+				uuid,
 				"Model",
-				model.use_count() - 1 // Subtract library's own reference
+				model.Model.use_count() - 1 // Subtract library's own reference
 				});
 		}
 	}
 
-	/*void ResourcePanel::AddTextureEntries()
+	void ResourcePanel::AddTextureEntries()
 	{
-		for (const auto& [uuid, texture] : TextureCache::GetCachedTextures())
+		for (const auto& [uuid, texture] : TextureCache::GetAllTextures())
 		{
 			m_FilteredResources.push_back({
-				texture->GetName(),
-				uuid.str(),
+				texture.Texture->GetName(),
+                uuid,
 				"Texture",
-				texture.use_count() - 1
+				texture.Texture.use_count() - 1
 			});
 		}
 	}
 
-	void ResourcePanel::AddMaterialEntries()
+	/*void ResourcePanel::AddMaterialEntries()
 	{
 		for (const auto& [uuid, material] : MaterialLibrary::GetMaterials())
 		{
@@ -149,9 +149,9 @@ namespace Equinox
 				material.use_count() - 1
 			});
 		}
-	}
+	}*/
 
-	void ResourcePanel::AddShaderEntries()
+	/*void ResourcePanel::AddShaderEntries()
 	{
 		for (const auto& [uuid, shader] : ShaderLibrary::GetShaders())
 		{

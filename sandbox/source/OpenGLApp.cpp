@@ -7,6 +7,7 @@
 #include <equinox/renderer/openGL/GLBuffer.h>
 #include <equinox/renderer/openGL/GLMesh.h>
 
+#include <equinox/resources/Resource.h>
 #include <equinox/resources/Resources.h>
 #include <equinox/resources/libraries/TextureCache.h>
 
@@ -49,7 +50,7 @@ namespace Equinox
 
             for (auto texture : material.GetTextures())
             {
-                textures.push_back(Resources::Load<Texture>(texture.path.string()));
+                textures.push_back(Resources::Load<Texture>(texture.path));
             }
 
             //MaterialLibrary::Add("", material);

@@ -1,6 +1,5 @@
 #include "eqnpch.h"
 #include "equinox/resources/MetaFile.h"
-#include "equinox/resources/ResourceDB.h"
 
 namespace Equinox
 {
@@ -17,7 +16,6 @@ namespace Equinox
             throw std::runtime_error("Failed to create .meta file");
         }
 
-        ResourceDB::RegisterAsset(path, newUuid);
         return newUuid;
     }
 
