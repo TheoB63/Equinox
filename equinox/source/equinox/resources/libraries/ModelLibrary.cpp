@@ -82,7 +82,7 @@ namespace Equinox
             return nullptr;
         }
 
-        UUID uuid = ResourceDB::GetUuidForPath(path);
+        UUID uuid = ResourceDB::PathToUuid(path);
         if (auto existing = Get(uuid))
         {
             EQN_CORE_INFO("Model already loaded: {0}", uuid.ToString());
@@ -108,7 +108,7 @@ namespace Equinox
 
     std::shared_ptr<Model> ModelLibrary::LoadOrGet(const fs::path& path)
     {
-        UUID uuid = ResourceDB::GetUuidForPath(path);
+        UUID uuid = ResourceDB::PathToUuid(path);
         if (auto model = Get(uuid)) 
         {
             return model;
@@ -126,7 +126,7 @@ namespace Equinox
             return false;
         }
 
-        auto path = ResourceDB::ResolveUuid(uuid);
+        auto path = ResourceDB::UuidToPath(uuid);
         if (path.empty()) 
         {
             EQN_CORE_ERROR("No source path for Model {0}", uuid.ToString());
@@ -173,7 +173,7 @@ namespace Equinox
 
         for (auto& [uuid, record] : s_Models) 
         {
-            auto path = ResourceDB::ResolveUuid(uuid);
+            auto path = ResourceDB::UuidToPath(uuid);
             if (path.empty()) 
             {
                 EQN_CORE_WARN("Skipping Model {0} with invalid path", uuid.ToString());

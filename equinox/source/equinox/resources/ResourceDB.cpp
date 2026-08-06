@@ -8,6 +8,7 @@
 
 namespace Equinox
 {
+	std::unordered_map<UUID, ResourceType, UUIDHash> ResourceDB::s_UuidToType;
 	std::unordered_map<UUID, fs::path, UUIDHash> ResourceDB::s_UuidToPath;
 	std::unordered_map<fs::path, UUID> ResourceDB::s_PathToUuid;
 
@@ -16,6 +17,7 @@ namespace Equinox
 		EQN_CORE_INFO("Initializing Resource DataBase...");
 		s_UuidToPath.clear();
 		s_PathToUuid.clear();
+		s_UuidToType.clear();
 
 		for (const auto& entry : fs::recursive_directory_iterator(projectRoot))
 		{
@@ -41,24 +43,24 @@ namespace Equinox
 				}
 			}
 			// Load to Database
-			switch (FileSystem::ClassifyFileType(path)) 
+			switch (FileSystem::ClassifyFileType(path))
 			{
-				case Equinox::ResourceType::Model:    Resources::Load<Model>(path);    break;
-				case Equinox::ResourceType::Texture:  Resources::Load<Texture>(path);  break;
-				case Equinox::ResourceType::Material: Resources::Load<Material>(path); break;
-				case Equinox::ResourceType::Shader:   Resources::Load<Shader>(path);   break;
-				default: break;
+			case Equinox::ResourceType::Model:    Resources::Load<Model>(path);    break;
+			case Equinox::ResourceType::Texture:  Resources::Load<Texture>(path);  break;
+			case Equinox::ResourceType::Material: Resources::Load<Material>(path); break;
+			case Equinox::ResourceType::Shader:   Resources::Load<Shader>(path);   break;
+			default: break;
 			}
 		}
 	}
 
-	fs::path ResourceDB::ResolveUuid(const UUID& uuid)
+	fs::path ResourceDB::UuidToPath(const UUID& uuid)
 	{
 		auto it = s_UuidToPath.find(uuid);
 		return (it != s_UuidToPath.end()) ? it->second : fs::path();
 	}
 
-	UUID ResourceDB::GetUuidForPath(const fs::path& assetPath)
+	UUID ResourceDB::PathToUuid(const fs::path& assetPath)
 	{
 		auto it = s_PathToUuid.find(assetPath);
 		if (it != s_PathToUuid.end())
@@ -88,6 +90,7 @@ namespace Equinox
 
 	void ResourceDB::RegisterAsset(const fs::path& path, const UUID& uuid)
 	{
+		s_UuidToType[uuid] = FileSystem::ClassifyFileType(path);
 		s_UuidToPath[uuid] = path;
 		s_PathToUuid[path] = uuid;
 	}
@@ -96,6 +99,7 @@ namespace Equinox
 	{
 		if (auto it = s_PathToUuid.find(path); it != s_PathToUuid.end())
 		{
+			s_UuidToType.erase(it->second);
 			s_UuidToPath.erase(it->second);
 			s_PathToUuid.erase(it);
 		}
@@ -104,7 +108,7 @@ namespace Equinox
 	std::vector<UUID> ResourceDB::GetAllDependencies(const UUID& uuid)
 	{
 		std::vector<UUID> dependencies;
-		fs::path assetPath = ResolveUuid(uuid);
+		fs::path assetPath = UuidToPath(uuid);
 
 		if (!assetPath.empty())
 		{
@@ -129,7 +133,7 @@ namespace Equinox
 			fs::path metaPath = path.string() + ".meta";
 
 			// Resource without .meta
-			if (!exists(metaPath)) 
+			if (!exists(metaPath))
 			{
 				const auto type = FileSystem::ClassifyFileType(path);
 				if (type == ResourceType::Unknown) return false;

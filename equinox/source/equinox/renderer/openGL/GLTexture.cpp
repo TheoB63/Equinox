@@ -14,7 +14,7 @@ namespace Equinox
 		LoadFromFile();
 	}
 
-	GLTexture::GLTexture(u32 width, u32 height, u32 format, const unsigned char* data, const std::string& name) 
+	GLTexture::GLTexture(u32 width, u32 height, u32 format, const unsigned char* data)
 	{
 		EQN_CORE_INFO("Creating empty GLTexture ({0}x{1}, format {2})", width, height, static_cast<int>(format));
 		CreateFromData(width, height, format, data);
@@ -67,7 +67,7 @@ namespace Equinox
 			glGenerateTextureMipmap(m_TextureID);
 
 			EQN_CORE_TRACE("Created GLTexture '{0}' (ID: {1}, {2}x{3}, {4} channels, Mip levels: {5})",
-				m_Path.filename().string(), m_TextureID, width, height, channels, m_MipLevels); 
+				m_Path.filename().string(), m_TextureID, width, height, channels, m_MipLevels);
 			stbi_image_free(data);
 		}
 		else
@@ -90,8 +90,7 @@ namespace Equinox
 		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
-	void GLTexture::CreateFromData(u32 width, u32 height,
-		u32 channels, const unsigned char* data)
+	void GLTexture::CreateFromData(u32 width, u32 height, u32 channels, const unsigned char* data)
 	{
 		// Determine OpenGL format
 		GLenum internalFormat = GL_RGBA8;

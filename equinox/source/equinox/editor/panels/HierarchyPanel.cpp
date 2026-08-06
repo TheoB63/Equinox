@@ -334,15 +334,14 @@ namespace Equinox
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ASSET_UUID))
 			{
 				const UUID assetUuid = *static_cast<const UUID*>(payload->Data);
-				auto path = ResourceDB::ResolveUuid(assetUuid);
+				auto path = ResourceDB::UuidToPath(assetUuid);
 				auto assetType = FileSystem::ClassifyFileType(path);
-				std::shared_ptr<Model> model;
 
 				switch (assetType)
 				{
-				case Equinox::ResourceType::Model: 
+				case ResourceType::Model:
 				{
-					model = Resources::Load<Model>(path);
+					std::shared_ptr<Model> model = ModelLibrary::Get(assetUuid);
 					auto parent = m_Context->CreateEntity(model->GetName());
 					parent.AddComponent<Children>();
 

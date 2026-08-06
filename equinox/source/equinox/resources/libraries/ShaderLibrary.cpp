@@ -85,7 +85,7 @@ namespace Equinox
             return nullptr;
         }
 
-        UUID uuid = ResourceDB::GetUuidForPath(filePath);
+        UUID uuid = ResourceDB::PathToUuid(filePath);
         if (auto existing = Get(uuid))
         {
             EQN_CORE_INFO("Shader already loaded: {0}", uuid.ToString());
@@ -112,7 +112,7 @@ namespace Equinox
 
     std::shared_ptr<Shader> ShaderLibrary::LoadOrGet(const fs::path& filePath)
     {
-        UUID uuid = ResourceDB::GetUuidForPath(filePath);
+        UUID uuid = ResourceDB::PathToUuid(filePath);
         if (auto shader = Get(uuid))
         {
             return shader;

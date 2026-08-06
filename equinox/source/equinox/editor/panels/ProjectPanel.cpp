@@ -49,7 +49,7 @@ namespace Equinox
     DirectoryNode ProjectPanel::BuildDirectoryTree(const fs::path& path)
     {
         DirectoryNode node;
-        node.Uuid = ResourceDB::GetUuidForPath(path);
+        node.Uuid = ResourceDB::PathToUuid(path);
         node.Name = path.filename().string();
         node.Type = ResourceType::Directory;
 
@@ -83,7 +83,7 @@ namespace Equinox
                     if (fileType != ResourceType::Unknown)
                     {
                         DirectoryNode fileNode;
-                        fileNode.Uuid = ResourceDB::GetUuidForPath(entry.path());
+                        fileNode.Uuid = ResourceDB::PathToUuid(entry.path());
                         fileNode.Name = entry.path().filename().string();
                         fileNode.Type = fileType;
                         node.Contents.push_back(fileNode);
@@ -124,8 +124,8 @@ namespace Equinox
 
     void ProjectPanel::DrawPathBar()
     {
-        const fs::path currentPath = ResourceDB::ResolveUuid(m_CurrentDirectoryUuid);
-        const fs::path rootPath = ResourceDB::ResolveUuid(m_RootNode.Uuid);
+        const fs::path currentPath = ResourceDB::UuidToPath(m_CurrentDirectoryUuid);
+        const fs::path rootPath = ResourceDB::UuidToPath(m_RootNode.Uuid);
         const fs::path relativePath = fs::relative(currentPath, rootPath);
 
         ImGui::BeginChild("##PathBar", ImVec2(0, ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2), false);
@@ -152,7 +152,7 @@ namespace Equinox
 
             if (ImGui::Button(part.string().c_str())) 
             {
-                m_CurrentDirectoryUuid = ResourceDB::GetUuidForPath(accumulatedPath);
+                m_CurrentDirectoryUuid = ResourceDB::PathToUuid(accumulatedPath);
                 break;
             }
         }
@@ -195,15 +195,6 @@ namespace Equinox
 
             ImGui::Button("##file", ImVec2(thumbnailSize, thumbnailSize));
 
-            // Click handling
-            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) 
-            {
-                if (auto* inspector = Editor::GetPanel<InspectorPanel>()) 
-                {
-                    inspector->SetSelectedResource(child.Uuid);
-                }
-            }
-
             // Double-click handling
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
@@ -238,8 +229,21 @@ namespace Equinox
 
             ImGui::Button("##file", ImVec2(thumbnailSize, thumbnailSize));
 
-            // Click handling
-            if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0))
+            // Drag handling (priority)
+            if (child.Type == ResourceType::Model || 
+                child.Type == ResourceType::Material || 
+                child.Type == ResourceType::Texture)
+            {
+                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+                {
+                    ImGui::SetDragDropPayload("ASSET_UUID", &child.Uuid, sizeof(Equinox::UUID));
+                    ImGui::Text("%s", child.Name.c_str());
+                    ImGui::EndDragDropSource();
+                }
+            }
+
+            // Click handling (only if pressed AND released on the same item)
+            if (ImGui::IsItemDeactivated() && ImGui::IsMouseReleased(0) && ImGui::IsItemHovered())
             {
                 if (auto* inspector = Editor::GetPanel<InspectorPanel>()) 
                 {
@@ -250,25 +254,7 @@ namespace Equinox
             // Double-click handling
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
-                if (child.Type == ResourceType::Directory) 
-                {
-                    m_CurrentDirectoryUuid = child.Uuid;
-                }
-                else 
-                {
-                    // Handle file double-click
-                }
-            }
-
-            // Drag handling
-            if (child.Type == ResourceType::Model || child.Type == ResourceType::Material)
-            {
-                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) 
-                {
-                    ImGui::SetDragDropPayload("ASSET_UUID", &child.Uuid, sizeof(Equinox::UUID));
-                    ImGui::Text("%s", child.Name.c_str()); // Preview during drag
-                    ImGui::EndDragDropSource();
-                }
+                // Handle file double-click
             }
 
             // Name label
@@ -305,7 +291,7 @@ namespace Equinox
     void ProjectPanel::CreateNewMaterial()
     {
         // Current directory
-        fs::path currDir = ResourceDB::ResolveUuid(m_CurrentDirectoryUuid);
+        fs::path currDir = ResourceDB::UuidToPath(m_CurrentDirectoryUuid);
 
         // Default material path
         fs::path newMaterialPath = currDir / "NewMaterial.mat";

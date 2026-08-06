@@ -97,6 +97,7 @@ namespace Equinox
 			{ ".fbx",  ResourceType::Model    },
 			{ ".obj",  ResourceType::Model    },
 			{ ".gltf", ResourceType::Model    },
+			{ ".blend",ResourceType::Model    },
 			{ ".png",  ResourceType::Texture  },
 			{ ".jpg",  ResourceType::Texture  },
 			{ ".tga",  ResourceType::Texture  },

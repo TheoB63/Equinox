@@ -44,6 +44,7 @@ namespace Equinox
 
 		// Texture management
 		void AddTexture(const TextureInfo& texture) { m_Textures.push_back(texture); }
+		void SetTexture(const TextureInfo& texture) { m_Textures[(int)texture.type] = texture; }
 		const std::vector<TextureInfo>& GetTextures() const { return m_Textures; }
 
 		std::optional<u32> GetUVIndex(TextureType type) const
@@ -76,7 +77,7 @@ namespace Equinox
 		std::vector<TextureInfo> m_Textures;
 	};
 
-	inline std::ostream& operator<<(std::ostream& os, const TextureType type) 
+	inline std::ostream& operator<<(std::ostream& os, const TextureType type)
 	{
 		return os << Material::ToString(type);
 	}
