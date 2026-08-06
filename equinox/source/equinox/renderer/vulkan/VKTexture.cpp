@@ -46,7 +46,10 @@ namespace Equinox
         }*/
     }
 
-    VKTexture::VKTexture(uint32_t width, uint32_t height, TextureFormat format) {}
+    VKTexture::VKTexture(u32 width, u32 height, u32 format,
+        const unsigned char* data, const std::string& name)
+    {
+    }
 
     VKTexture::~VKTexture() {}
 
@@ -87,5 +90,5 @@ namespace Equinox
         //    "Failed to Bind Image Memory!");
     }
 
-    void VKTexture::Bind(uint32_t slot) const {}
+    void VKTexture::Bind(u32 slot) const {}
 }

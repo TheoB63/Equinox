@@ -11,29 +11,26 @@ namespace Equinox
     {
         switch (Renderer::GetAPI())
         {
-        case RendererAPI::API::OpenGL:
-            return std::make_shared<GLTexture>(path);
-        case RendererAPI::API::Vulkan:
-            return std::make_shared<VKTexture>(path);
+        case RendererAPI::API::OpenGL: return std::make_shared<GLTexture>(path);
+        case RendererAPI::API::Vulkan: return std::make_shared<VKTexture>(path);
         default:
             EQN_CORE_ASSERT(false, "Unknown renderer API!");
             return nullptr;
         }
     }
 
-    std::shared_ptr<Texture> Texture::Create(uint32_t width, uint32_t height, TextureFormat format)
+    std::shared_ptr<Texture> Texture::Create(u32 width, u32 height, u32 format, const unsigned char* data, const std::string& name)
     {
-        if (width == 0 || height == 0) {
+        if (width == 0 || height == 0) 
+        {
             EQN_CORE_ERROR("Texture creation failed: Invalid dimensions {0}x{1}", width, height);
             return nullptr;
         }
 
         switch (Renderer::GetAPI())
         {
-        case RendererAPI::API::OpenGL:
-            return std::make_shared<GLTexture>(width, height, format);
-        case RendererAPI::API::Vulkan:
-            return std::make_shared<VKTexture>(width, height, format);
+        case RendererAPI::API::OpenGL: return std::make_shared<GLTexture>(width, height, format, data, name);
+        case RendererAPI::API::Vulkan: return std::make_shared<VKTexture>(width, height, format, data, name);
         default:
             EQN_CORE_ASSERT(false, "Unknown renderer API!");
             return nullptr;

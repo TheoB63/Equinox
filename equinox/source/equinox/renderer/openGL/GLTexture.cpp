@@ -14,16 +14,16 @@ namespace Equinox
 		LoadFromFile();
 	}
 
-	GLTexture::GLTexture(uint32_t width, uint32_t height, TextureFormat format)
+	GLTexture::GLTexture(u32 width, u32 height, u32 format, const unsigned char* data, const std::string& name) 
 	{
 		EQN_CORE_INFO("Creating empty GLTexture ({0}x{1}, format {2})", width, height, static_cast<int>(format));
-		// TODO: Implementation for empty texture creation should be added here
+		CreateFromData(width, height, format, data);
 	}
 
 	GLTexture::~GLTexture()
 	{
 		EQN_CORE_TRACE("Destroying GLTexture (ID: {0}, '{1}')", m_TextureID, m_Path.filename().string());
-		// TODO: Add glDeleteTextures if necessary
+		glDeleteTextures(1, &m_TextureID);
 	}
 
 	void GLTexture::LoadFromFile()
@@ -88,6 +88,38 @@ namespace Equinox
 		glTextureParameteri(m_TextureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTextureParameteri(m_TextureID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+
+	void GLTexture::CreateFromData(u32 width, u32 height,
+		u32 channels, const unsigned char* data)
+	{
+		// Determine OpenGL format
+		GLenum internalFormat = GL_RGBA8;
+		GLenum format = GL_RGBA;
+
+		switch (channels)
+		{
+		case 1: internalFormat = GL_R8;    format = GL_RED;  break;
+		case 3: internalFormat = GL_RGB8;  format = GL_RGB;  break;
+		case 4: internalFormat = GL_RGBA8; format = GL_RGBA; break;
+		default: EQN_CORE_ASSERT(false, "Unsupported number of channels: {0}", channels);
+		}
+
+		// Create and configure texture
+		glGenTextures(1, &m_TextureID);
+		glBindTexture(GL_TEXTURE_2D, m_TextureID);
+
+		// Set texture parameters
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		// Allocate storage and upload data
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+		// Unbind texture
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void GLTexture::Bind(uint32_t slot) const

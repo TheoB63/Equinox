@@ -31,9 +31,9 @@ namespace Equinox
 					auto model = ModelLibrary::Get(meshRend.ModelUUID);
 					auto material = MaterialLibrary::Get(meshRend.MaterialUUID);
 
-					if (!model || !material)
+					if (!model)
 					{
-						//EQN_CORE_WARN("Missing resources for MeshRenderer");
+						EQN_CORE_WARN("MeshRenderer missing Model reference");
 						return;
 					}
 
@@ -43,6 +43,11 @@ namespace Equinox
 					{
 						EQN_CORE_ERROR("Invalid mesh index: {0}", meshRend.MeshIndex);
 						return;
+					}
+
+					if (!material)
+					{
+						material = MaterialLibrary::Get(UUID(7));
 					}
 
 					// Get shader and setup transform

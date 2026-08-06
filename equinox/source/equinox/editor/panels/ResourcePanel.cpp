@@ -71,22 +71,15 @@ namespace Equinox
 
 		// Collect resources from libraries
 		if (m_ShowModels) AddModelEntries();
-		if (m_ShowTextures) AddTextureEntries();
 		if (m_ShowMaterials) AddMaterialEntries();
 		if (m_ShowShaders) AddShaderEntries();
-
-		// TODO: Apply search filter
-		//std::string searchLower = StringUtils::ToLower(m_SearchBuffer);
-		/*std::string searchLower = "";
-		auto filtered = m_FilteredResources | std::views::filter([&](const auto& entry) {
-			return searchLower.empty() ||
-				StringUtils::Contains(StringUtils::ToLower(entry.name), searchLower) ||
-				StringUtils::Contains(entry.uuid, searchLower);
-		});*/
+		if (m_ShowTextures) AddTextureEntries();
 
 		// Display entries
 		for (const auto& entry : m_FilteredResources)
 		{
+			if (!ResourceMatchesSearch(entry)) continue;
+
 			ImGui::TableNextRow();
 
 			// Name column
@@ -126,19 +119,6 @@ namespace Equinox
 		}
 	}
 
-	void ResourcePanel::AddTextureEntries()
-	{
-		for (const auto& [uuid, texture] : TextureCache::GetAllTextures())
-		{
-			m_FilteredResources.push_back({
-				texture.Texture->GetName(),
-                uuid,
-				"Texture",
-				texture.Texture.use_count() - 1
-			});
-		}
-	}
-
 	void ResourcePanel::AddMaterialEntries()
 	{
 		for (const auto& [uuid, material] : MaterialLibrary::GetAllMaterials())
@@ -148,7 +128,7 @@ namespace Equinox
 				uuid,
 				"Material",
 				material.use_count() - 1
-			});
+				});
 		}
 	}
 
@@ -161,8 +141,37 @@ namespace Equinox
 				uuid,
 				"Shader",
 				shader.Shader.use_count() - 1
-			});
+				});
 		}
+	}
+
+	void ResourcePanel::AddTextureEntries()
+	{
+		for (const auto& [uuid, texture] : TextureCache::GetAllTextures())
+		{
+			m_FilteredResources.push_back({
+				texture.Texture->GetName(),
+				uuid,
+				"Texture",
+				texture.Texture.use_count() - 1
+				});
+		}
+	}
+
+	bool ResourcePanel::ResourceMatchesSearch(ResourceEntry entry)
+	{
+		if (strlen(m_SearchBuffer) == 0) return true;
+
+		// Case-insensitive search
+		std::string name = entry.Name;
+		std::string uuid = entry.Uuid.ToString();
+		std::string filter = m_SearchBuffer;
+
+		std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+		std::transform(uuid.begin(), uuid.end(), uuid.begin(), ::tolower);
+		std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
+
+		return (name.find(filter) != std::string::npos) || (uuid.find(filter) != std::string::npos);
 	}
 
 	ImVec4 ResourcePanel::GetTypeColor(const std::string& type) const
