@@ -8,7 +8,11 @@
 
 namespace Equinox
 {
-	Model::Model(const fs::path& path) { LoadModel(path); }
+	Model::Model(const fs::path& path)
+	{
+		LoadModel(path);
+		ProcessMeshData();
+	}
 
 	void Model::LoadModel(const fs::path& path)
 	{
@@ -43,7 +47,7 @@ namespace Equinox
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-			m_Meshes.push_back(ProcessMesh(mesh, scene, nodeTransform));
+			m_MeshesData.push_back(ProcessMesh(mesh, scene, nodeTransform));
 		}
 
 		// Process children recursively
@@ -209,5 +213,22 @@ namespace Equinox
 		}
 
 		return correction;
+	}
+
+	void Model::ProcessMeshData()
+	{
+		for (auto& meshData : m_MeshesData) 
+		{
+			auto vb = VertexBuffer::Create(meshData.vertices.data(), meshData.vertices.size() * sizeof(Vertex));
+			vb->SetLayout({
+				{ ShaderDataType::Float3, "a_Position"  },
+				{ ShaderDataType::Float3, "a_Normal"    },
+				{ ShaderDataType::Float2, "a_TexCoord0" },
+				{ ShaderDataType::Float2, "a_TexCoord1" },
+				{ ShaderDataType::Float3, "a_Tangent"   } }
+				);
+			auto ib = IndexBuffer::Create(meshData.indices.data(), meshData.indices.size());
+			m_Meshes.push_back(Mesh::Create(vb, ib));
+		}
 	}
 }

@@ -56,6 +56,15 @@ layout(binding = 0) uniform UniformBufferObject
     mat4 proj;
 } ubo;
 
+// Texture presence flags
+uniform int u_HasDiffuse;
+uniform int u_HasNormal;
+uniform int u_HasEmissive;
+uniform int u_HasMetallic;
+uniform int u_HasRoughness;
+uniform int u_HasSpecular;
+
+// Texture samplers
 uniform sampler2D u_TexDiffuse;
 uniform sampler2D u_TexNormal;
 uniform sampler2D u_TexEmissive;
@@ -63,6 +72,14 @@ uniform sampler2D u_TexMetallic;
 uniform sampler2D u_TexRoughness;
 uniform sampler2D u_TexSpecular;
 
+// Default value uniforms
+uniform vec3 u_DiffuseColor = vec3(0.8);
+uniform vec3 u_EmissiveColor = vec3(0.0);
+uniform float u_MetallicValue = 0.0;
+uniform float u_RoughnessValue = 0.5;
+uniform float u_SpecularValue = 0.5;
+
+// Per texture UV Set selection
 uniform int u_UVIndexDiffuse;
 uniform int u_UVIndexNormal;
 uniform int u_UVIndexEmissive;
@@ -72,36 +89,83 @@ uniform int u_UVIndexSpecular;
 
 const float PI = 3.14159265359;
 
-float DistributionGGX(vec3 N, vec3 H, float roughness) {
+float DistributionGGX(vec3 N, vec3 H, float roughness) 
+{
     float a = roughness * roughness;
     float a2 = a * a;
     float NdotH = max(dot(N, H), 0.0);
     return a2 / (PI * pow(NdotH * NdotH * (a2 - 1.0) + 1.0, 2.0));
 }
 
-float GeometrySchlickGGX(float NdotV, float roughness) {
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
     float r = roughness + 1.0;
     float k = (r * r) / 8.0;
     return NdotV / (NdotV * (1.0 - k) + k);
 }
 
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) 
+{
     return GeometrySchlickGGX(max(dot(N, V), 0.0), roughness) *
            GeometrySchlickGGX(max(dot(N, L), 0.0), roughness);
 }
 
-vec3 FresnelSchlick(float cosTheta, vec3 F0) {
+vec3 FresnelSchlick(float cosTheta, vec3 F0) 
+{
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
 void main()
 {
-    vec3 albedo = texture(u_TexDiffuse, u_UVIndexDiffuse == 0 ? v_TexCoord0 : v_TexCoord1).rgb;
-    vec3 normal = texture(u_TexNormal, u_UVIndexNormal == 0 ? v_TexCoord0 : v_TexCoord1).xyz;
-    vec3 emissive = texture(u_TexEmissive, u_UVIndexEmissive == 0 ? v_TexCoord0 : v_TexCoord1).xyz;
-    float metallic = texture(u_TexMetallic, u_UVIndexMetallic == 0 ? v_TexCoord0 : v_TexCoord1).r;
-    float roughness = texture(u_TexRoughness, u_UVIndexRoughness == 0 ? v_TexCoord0 : v_TexCoord1).r;
-    float ao = texture(u_TexSpecular, u_UVIndexSpecular == 0 ? v_TexCoord0 : v_TexCoord1).r;
+    // Albedo with fallback
+    vec3 albedo = u_DiffuseColor;
+    if (u_HasDiffuse != 0) 
+    {
+        vec2 diffuseUV = u_UVIndexDiffuse == 0 ? v_TexCoord0 : v_TexCoord1;
+        albedo = texture(u_TexDiffuse, diffuseUV).rgb;
+    }
+
+    // Normal with fallback to vertex normal
+    vec3 normal = normalize(v_Normal);
+    if (u_HasNormal != 0)
+    {
+        vec2 normalUV = u_UVIndexNormal == 0 ? v_TexCoord0 : v_TexCoord1;
+        vec3 tangentNormal = texture(u_TexNormal, normalUV).xyz * 2.0 - 1.0;
+        mat3 TBN = mat3(normalize(v_Tangent), normalize(v_Bitangent), normalize(v_Normal));
+        normal = normalize(TBN * tangentNormal);
+    }
+
+    // Emissive with fallback
+    vec3 emissive = u_EmissiveColor;
+    if (u_HasEmissive != 0) 
+    {
+        vec2 emissiveUV = u_UVIndexEmissive == 0 ? v_TexCoord0 : v_TexCoord1;
+        emissive = texture(u_TexEmissive, emissiveUV).rgb;
+    }
+
+    // Metallic with fallback
+    float metallic = u_MetallicValue;
+    if (u_HasMetallic != 0) 
+    {
+        vec2 metallicUV = u_UVIndexMetallic == 0 ? v_TexCoord0 : v_TexCoord1;
+        metallic = texture(u_TexMetallic, metallicUV).r;
+    }
+
+    // Roughness with fallback
+    float roughness = u_RoughnessValue;
+    if (u_HasRoughness != 0)
+    {
+        vec2 roughnessUV = u_UVIndexRoughness == 0 ? v_TexCoord0 : v_TexCoord1;
+        roughness = texture(u_TexRoughness, roughnessUV).r;
+    }
+
+    // AO/Specular with fallback
+    float ao = u_SpecularValue;
+    if (u_HasSpecular != 0)
+    {
+        vec2 specularUV = u_UVIndexSpecular == 0 ? v_TexCoord0 : v_TexCoord1;
+        ao = texture(u_TexSpecular, specularUV).r;
+    }
 
     // Compute world normal from normal map
     mat3 TBN = mat3(normalize(v_Tangent), normalize(v_Bitangent), normalize(v_Normal));

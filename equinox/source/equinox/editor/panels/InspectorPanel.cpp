@@ -332,7 +332,7 @@ namespace Equinox
 			// Texture properties with toggle buttons
 			const auto& textures = material->GetTextures();
 
-			auto DrawTextureProperty = [&](Material::TextureType type, const char* label)
+			auto DrawTextureProperty = [&](TextureType type, const char* label)
 				{
 					bool hasTexture = false;
 					for (const auto& texInfo : textures)
@@ -400,12 +400,12 @@ namespace Equinox
 					}
 				};
 
-			DrawTextureProperty(Material::TextureType::Diffuse, "Albedo");
-			DrawTextureProperty(Material::TextureType::Normal, "Normal");
-			DrawTextureProperty(Material::TextureType::Metalness, "Metallic");
-			DrawTextureProperty(Material::TextureType::Roughness, "Roughness");
-			DrawTextureProperty(Material::TextureType::Specular, "AO");
-			DrawTextureProperty(Material::TextureType::Emissive, "Emissive");
+			DrawTextureProperty(TextureType::Diffuse, "Albedo");
+			DrawTextureProperty(TextureType::Normal, "Normal");
+			DrawTextureProperty(TextureType::Metalness, "Metallic");
+			DrawTextureProperty(TextureType::Roughness, "Roughness");
+			DrawTextureProperty(TextureType::Specular, "AO");
+			DrawTextureProperty(TextureType::Emissive, "Emissive");
 
 			// TODO: Could add color properties, sliders, etc. for each texture channel (too lazy :3)
 		}

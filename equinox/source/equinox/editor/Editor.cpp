@@ -47,7 +47,7 @@ namespace Equinox
 		}
 
 		// Set Panels
-		AddPanel(new HierarchyPanel(new Scene));
+		AddPanel(new HierarchyPanel());
 		AddPanel(new InspectorPanel());
 		AddPanel(new ProjectPanel());
 		AddPanel(new ResourcePanel());

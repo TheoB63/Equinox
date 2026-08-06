@@ -127,7 +127,7 @@ namespace Equinox
     }
 
     // Vertex Buffer
-    std::unique_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size)
+    std::shared_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size)
     {
         switch (Renderer::GetAPI())
         {
@@ -136,13 +136,13 @@ namespace Equinox
             return nullptr;
 
         case RendererAPI::API::OpenGL:
-            return std::make_unique<GLVertexBuffer>(size);
+            return std::make_shared<GLVertexBuffer>(size);
 
         case RendererAPI::API::Vulkan:
         {
             auto vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
             const auto& device = vkRenderer->GetLogicalDevice();
-            return std::make_unique<VKVertexBuffer>(
+            return std::make_shared<VKVertexBuffer>(
                 vkRenderer->GetLogicalDevice().GetHandle(),
                 vkRenderer->GetPhysicalDevice().GetHandle(),
                 nullptr,
@@ -157,7 +157,7 @@ namespace Equinox
         return nullptr;
     }
 
-    std::unique_ptr<VertexBuffer> VertexBuffer::Create(const void* data, uint32_t size)
+    std::shared_ptr<VertexBuffer> VertexBuffer::Create(const void* data, uint32_t size)
     {
         switch (Renderer::GetAPI())
         {
@@ -166,13 +166,13 @@ namespace Equinox
             return nullptr;
 
         case RendererAPI::API::OpenGL:
-            return std::make_unique<GLVertexBuffer>(data, size);
+            return std::make_shared<GLVertexBuffer>(data, size);
 
         case RendererAPI::API::Vulkan:
         {
             auto vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
             const auto& device = vkRenderer->GetLogicalDevice();
-            return std::make_unique<VKVertexBuffer>(
+            return std::make_shared<VKVertexBuffer>(
                 vkRenderer->GetLogicalDevice().GetHandle(),
                 vkRenderer->GetPhysicalDevice().GetHandle(),
                 data,
@@ -188,18 +188,18 @@ namespace Equinox
     }
 
     // Index Buffer
-    std::unique_ptr<IndexBuffer> IndexBuffer::Create(const uint32_t* indices, uint32_t count)
+    std::shared_ptr<IndexBuffer> IndexBuffer::Create(const uint32_t* indices, uint32_t count)
     {
         switch (Renderer::GetAPI())
         {
         case RendererAPI::API::OpenGL:
-            return std::make_unique<GLIndexBuffer>(indices, count);
+            return std::make_shared<GLIndexBuffer>(indices, count);
 
         case RendererAPI::API::Vulkan:
         {
             auto vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
             const auto& device = vkRenderer->GetLogicalDevice();
-            return std::make_unique<VKIndexBuffer>(
+            return std::make_shared<VKIndexBuffer>(
                 vkRenderer->GetLogicalDevice().GetHandle(),
                 vkRenderer->GetPhysicalDevice().GetHandle(),
                 indices,

@@ -7,8 +7,11 @@
 
 #include "equinox/resources/FileSystem.h"
 #include "equinox/resources/Resources.h"
+
 #include "equinox/editor/Editor.h"
 #include "equinox/editor/panels/ScenePanel.h"
+
+#include "equinox/scene/Systems.h"
 
 namespace Equinox
 {
@@ -26,6 +29,7 @@ namespace Equinox
 		ResourceDB::Init(FileSystem::AssetsPath());
 		Resources::Init();
 		Editor::Init(m_Window->GetNativeWindow());
+		Systems::Init();
 
 		// Subscribe to events
 		m_MainThreadEventBus->Subscribe<WindowResizeEvent>([this](Event& e)
@@ -66,6 +70,7 @@ namespace Equinox
 				auto sceneFb = Editor::GetPanel<ScenePanel>()->GetFramebuffer();
 				Renderer::BindFramebuffer(sceneFb);
 				Renderer::Clear();
+				Systems::Update();
 				Renderer::DrawFrame();
 				Renderer::BindFramebuffer(nullptr);
 			}

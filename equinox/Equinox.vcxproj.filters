@@ -204,6 +204,8 @@
     <ClInclude Include="source\equinox\resources\MetaFile.h" />
     <ClInclude Include="source\equinox\resources\Resource.h" />
     <ClInclude Include="source\equinox\resources\ResourceDB.h" />
+    <ClInclude Include="source\equinox\scene\System.h" />
+    <ClInclude Include="source\equinox\scene\Systems.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -328,5 +330,6 @@
     <ClCompile Include="source\equinox\resources\MetaFile.cpp" />
     <ClCompile Include="source\equinox\resources\ResourceDB.cpp" />
     <ClCompile Include="source\equinox\renderer\Material.cpp" />
+    <ClCompile Include="source\equinox\scene\Systems.cpp" />
   </ItemGroup>
 </Project>

@@ -12,7 +12,8 @@ namespace Equinox
 	{
 		// Glad should already be initialized by Window class
 		// Verify GLAD loaded properly
-		if (!gladLoadGL()) {
+		if (!gladLoadGL())
+		{
 			EQN_CORE_CRITICAL("Failed to initialize Glad!");
 			return;
 		}

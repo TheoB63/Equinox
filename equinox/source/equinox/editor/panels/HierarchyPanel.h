@@ -11,12 +11,13 @@ namespace Equinox
     class HierarchyPanel : public Panel
     {
     public:
-        HierarchyPanel(Scene* context);
+        HierarchyPanel();
 
         void OnInit() override;
         void OnRender() override;
 
-        void SetContext(Scene* scene);
+        std::shared_ptr<Scene> GetContext() { return m_Context; }
+        void SetContext(std::shared_ptr<Scene> scene) { m_Context = scene; }
 
         Entity GetSelectedEntity() const { return m_Selection; }
         Entity* GetSelectedEntity() { return &m_Selection; }
@@ -33,7 +34,7 @@ namespace Equinox
         void ProcessDropResource();
 
     private:
-        Scene* m_Context = nullptr;
+        std::shared_ptr<Scene> m_Context;
         Entity m_Selection;
         Entity m_DraggedEntity;
         Entity m_RenamingEntity;

@@ -218,6 +218,8 @@
     <ClInclude Include="source\equinox\scene\Components.h" />
     <ClInclude Include="source\equinox\scene\Entity.h" />
     <ClInclude Include="source\equinox\scene\Scene.h" />
+    <ClInclude Include="source\equinox\scene\System.h" />
+    <ClInclude Include="source\equinox\scene\Systems.h" />
     <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
     <ClInclude Include="source\equinox\utils\ImGuiUtils.h" />
     <ClInclude Include="source\equinox\utils\ImageUtils.h" />
@@ -276,6 +278,7 @@
     <ClCompile Include="source\equinox\resources\ResourceDB.cpp" />
     <ClCompile Include="source\equinox\scene\Entity.cpp" />
     <ClCompile Include="source\equinox\scene\Scene.cpp" />
+    <ClCompile Include="source\equinox\scene\Systems.cpp" />
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp" />
     <ClCompile Include="source\equinox\window\WinWindow.cpp" />
     <ClCompile Include="source\equinox\window\Window.cpp" />

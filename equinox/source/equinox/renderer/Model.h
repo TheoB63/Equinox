@@ -2,7 +2,6 @@
 
 #include "equinox/renderer/Material.h"
 #include "equinox/renderer/Mesh.h"
-#include "equinox/renderer/openGL/GLMesh.h"
 #include "equinox/resources/Resource.h"
 
 #include <string>
@@ -35,7 +34,8 @@ namespace Equinox
 	public:
 		Model(const fs::path& path);
 
-		std::vector<MeshData>& GetMeshes() { return m_Meshes; }
+		std::vector<MeshData>& GetMeshesData() { return m_MeshesData; }
+		std::vector<std::shared_ptr<Mesh>>& GetMeshes() { return m_Meshes; }
 		std::vector<Material>& GetMaterials() { return m_Materials; }
 
 	private:
@@ -43,10 +43,12 @@ namespace Equinox
 		void ProcessNode(aiNode* node, const aiScene* scene, const Mat4& parentTransform = Mat4(1.0f));
 		MeshData ProcessMesh(aiMesh* mesh, const aiScene* scene, const Mat4& transform);
 		Material ProcessMaterial(aiMaterial* material, const fs::path& directory);
-
 		Mat4 AxisCorrectionMatrix(const aiScene* scene);
 
-		std::vector<MeshData> m_Meshes;
+		void ProcessMeshData();
+
+		std::vector<MeshData> m_MeshesData;
+		std::vector<std::shared_ptr<Mesh>> m_Meshes;
 		std::vector<Material> m_Materials;
 		fs::path m_Directory;
 	};
