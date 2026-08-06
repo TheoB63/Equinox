@@ -5,15 +5,15 @@
 
 namespace Equinox
 {
-	std::shared_ptr<Shader> Shader::Create(const std::string& filePath)
+	std::shared_ptr<Shader> Shader::Create(const fs::path& filePath)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::OpenGL:
-			return std::make_shared<GLShader>(filePath);
-		default:
-			EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
-			return nullptr;
+			case RendererAPI::API::OpenGL:
+				return std::make_shared<GLShader>(filePath);
+			default:
+				EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
+				return nullptr;
 		}
 	}
 
@@ -21,20 +21,20 @@ namespace Equinox
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::OpenGL:
-			return std::make_shared<GLShader>(vertexSrc, fragmentSrc);
-		default:
-			EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
-			return nullptr;
+			case RendererAPI::API::OpenGL:
+				return std::make_shared<GLShader>(vertexSrc, fragmentSrc);
+			default:
+				EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
+				return nullptr;
 		}
 	}
 
-	std::string Shader::Load(const std::string& filePath)
+	std::string Shader::Load(const fs::path& filePath)
 	{
 		std::ifstream in(filePath, std::ios::in | std::ios::binary);
 		if (!in)
 		{
-			EQN_CORE_ERROR("Could not open shader file: {0}", filePath);
+			EQN_CORE_ERROR("Could not open shader file: {0}", filePath.string());
 			return "";
 		}
 

@@ -24,7 +24,7 @@ namespace Equinox
     {
         if (!model) 
         {
-            EQN_CORE_ERROR("Attempted to add null model");
+            EQN_CORE_ERROR("Attempted to add null Model");
             return false;
         }
 
@@ -92,16 +92,17 @@ namespace Equinox
         auto model = std::make_shared<Model>(path);
         if (!model || model->GetMeshes().empty())
         {
-            EQN_CORE_ERROR("Failed to load model from {0}", path.string());
+            EQN_CORE_ERROR("Failed to load Model from {0}", path.string());
             return nullptr;
         }
 
         model->SetUUID(uuid);
+        model->SetName(path.filename().stem().string());
         auto modTime = fs::last_write_time(path);
 
         std::unique_lock lock(s_Mutex);
         s_Models[uuid] = { model, modTime };
-        EQN_CORE_INFO("Loaded model {0} from {1}", uuid.ToString(), path.string());
+        EQN_CORE_TRACE("Loaded Model as {0}", uuid.ToString());
         return model;
     }
 
@@ -121,14 +122,14 @@ namespace Equinox
         auto it = s_Models.find(uuid);
         if (it == s_Models.end()) 
         {
-            EQN_CORE_WARN("Cannot reload non-existent model {0}", uuid.ToString());
+            EQN_CORE_WARN("Cannot reload non-existent Model {0}", uuid.ToString());
             return false;
         }
 
         auto path = ResourceDB::ResolveUuid(uuid);
         if (path.empty()) 
         {
-            EQN_CORE_ERROR("No source path for model {0}", uuid.ToString());
+            EQN_CORE_ERROR("No source path for Model {0}", uuid.ToString());
             return false;
         }
 
@@ -152,12 +153,12 @@ namespace Equinox
 
             newModel->SetUUID(uuid);
             it->second = { newModel, newTime };
-            EQN_CORE_INFO("Successfully reloaded model {0}", uuid.ToString());
+            EQN_CORE_INFO("Successfully reloaded Model {0}", uuid.ToString());
             return true;
         }
         catch (const std::exception& e)
         {
-            EQN_CORE_ERROR("Failed to reload model {0}: {1}", uuid.ToString(), e.what());
+            EQN_CORE_ERROR("Failed to reload Model {0}: {1}", uuid.ToString(), e.what());
             return false;
         }
     }
@@ -165,7 +166,7 @@ namespace Equinox
     void ModelLibrary::ReloadAll()
     {
         std::unique_lock lock(s_Mutex);
-        EQN_CORE_INFO("Reloading all models...");
+        EQN_CORE_INFO("Reloading all Models...");
 
         size_t successCount = 0;
         size_t failCount = 0;
@@ -175,7 +176,7 @@ namespace Equinox
             auto path = ResourceDB::ResolveUuid(uuid);
             if (path.empty()) 
             {
-                EQN_CORE_WARN("Skipping model {0} with invalid path", uuid.ToString());
+                EQN_CORE_WARN("Skipping Model {0} with invalid path", uuid.ToString());
                 failCount++;
                 continue;
             }
@@ -196,7 +197,7 @@ namespace Equinox
                 auto newModel = std::make_shared<Model>(path);
                 if (!newModel || newModel->GetMeshes().empty())
                 {
-                    throw std::runtime_error("Empty model");
+                    throw std::runtime_error("Empty Model");
                 }
 
                 newModel->SetUUID(uuid);
@@ -210,6 +211,6 @@ namespace Equinox
             }
         }
 
-        EQN_CORE_INFO("Reloaded models: {0} succeeded, {1} failed", successCount, failCount);
+        EQN_CORE_INFO("Reloaded Models: {0} succeeded, {1} failed", successCount, failCount);
     }
 }

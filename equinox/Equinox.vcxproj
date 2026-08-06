@@ -241,6 +241,7 @@
     <ClCompile Include="source\equinox\input\Input.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
+    <ClCompile Include="source\equinox\renderer\Material.cpp" />
     <ClCompile Include="source\equinox\renderer\Mesh.cpp" />
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
     <ClCompile Include="source\equinox\renderer\RendererAPI.cpp" />

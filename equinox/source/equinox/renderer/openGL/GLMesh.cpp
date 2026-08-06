@@ -24,7 +24,7 @@ namespace Equinox
 		int slot = 0;
 		std::string texType;
 
-		for (const auto& texInfo : m_Material->GetTextures())
+		/*for (const auto& texInfo : m_Material->GetTextures())
 		{
 			switch (texInfo.type)
 			{
@@ -42,7 +42,7 @@ namespace Equinox
 				texture->Bind(slot);
 			}
 			m_Material->GetShader()->SetInt(texType, texInfo.uvIndex);
-		}
+		}*/
 
 		glBindVertexArray(m_VAO);
 		if (m_IndexBuffer)

@@ -1,37 +1,49 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
-#include "equinox/renderer/Shader.h"
+#include "equinox/core/UUID.h"
 
+#include "equinox/resources/Resource.h"
+#include "equinox/resources/libraries/ShaderLibrary.h"
+#include "equinox/resources/libraries/TextureCache.h"
+
+#include <nlohmann/json.hpp>
 #include <vector>
 #include <filesystem>
+#include <iostream>
 
 namespace Equinox
 {
-    enum class TextureType
-    {
-        Diffuse,
-        Normal,
-        Emissive,
-        Metalness,
-        Roughness,
-        Specular
-    };
-
-    struct TextureInfo
-    {
-        TextureType type;
-        fs::path path;
-        u32 uvIndex = 0;
-    };
-
-    class Material
+    class Material : public Resource
     {
     public:
-        void SetShader(const std::shared_ptr<Shader>& shader) { m_Shader = shader; }
-        const std::shared_ptr<Shader>& GetShader() const { return m_Shader; }
+        enum class TextureType 
+        {
+            Diffuse,
+            Normal,
+            Emissive,
+            Metalness,
+            Roughness,
+            Specular
+        };
 
-        void AddTexture(const TextureInfo& info) { m_Textures.push_back(info); }
+        struct TextureInfo
+        {
+            UUID Uuid;
+            TextureType type;
+            u32 uvIndex = 0;
+        };
+
+        // Shader management
+        void SetShaderUUID(const UUID& uuid) { m_ShaderUUID = uuid; }
+        UUID GetShaderUUID() const { return m_ShaderUUID; }
+        std::shared_ptr<Shader> GetShader() const 
+        {
+            return ShaderLibrary::Get(m_ShaderUUID);
+        }
+
+        // Texture management
+        void AddTexture(const TextureInfo& texture) { m_Textures.push_back(texture); }
         const std::vector<TextureInfo>& GetTextures() const { return m_Textures; }
 
         std::optional<u32> GetUVIndex(TextureType type) const
@@ -40,12 +52,32 @@ namespace Equinox
             {
                 if (tex.type == type) return tex.uvIndex;
             }
-            return std::nullopt; // No texture of this type
+            return std::nullopt;
         }
 
+        // Runtime texture access
+        std::shared_ptr<Texture> GetTextureByType(TextureType type) const 
+        {
+            for (const auto& tex : m_Textures) 
+            {
+                if (tex.type == type) return TextureCache::Get(tex.Uuid);
+            }
+            return nullptr;
+        }
+
+        // Serialization/Deserialization
+        void Serialize(nlohmann::json& json) const;
+        void Deserialize(const nlohmann::json& json);
+
+        static const char* ToString(TextureType type);
+
     private:
-        std::shared_ptr<Shader> m_Shader;
+        UUID m_ShaderUUID;
         std::vector<TextureInfo> m_Textures;
-        std::string name;
     };
+
+    inline std::ostream& operator<<(std::ostream& os, const Material::TextureType type) 
+    {
+        return os << Material::ToString(type);
+    }
 }

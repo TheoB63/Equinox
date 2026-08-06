@@ -1,5 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/ProjectPanel.h"
+#include "equinox/editor/panels/InspectorPanel.h"
 #include "equinox/resources/ResourceDB.h"
 
 namespace Equinox
@@ -165,6 +166,13 @@ namespace Equinox
         const DirectoryNode* currentDir = FindNodeByUuid(m_RootNode, m_CurrentDirectoryUuid);
         if (!currentDir) return;
 
+        // Handle right-click context menu
+        if (ImGui::BeginPopupContextWindow("ProjectContextMenu"))
+        {
+            DrawCreateMenu();
+            ImGui::EndPopup();
+        }
+
         // Grid layout settings
         const float padding = 16.0f;
         const float thumbnailSize = 64.0f;
@@ -186,6 +194,15 @@ namespace Equinox
                 ImVec2(thumbnailSize, thumbnailSize));*/
 
             ImGui::Button("##file", ImVec2(thumbnailSize, thumbnailSize));
+
+            // Click handling
+            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(0)) 
+            {
+                if (auto* inspector = Editor::GetPanel<InspectorPanel>()) 
+                {
+                    inspector->SetSelectedResource(child.Uuid);
+                }
+            }
 
             // Double-click handling
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
@@ -221,6 +238,15 @@ namespace Equinox
 
             ImGui::Button("##file", ImVec2(thumbnailSize, thumbnailSize));
 
+            // Click handling
+            if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0))
+            {
+                if (auto* inspector = Editor::GetPanel<InspectorPanel>()) 
+                {
+                    inspector->SetSelectedResource(child.Uuid);
+                }
+            }
+
             // Double-click handling
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
@@ -235,7 +261,7 @@ namespace Equinox
             }
 
             // Drag handling
-            if (child.Type == ResourceType::Model) 
+            if (child.Type == ResourceType::Model || child.Type == ResourceType::Material)
             {
                 if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) 
                 {
@@ -261,6 +287,70 @@ namespace Equinox
         }
 
         ImGui::Columns(1);
+    }
+
+    void ProjectPanel::DrawCreateMenu()
+    {
+        if (ImGui::BeginMenu("Create"))
+        {
+            if (ImGui::MenuItem("Material")) 
+            {
+                CreateNewMaterial();
+            }
+            // TODO: Add other create options here...
+            ImGui::EndMenu();
+        }
+    }
+
+    void ProjectPanel::CreateNewMaterial()
+    {
+        // Current directory
+        fs::path currDir = ResourceDB::ResolveUuid(m_CurrentDirectoryUuid);
+
+        // Default material path
+        fs::path newMaterialPath = currDir / "NewMaterial.mat";
+
+        // Ensure unique filename
+        int counter = 1;
+        while (fs::exists(newMaterialPath))
+        {
+            newMaterialPath = currDir /
+                ("NewMaterial_" + std::to_string(counter++) + ".mat");
+        }
+
+        // Create the material file
+        std::ofstream file(newMaterialPath);
+        if (!file.is_open())
+        {
+            EQN_CORE_ERROR("Failed to create material file: {0}", newMaterialPath.string());
+            return;
+        }
+
+        // Create default material content
+        nlohmann::json materialData;
+        materialData["shader"] = ""; // Empty shader by default
+        materialData["textures"] = nlohmann::json::object();
+        file << materialData.dump(4);
+        file.close();
+
+        // Create .meta file
+        fs::path metaPath = newMaterialPath;
+        metaPath += ".meta";
+
+        UUID uuid;
+        MetaFile meta(uuid); // New random UUID
+        meta.Save(metaPath);
+
+        // Register with resource database
+        ResourceDB::RegisterAsset(newMaterialPath, meta.GetUUID());
+
+        // Notify listeners
+        /*if (OnMaterialCreated)
+        {
+            OnMaterialCreated(newMaterialPath);
+        }*/
+
+        EQN_CORE_INFO("Created new material: {0}", newMaterialPath.string());
     }
 
     const DirectoryNode* ProjectPanel::FindNodeByUuid(const DirectoryNode& node, const UUID& uuid)

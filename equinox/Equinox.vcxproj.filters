@@ -327,5 +327,6 @@
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
     <ClCompile Include="source\equinox\resources\MetaFile.cpp" />
     <ClCompile Include="source\equinox\resources\ResourceDB.cpp" />
+    <ClCompile Include="source\equinox\renderer\Material.cpp" />
   </ItemGroup>
 </Project>

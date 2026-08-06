@@ -43,10 +43,10 @@ namespace Equinox
 			// Load to Database
 			switch (FileSystem::ClassifyFileType(path)) 
 			{
-				case Equinox::ResourceType::Model:     Resources::Load<Model>(path);   break;
-				case Equinox::ResourceType::Texture:   Resources::Load<Texture>(path); break;
-				case Equinox::ResourceType::Material:  break;
-				case Equinox::ResourceType::Shader:    break;
+				case Equinox::ResourceType::Model:    Resources::Load<Model>(path);    break;
+				case Equinox::ResourceType::Texture:  Resources::Load<Texture>(path);  break;
+				case Equinox::ResourceType::Material: Resources::Load<Material>(path); break;
+				case Equinox::ResourceType::Shader:   Resources::Load<Shader>(path);   break;
 				default: break;
 			}
 		}

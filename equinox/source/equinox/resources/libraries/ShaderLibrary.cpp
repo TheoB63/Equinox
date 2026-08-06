@@ -1,223 +1,213 @@
 #include "eqnpch.h"
 #include "equinox/resources/libraries/ShaderLibrary.h"
+#include "equinox/resources/ResourceDB.h"
 
 namespace Equinox
 {
-	namespace fs = std::filesystem;
+    std::shared_mutex ShaderLibrary::s_Mutex;
+    std::unordered_map<UUID, ShaderLibrary::ShaderRecord, UUIDHash> ShaderLibrary::s_Shaders;
 
-	//std::shared_mutex ShaderLibrary::s_Mutex;
-	//std::unordered_map<std::string, ShaderLibrary::ShaderRecord> ShaderLibrary::s_Shaders;
+    void ShaderLibrary::Init()
+    {
+        std::unique_lock lock(s_Mutex);
+        EQN_CORE_INFO("Initialized Shader Library");
+    }
 
-	void ShaderLibrary::Init()
-	{
-		std::unique_lock lock(s_Mutex);
-		EQN_CORE_INFO("Initialized Shader Library");
-	}
+    void ShaderLibrary::Shutdown()
+    {
+        std::unique_lock lock(s_Mutex);
+        s_Shaders.clear();
+        EQN_CORE_INFO("Cleared Shader Library");
+    }
 
-	void ShaderLibrary::Shutdown()
-	{
-		std::unique_lock lock(s_Mutex);
-		s_Shaders.clear();
-		EQN_CORE_INFO("Cleared Shader Library");
-	}
+    bool ShaderLibrary::Add(std::shared_ptr<Shader> shader)
+    {
+        if (!shader)
+        {
+            EQN_CORE_ERROR("Attempted to add null Shader");
+            return false;
+        }
 
-	bool ShaderLibrary::Add(const std::string& name, std::shared_ptr<Shader> shader)
-	{
-		std::unique_lock lock(s_Mutex);
-		if (shader == nullptr)
-		{
-			EQN_CORE_ERROR("Attempted to add null shader '{0}'", name);
-			return false;
-		}
+        UUID uuid = shader->GetUUID();
+        std::unique_lock lock(s_Mutex);
 
-		auto [it, inserted] = s_Shaders.try_emplace(name, ShaderRecord{ shader, "", {} });
-		if (!inserted)
-		{
-			EQN_CORE_WARN("Shader '{0}' already exists! Overwriting...", name);
-			it->second = { shader, "", {} };
-		}
-		return true;
-	}
+        auto [it, inserted] = s_Shaders.try_emplace(uuid,
+            ShaderRecord{ shader, "", fs::file_time_type() }
+        );
 
-	bool ShaderLibrary::Remove(const std::string& name)
-	{
-		std::unique_lock lock(s_Mutex);
-		return s_Shaders.erase(name) > 0;
-	}
+        if (!inserted) 
+        {
+            EQN_CORE_WARN("Shader with UUID {0} already exists! Overwriting...", uuid.ToString());
+            it->second = { shader, "", fs::file_time_type() };
+        }
+        return true;
+    }
 
-	std::shared_ptr<Shader> ShaderLibrary::Get(const std::string& name)
-	{
-		std::shared_lock lock(s_Mutex);
-		auto it = s_Shaders.find(name);
-		if (it == s_Shaders.end())
-		{
-			EQN_CORE_ERROR("Shader '{0}' not found in library", name);
-			return nullptr;
-		}
-		return it->second.shader;
-	}
+    bool ShaderLibrary::Remove(const UUID& uuid)
+    {
+        std::unique_lock lock(s_Mutex);
+        return s_Shaders.erase(uuid) > 0;
+    }
 
-	bool ShaderLibrary::Contains(const std::string& name)
-	{
-		std::shared_lock lock(s_Mutex);
-		return s_Shaders.find(name) != s_Shaders.end();
-	}
+    bool ShaderLibrary::Contains(const UUID& uuid)
+    {
+        std::shared_lock lock(s_Mutex);
+        return s_Shaders.find(uuid) != s_Shaders.end();
+    }
 
-	std::vector<std::string> ShaderLibrary::GetShaderNames()
-	{
-		std::shared_lock lock(s_Mutex);
-		std::vector<std::string> names;
-		names.reserve(s_Shaders.size());
-		for (const auto& [name, _] : s_Shaders)
-			names.push_back(name);
-		return names;
-	}
+    std::shared_ptr<Shader> ShaderLibrary::Get(const UUID& uuid)
+    {
+        std::shared_lock lock(s_Mutex);
+        auto it = s_Shaders.find(uuid);
+        return it != s_Shaders.end() ? it->second.Shader : nullptr;
+    }
 
-	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& filePath)
-	{
-		const fs::path path(filePath);
-		if (!fs::exists(path))
-		{
-			EQN_CORE_ERROR("Shader file not found: {0}", filePath);
-			return nullptr;
-		}
+    std::vector<UUID> ShaderLibrary::GetAllUuids()
+    {
+        std::shared_lock lock(s_Mutex);
+        std::vector<UUID> uuids;
+        uuids.reserve(s_Shaders.size());
+        for (const auto& [uuid, _] : s_Shaders)
+            uuids.push_back(uuid);
+        return uuids;
+    }
 
-		auto shader = Shader::Create(filePath);
-		if (!shader)
-		{
-			EQN_CORE_ERROR("Failed to create shader from {0}", filePath);
-			return nullptr;
-		}
+    std::unordered_map<UUID, ShaderLibrary::ShaderRecord, UUIDHash> ShaderLibrary::GetAllShaders()
+    {
+        return s_Shaders;
+    }
 
-		const std::string name = path.stem().string();
-		const auto modTime = fs::last_write_time(path);
+    std::shared_ptr<Shader> ShaderLibrary::Load(const fs::path& filePath)
+    {
+        if (!fs::exists(filePath))
+        {
+            EQN_CORE_ERROR("Shader file not found: {0}", filePath.string());
+            return nullptr;
+        }
 
-		std::unique_lock lock(s_Mutex);
-		s_Shaders[name] = { shader, path, modTime };
-		EQN_CORE_INFO("Loaded shader '{0}' from {1}", name, filePath);
-		return shader;
-	}
+        UUID uuid = ResourceDB::GetUuidForPath(filePath);
+        if (auto existing = Get(uuid))
+        {
+            EQN_CORE_INFO("Shader already loaded: {0}", uuid.ToString());
+            return existing;
+        }
 
-	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filePath)
-	{
-		const fs::path path(filePath);
-		if (!fs::exists(path))
-		{
-			EQN_CORE_ERROR("Shader file not found: {0}", filePath);
-			return nullptr;
-		}
+        auto shader = Shader::Create(filePath);
+        if (!shader)
+        {
+            EQN_CORE_ERROR("Failed to compile shader from {0}", filePath.string());
+            return nullptr;
+        }
 
-		auto shader = Shader::Create(filePath);
-		if (!shader)
-		{
-			EQN_CORE_ERROR("Failed to create shader '{0}' from {1}", name, filePath);
-			return nullptr;
-		}
+        auto modTime = fs::last_write_time(filePath);
 
-		const auto modTime = fs::last_write_time(path);
+        std::unique_lock lock(s_Mutex);
+        s_Shaders[uuid] = { shader, filePath, modTime };
+        shader->SetUUID(uuid);
+        shader->SetName(filePath.filename().stem().string());
 
-		std::unique_lock lock(s_Mutex);
-		s_Shaders[name] = { shader, path, modTime };
-		EQN_CORE_INFO("Loaded shader '{0}' from {1}", name, filePath);
-		return shader;
-	}
+        EQN_CORE_INFO("Loaded Shader {0} from {1}", uuid.ToString(), filePath.string());
+        return shader;
+    }
 
-	std::shared_ptr<Shader> ShaderLibrary::LoadOrGet(const std::string& filePath)
-	{
-		const fs::path path(filePath);
-		const std::string name = path.stem().string();
+    std::shared_ptr<Shader> ShaderLibrary::LoadOrGet(const fs::path& filePath)
+    {
+        UUID uuid = ResourceDB::GetUuidForPath(filePath);
+        if (auto shader = Get(uuid))
+        {
+            return shader;
+        }
+        return Load(filePath);
+    }
 
-		std::shared_lock lock(s_Mutex);
-		if (auto it = s_Shaders.find(name); it != s_Shaders.end())
-			return it->second.shader;
+    bool ShaderLibrary::Reload(const UUID& uuid)
+    {
+        std::unique_lock lock(s_Mutex);
+        auto it = s_Shaders.find(uuid);
+        if (it == s_Shaders.end())
+        {
+            EQN_CORE_WARN("Cannot reload non-existent Shader {0}", uuid.ToString());
+            return false;
+        }
 
-		lock.unlock();
-		return Load(filePath);
-	}
+        auto& record = it->second;
+        if (record.SourcePath.empty())
+        {
+            EQN_CORE_INFO("Shader {0} not reloadable (no source path)", uuid.ToString());
+            return false;
+        }
 
-	std::shared_ptr<Shader> ShaderLibrary::LoadOrGet(const std::string& name, const std::string& filePath)
-	{
-		std::shared_lock lock(s_Mutex);
-		if (auto it = s_Shaders.find(name); it != s_Shaders.end())
-			return it->second.shader;
+        if (!fs::exists(record.SourcePath))
+        {
+            EQN_CORE_ERROR("Shader source missing: {0}", record.SourcePath.string());
+            return false;
+        }
 
-		lock.unlock();
-		return Load(name, filePath);
-	}
+        const auto newTime = fs::last_write_time(record.SourcePath);
+        if (newTime <= record.LastModified)
+            return true; // Already up-to-date
 
-	bool ShaderLibrary::Reload(const std::string& name)
-	{
-		std::unique_lock lock(s_Mutex);
-		auto it = s_Shaders.find(name);
-		if (it == s_Shaders.end())
-		{
-			EQN_CORE_WARN("Cannot reload non-existent shader '{0}'", name);
-			return false;
-		}
+        try 
+        {
+            auto newShader = Shader::Create(record.SourcePath);
+            if (!newShader)
+                throw std::runtime_error("Compilation failed");
 
-		auto& record = it->second;
-		if (record.sourcePath.empty())
-		{
-			EQN_CORE_INFO("Shader '{0}' not reloadable (no source path)", name);
-			return false;
-		}
+            newShader->SetUUID(uuid);
+            record.Shader = newShader;
+            record.LastModified = newTime;
 
-		if (!fs::exists(record.sourcePath))
-		{
-			EQN_CORE_ERROR("Shader source file missing: {0}", record.sourcePath.string());
-			return false;
-		}
+            EQN_CORE_INFO("Successfully reloaded Shader {0}", uuid.ToString());
+            return true;
+        }
+        catch (const std::exception& e) 
+        {
+            EQN_CORE_ERROR("Failed to reload Shader {0}: {1}", uuid.ToString(), e.what());
+            return false;
+        }
+    }
 
-		const auto newTime = fs::last_write_time(record.sourcePath);
-		if (newTime <= record.lastModified)
-			return true; // Already up-to-date
+    void ShaderLibrary::ReloadAll()
+    {
+        std::unique_lock lock(s_Mutex);
+        EQN_CORE_INFO("Reloading all shaders...");
 
-		if (auto newShader = Shader::Create(record.sourcePath.string()))
-		{
-			record.shader = newShader;
-			record.lastModified = newTime;
-			EQN_CORE_INFO("Successfully reloaded shader '{0}'", name);
-			return true;
-		}
+        size_t successCount = 0;
+        size_t failCount = 0;
 
-		EQN_CORE_ERROR("Failed to reload shader '{0}' (compilation failed)", name);
-		return false;
-	}
+        for (auto& [uuid, record] : s_Shaders)
+        {
+            if (record.SourcePath.empty()) continue;
 
-	void ShaderLibrary::ReloadAll()
-	{
-		std::unique_lock lock(s_Mutex);
-		EQN_CORE_INFO("Reloading all shaders...");
+            if (!fs::exists(record.SourcePath)) 
+            {
+                EQN_CORE_ERROR("Shader source missing: {0}", record.SourcePath.string());
+                failCount++;
+                continue;
+            }
 
-		size_t successCount = 0;
-		size_t failCount = 0;
+            const auto newTime = fs::last_write_time(record.SourcePath);
+            if (newTime <= record.LastModified)
+                continue;
 
-		for (auto& [name, record] : s_Shaders)
-		{
-			if (record.sourcePath.empty()) continue;
+            try 
+            {
+                auto newShader = Shader::Create(record.SourcePath);
+                if (!newShader)
+                    throw std::runtime_error("Compilation failed");
 
-			if (!fs::exists(record.sourcePath))
-			{
-				EQN_CORE_ERROR("Shader source missing: {0}", record.sourcePath.string());
-				failCount++;
-				continue;
-			}
+                newShader->SetUUID(uuid);
+                record.Shader = newShader;
+                record.LastModified = newTime;
+                successCount++;
+            }
+            catch (const std::exception& e)
+            {
+                EQN_CORE_ERROR("Reload failed for {0}: {1}", uuid.ToString(), e.what());
+                failCount++;
+            }
+        }
 
-			const auto newTime = fs::last_write_time(record.sourcePath);
-			if (newTime <= record.lastModified)
-				continue;
-
-			if (auto newShader = Shader::Create(record.sourcePath.string()))
-			{
-				record.shader = newShader;
-				record.lastModified = newTime;
-				successCount++;
-			}
-			else
-			{
-				failCount++;
-			}
-		}
-		EQN_CORE_INFO("Reloaded shaders: {0} succeeded, {1} failed", successCount, failCount);
-	}
+        EQN_CORE_INFO("Reloaded Shaders: {0} succeeded, {1} failed", successCount, failCount);
+    }
 }

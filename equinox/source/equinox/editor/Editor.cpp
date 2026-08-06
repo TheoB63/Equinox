@@ -172,8 +172,8 @@ namespace Equinox
 
 	void Editor::SetCustomStyle()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.Fonts->AddFontFromFileTTF(FileSystem::GetPath(ResourceType::Font, "OxygenMono-Regular.ttf").string().c_str(), 16.0f);
+		//ImGuiIO& io = ImGui::GetIO();
+		//io.Fonts->AddFontFromFileTTF(FileSystem::GetPath(ResourceType::Font, "OxygenMono-Regular.ttf").string().c_str(), 16.0f);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		ImVec4* colors = style.Colors;
