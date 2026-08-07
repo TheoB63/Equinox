@@ -126,7 +126,7 @@ namespace Equinox
             return false;
         }
 
-        auto path = ResourceDB::UuidToPath(uuid);
+        auto path = ResourceDB::UuidToInfo(uuid).Path;
         if (path.empty()) 
         {
             EQN_CORE_ERROR("No source path for Model {0}", uuid.ToString());
@@ -173,7 +173,7 @@ namespace Equinox
 
         for (auto& [uuid, record] : s_Models) 
         {
-            auto path = ResourceDB::UuidToPath(uuid);
+            auto path = ResourceDB::UuidToInfo(uuid).Path;
             if (path.empty()) 
             {
                 EQN_CORE_WARN("Skipping Model {0} with invalid path", uuid.ToString());

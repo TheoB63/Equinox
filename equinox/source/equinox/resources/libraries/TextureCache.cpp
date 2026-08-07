@@ -144,7 +144,7 @@ namespace Equinox
 			return false;
 		}
 
-		auto path = ResourceDB::UuidToPath(uuid);
+		auto path = ResourceDB::UuidToInfo(uuid).Path;
 		if (path.empty())
 		{
 			EQN_CORE_ERROR("No source path for texture {0}", uuid.ToString());
@@ -191,7 +191,7 @@ namespace Equinox
 
 		for (auto& [uuid, record] : s_Textures)
 		{
-			auto path = ResourceDB::UuidToPath(uuid);
+			auto path = ResourceDB::UuidToInfo(uuid).Path;
 			if (path.empty())
 			{
 				EQN_CORE_WARN("Skipping texture {0} with invalid path", uuid.ToString());

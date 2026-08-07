@@ -213,6 +213,7 @@ namespace Equinox
 						{
 							meshRenderer.ModelUUID = *droppedUUID;
 							meshRenderer.modelNamePreview = model->GetName();
+							ResourceDB::SetDirty(model->GetUUID());
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -220,16 +221,13 @@ namespace Equinox
 				ImGui::SameLine();
 
 				// Mesh Index Selection
-				if (true/*!meshRenderer.ModelUUID.IsNull()*/)
+				if (auto model = ModelLibrary::Get(meshRenderer.ModelUUID))
 				{
-					if (auto model = ModelLibrary::Get(meshRenderer.ModelUUID))
-					{
-						const uint32_t meshCount = model->GetMeshes().size();
-						ImGui::Text("#");
-						ImGui::SameLine();
-						ImGui::SetNextItemWidth(20);
-						ImGui::DragInt("##MeshIndex", reinterpret_cast<int*>(&meshRenderer.MeshIndex), 1.0f, 0, meshCount - 1);
-					}
+					const uint32_t meshCount = model->GetMeshes().size();
+					ImGui::Text("#");
+					ImGui::SameLine();
+					ImGui::SetNextItemWidth(20);
+					ImGui::DragInt("##MeshIndex", reinterpret_cast<int*>(&meshRenderer.MeshIndex), 1.0f, 0, meshCount - 1);
 				}
 
 				// Material Selection
@@ -386,6 +384,7 @@ namespace Equinox
 						{
 							const UUID* droppedUUID = static_cast<const UUID*>(payload->Data);
 							material->SetTexture({ *droppedUUID, type, 0 });
+							ResourceDB::SetDirty(material->GetUUID());
 						}
 
 						ImGui::EndDragDropTarget();
