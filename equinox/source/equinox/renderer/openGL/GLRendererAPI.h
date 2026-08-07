@@ -23,11 +23,14 @@ namespace Equinox
 		virtual void SetClearColor(const glm::vec4& color) override;
 		virtual void Clear() override;
 
-		void EnableDepthTest(bool enable);
-		bool IsDepthTestEnabled() const { return m_DepthTestEnabled; };
+		virtual void EnableDepthMask(bool enable) override;
+		virtual bool IsDepthMaskEnabled() override;
 
-		void EnableBlending(bool enable);
-		void SetBlendFunction(u32 srcFactor, u32 dstFactor);
+		virtual void EnableDepthTest(bool enable);
+		virtual bool IsDepthTestEnabled() const { return m_DepthTestEnabled; }
+
+		virtual void EnableBlending(bool enable);
+		virtual void SetBlendFunction(BlendFactor srcFactor, BlendFactor dstFactor);
 
 		virtual void SubmitMesh(const std::shared_ptr<Mesh>& mesh) override;
 
@@ -35,6 +38,7 @@ namespace Equinox
 		void DrawFrame() override;
 
 	private:
+		GLenum BlendFactorToGL(BlendFactor factor) const;
 		void CheckError(const char* file, int line);
 
 		bool m_DepthTestEnabled = true;

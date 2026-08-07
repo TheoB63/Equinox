@@ -36,6 +36,15 @@ namespace Equinox
         virtual void SetClearColor(const glm::vec4& color) override;
         virtual void Clear() override;
 
+        virtual void EnableDepthMask(bool enable) override;
+        virtual bool IsDepthMaskEnabled() override;
+
+        virtual void EnableDepthTest(bool enable) override;
+        virtual bool IsDepthTestEnabled() const override { return true; }
+
+        virtual void EnableBlending(bool enable) override;
+        virtual void SetBlendFunction(BlendFactor srcFactor, BlendFactor dstFactor) override;
+
         virtual void SubmitMesh(const std::shared_ptr<Mesh>& mesh) override;
 
         virtual void DrawIndexed(u32 count) override;

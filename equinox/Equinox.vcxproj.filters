@@ -251,6 +251,9 @@
     <ClInclude Include="source\equinox\utils\CustomFormatters.h">
       <Filter>equinox\utils</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\utils\EquinoxIcons.h">
+      <Filter>equinox\utils</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\utils\ImGuiUtils.h">
       <Filter>equinox\utils</Filter>
     </ClInclude>
@@ -263,7 +266,6 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\utils\EquinoxIcons.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />

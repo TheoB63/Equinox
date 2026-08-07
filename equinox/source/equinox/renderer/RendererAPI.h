@@ -3,20 +3,40 @@
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/Math.h"
 #include "equinox/renderer/Framebuffer.h"
-#include "equinox/renderer/Mesh.h"
 
 #include <memory>
 
 namespace Equinox
 {
+	class Mesh;
+
 	class RendererAPI
 	{
 	public:
+
 		enum class API
 		{
 			None = 0,
 			OpenGL,
 			Vulkan
+		};
+
+		enum class RenderMode
+		{
+			Opaque,
+			Cutout,
+			Transparent,
+			Fade
+		};
+
+		enum class BlendFactor
+		{
+			Zero,
+			One,
+			SrcAlpha,
+			OneMinusSrcAlpha,
+			DstAlpha,
+			OneMinusDstAlpha
 		};
 
 		virtual ~RendererAPI() = default;
@@ -29,6 +49,15 @@ namespace Equinox
 		virtual void SetViewport(u32 x, u32 y, u32 width, u32 height) = 0;
 		virtual void SetClearColor(const glm::vec4& color) = 0;
 		virtual void Clear() = 0;
+
+		virtual void EnableDepthMask(bool enable) = 0;
+		virtual bool IsDepthMaskEnabled() = 0;
+
+		virtual void EnableDepthTest(bool enable) = 0;
+		virtual bool IsDepthTestEnabled() const = 0;
+
+		virtual void EnableBlending(bool enable) = 0;
+		virtual void SetBlendFunction(BlendFactor srcFactor, BlendFactor dstFactor) = 0;
 
 		virtual void SubmitMesh(const std::shared_ptr<Mesh>& mesh) = 0;
 

@@ -193,67 +193,66 @@ namespace Equinox
 
 		DrawComponent<MeshRenderer>("Mesh Renderer", m_SelectedEntity, [](Entity entity, MeshRenderer& meshRenderer)
 			{
-				// Model Selection
-				ImGui::Text("Mesh");
-				ImGui::SameLine();
+			// Model Selection
+			ImGui::Text("Mesh");
+			ImGui::SameLine();
 
-				// Model UUID drag target
-				if (ImGui::Button(meshRenderer.modelNamePreview.empty() ?
-					"Drop Model Here" : meshRenderer.modelNamePreview.c_str()))
-				{
-					// TODO: Open model selection window
-				}
+			// Model UUID drag target
+			if (ImGui::Button(meshRenderer.modelNamePreview.empty() ?
+				"Drop Model Here" : meshRenderer.modelNamePreview.c_str()))
+			{
+				// TODO: Open model selection window
+			}
 
-				if (ImGui::BeginDragDropTarget())
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID")) 
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID"))
+					const UUID* droppedUUID = static_cast<const UUID*>(payload->Data);
+					if (auto model = ModelLibrary::Get(*droppedUUID))
 					{
-						const UUID* droppedUUID = static_cast<const UUID*>(payload->Data);
-						if (auto model = ModelLibrary::Get(*droppedUUID))
-						{
-							meshRenderer.ModelUUID = *droppedUUID;
-							meshRenderer.modelNamePreview = model->GetName();
-						}
+						meshRenderer.ModelUUID = *droppedUUID;
+						meshRenderer.modelNamePreview = model->GetName();
 					}
-					ImGui::EndDragDropTarget();
 				}
+				ImGui::EndDragDropTarget();
+			}
+			ImGui::SameLine();
+
+			// Mesh Index Selection
+			if (auto model = ModelLibrary::Get(meshRenderer.ModelUUID))
+			{
+				const uint32_t meshCount = model->GetMeshes().size();
+				ImGui::Text("#");
 				ImGui::SameLine();
+				ImGui::SetNextItemWidth(20);
+				ImGui::DragInt("##MeshIndex", reinterpret_cast<int*>(&meshRenderer.MeshIndex), 1.0f, 0, meshCount - 1);
+			}
 
-				// Mesh Index Selection
-				if (auto model = ModelLibrary::Get(meshRenderer.ModelUUID))
+			// Material Selection
+			ImGui::Text("Material");
+			ImGui::SameLine();
+
+			if (ImGui::Button(meshRenderer.materialNamePreview.empty() ?
+				"Drop Material Here" : meshRenderer.materialNamePreview.c_str()))
+			{
+				// TODO: Open material selection window
+			}
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID"))
 				{
-					const uint32_t meshCount = model->GetMeshes().size();
-					ImGui::Text("#");
-					ImGui::SameLine();
-					ImGui::SetNextItemWidth(20);
-					ImGui::DragInt("##MeshIndex", reinterpret_cast<int*>(&meshRenderer.MeshIndex), 1.0f, 0, meshCount - 1);
-				}
-
-				// Material Selection
-				ImGui::Text("Material");
-				ImGui::SameLine();
-
-				if (ImGui::Button(meshRenderer.materialNamePreview.empty() ?
-					"Drop Material Here" : meshRenderer.materialNamePreview.c_str()))
-				{
-					// TODO: Open material selection window
-				}
-
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID"))
-					{
-						const UUID droppedUUID = *static_cast<const UUID*>(payload->Data);
-						if (auto material = MaterialLibrary::Get(droppedUUID))
-						{
-							meshRenderer.MaterialUUID = droppedUUID;
-							meshRenderer.materialNamePreview = material->GetName();
-							ResourceDB::SetDirty(meshRenderer.ModelUUID);
-							ModelLibrary::Get(meshRenderer.ModelUUID)->AddMaterial(droppedUUID, meshRenderer.MeshIndex);
-						}
+					const UUID droppedUUID = *static_cast<const UUID*>(payload->Data);
+					if (auto material = MaterialLibrary::Get(droppedUUID)) {
+						meshRenderer.MaterialUUID = droppedUUID;
+						meshRenderer.materialNamePreview = material->GetName();
+						ResourceDB::SetDirty(meshRenderer.ModelUUID);
+						ModelLibrary::Get(meshRenderer.ModelUUID)->AddMaterial(droppedUUID, meshRenderer.MeshIndex);
 					}
-					ImGui::EndDragDropTarget();
 				}
+				ImGui::EndDragDropTarget();
+			}
 			});
 
 		// Add Component button
@@ -318,6 +317,7 @@ namespace Equinox
 						if (ImGui::Selectable(s.Shader->GetName().c_str(), &selected)) 
 						{
 							material->SetShaderUUID(uuid);
+							ResourceDB::SetDirty(material->GetUUID());
 						}
 					}
 					ImGui::EndCombo();
@@ -329,13 +329,47 @@ namespace Equinox
 			}
 
 			// Render mode
-			const char* renderModes[] = { "Opaque", "Cutout", "Transparent", "Fade" };
-			static int currentRenderMode = 0;
+			RendererAPI::RenderMode currentMode = material->GetRenderMode();
+			int modeIndex = static_cast<int>(currentMode);
+
 			ImGui::Text("Render Mode");
 			ImGui::SameLine();
-			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-			ImGui::Combo("##RenderMode", &currentRenderMode, renderModes, IM_ARRAYSIZE(renderModes));
+			const char* renderModes[] = { "Opaque", "Cutout", "Transparent", "Fade" };
+			if (ImGui::Combo("##RenderMode", &modeIndex, renderModes, IM_ARRAYSIZE(renderModes)))
+			{
+				material->SetRenderMode(static_cast<RendererAPI::RenderMode>(modeIndex));
+				ResourceDB::SetDirty(material->GetUUID());
+			}
 
+			if (material->GetRenderMode() == RendererAPI::RenderMode::Cutout) 
+			{
+				float cutoff = material->GetAlphaCutoff();
+				if (ImGui::SliderFloat("Alpha Cutoff", &cutoff, 0.0f, 1.0f))
+				{
+					material->SetAlphaCutoff(cutoff);
+				}
+			}
+
+			if (material->GetRenderMode() == RendererAPI::RenderMode::Transparent ||
+				material->GetRenderMode() == RendererAPI::RenderMode::Fade)
+			{
+				int srcFactor = static_cast<int>(material->GetBlendSrc());
+				int dstFactor = static_cast<int>(material->GetBlendDst());
+
+				const char* blendFactors[] = { "Zero", "One", "SrcAlpha", "OneMinusSrcAlpha" };
+
+				if (ImGui::Combo("Blend Src", &srcFactor, blendFactors, IM_ARRAYSIZE(blendFactors)))
+				{
+					material->SetBlendSrc(static_cast<RendererAPI::BlendFactor>(srcFactor));
+					ResourceDB::SetDirty(material->GetUUID());
+				}
+
+				if (ImGui::Combo("Blend Dst", &dstFactor, blendFactors, IM_ARRAYSIZE(blendFactors)))
+				{
+					material->SetBlendDst(static_cast<RendererAPI::BlendFactor>(dstFactor));
+					ResourceDB::SetDirty(material->GetUUID());
+				}
+			}
 			ImGui::Dummy({ 0, 4 });
 
 			// Texture properties with toggle buttons
@@ -368,7 +402,7 @@ namespace Equinox
 					ImGui::Indent();
 
 					// Texture slot with drag-drop support
-					if (hasTexture)
+					if (hasTexture) 
 					{
 						ImGui::ImageButton(label, (ImTextureID)texture->GetRendererID(), { 32, 32 }, { 0, 1 }, { 1, 0 });
 					}
@@ -379,7 +413,7 @@ namespace Equinox
 					}
 					ImGui::PopStyleVar();
 
-					if (ImGui::BeginDragDropTarget())
+					if (ImGui::BeginDragDropTarget()) 
 					{
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID"))
 						{
@@ -387,7 +421,6 @@ namespace Equinox
 							material->SetTexture({ *droppedUUID, type, 0 });
 							ResourceDB::SetDirty(material->GetUUID());
 						}
-
 						ImGui::EndDragDropTarget();
 					}
 
@@ -405,11 +438,13 @@ namespace Equinox
 				};
 
 			DrawTextureProperty(TextureType::Diffuse, "Albedo");
+			DrawTextureProperty(TextureType::Alpha, "Alpha");
 			DrawTextureProperty(TextureType::Normal, "Normal");
 			DrawTextureProperty(TextureType::Metalness, "Metallic");
 			DrawTextureProperty(TextureType::Roughness, "Roughness");
-			DrawTextureProperty(TextureType::Specular, "AO");
+			DrawTextureProperty(TextureType::Specular, "Specular");
 			DrawTextureProperty(TextureType::Emissive, "Emissive");
+			DrawTextureProperty(TextureType::Oclusion, "Oclusion");
 
 			// TODO: Could add color properties, sliders, etc. for each texture channel (too lazy :3)
 		}

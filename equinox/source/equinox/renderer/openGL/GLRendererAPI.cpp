@@ -20,7 +20,7 @@ namespace Equinox
 
 		EnableDepthTest(true);
 		EnableBlending(true);
-		SetBlendFunction(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		SetBlendFunction(BlendFactor::SrcAlpha, BlendFactor::OneMinusSrcAlpha);
 		SetClearColor({ 0.15, 0.15, 0.15, 1.0 });
 		//SetClearColor({ 1.00, 0.95, 0.97, 1.0 });
 
@@ -71,6 +71,19 @@ namespace Equinox
 		EQN_GL_CHECK_ERROR();
 	}
 
+	void GLRendererAPI::EnableDepthMask(bool enable)
+	{
+		glDepthMask(enable ? GL_TRUE : GL_FALSE);
+		EQN_GL_CHECK_ERROR();
+	}
+
+	bool GLRendererAPI::IsDepthMaskEnabled()
+	{
+		GLboolean currentState;
+		glGetBooleanv(GL_DEPTH_WRITEMASK, &currentState);
+		return currentState == GL_TRUE;
+	}
+
 	void GLRendererAPI::EnableDepthTest(bool enable)
 	{
 		m_DepthTestEnabled = enable;
@@ -85,9 +98,11 @@ namespace Equinox
 		EQN_GL_CHECK_ERROR();
 	}
 
-	void GLRendererAPI::SetBlendFunction(u32 srcFactor, u32 dstFactor)
+	void GLRendererAPI::SetBlendFunction(BlendFactor srcFactor, BlendFactor dstFactor)
 	{
-		glBlendFunc(srcFactor, dstFactor);
+		GLenum glSrc = BlendFactorToGL(srcFactor);
+		GLenum glDst = BlendFactorToGL(dstFactor);
+		glBlendFunc(glSrc, glDst);
 		EQN_GL_CHECK_ERROR();
 	}
 
@@ -115,6 +130,22 @@ namespace Equinox
 		{
 			mesh->Bind(); EQN_GL_CHECK_ERROR();
 			mesh->Draw(); EQN_GL_CHECK_ERROR();
+		}
+	}
+
+	GLenum GLRendererAPI::BlendFactorToGL(BlendFactor factor) const
+	{
+		switch (factor) 
+		{
+		case BlendFactor::Zero:               return GL_ZERO;
+		case BlendFactor::One:                return GL_ONE;
+		case BlendFactor::SrcAlpha:           return GL_SRC_ALPHA;
+		case BlendFactor::OneMinusSrcAlpha:   return GL_ONE_MINUS_SRC_ALPHA;
+		case BlendFactor::DstAlpha:           return GL_DST_ALPHA;
+		case BlendFactor::OneMinusDstAlpha:   return GL_ONE_MINUS_DST_ALPHA;
+		default:
+			EQN_CORE_ERROR("Unsupported blend factor: {0}", static_cast<int>(factor));
+			return GL_ONE;
 		}
 	}
 

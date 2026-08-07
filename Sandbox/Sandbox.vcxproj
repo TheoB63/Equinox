@@ -155,10 +155,6 @@
       <Project>{EE9549D3-5A75-C86E-638D-5345CFEB2ED0}</Project>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="assets\shaders\EquinoxDebug.glsl" />
-    <None Include="assets\shaders\EquinoxDebug.glsl.meta" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
