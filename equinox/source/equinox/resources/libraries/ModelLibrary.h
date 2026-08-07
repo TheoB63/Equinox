@@ -35,6 +35,8 @@ namespace Equinox
         static bool Reload(const UUID& uuid);
         static void ReloadAll();
 
+        static bool Save(const UUID& materialUUID);
+
     private:
         static std::shared_mutex s_Mutex;
         static std::unordered_map<UUID, ModelRecord, UUIDHash> s_Models;

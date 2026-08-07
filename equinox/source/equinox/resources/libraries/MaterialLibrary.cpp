@@ -72,24 +72,6 @@ namespace Equinox
         return s_Materials;
     }
 
-    bool MaterialLibrary::Save(const UUID& materialUUID)
-    {
-        if (auto material = Get(materialUUID)) 
-        {
-            auto path = ResourceDB::UuidToInfo(materialUUID).Path;
-            if (path.empty()) return false;
-
-            nlohmann::json json;
-            material->Serialize(json);
-
-            std::ofstream file(path);
-            file << json.dump(4);
-            return true;
-        }
-
-        return false;
-    }
-
     void MaterialLibrary::Reload(const UUID& materialUUID)
     {
         auto path = ResourceDB::UuidToInfo(materialUUID).Path;
@@ -109,5 +91,22 @@ namespace Equinox
             // Restore UUID and name
             material->SetUUID(materialUUID);
         }
+    }
+
+    bool MaterialLibrary::Save(const UUID& materialUUID)
+    {
+        if (auto material = Get(materialUUID)) 
+        {
+            auto path = ResourceDB::UuidToInfo(materialUUID).Path;
+            if (path.empty()) return false;
+
+            nlohmann::json json;
+            material->Serialize(json);
+
+            std::ofstream file(path);
+            file << json.dump(4);
+            return true;
+        }
+        return false;
     }
 }

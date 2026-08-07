@@ -95,17 +95,18 @@ namespace Equinox
 	{
 		static const std::unordered_map<std::string, ResourceType> extensionMap =
 		{
-			{ ".fbx",  ResourceType::Model    },
-			{ ".obj",  ResourceType::Model    },
-			{ ".gltf", ResourceType::Model    },
-			{ ".blend",ResourceType::Model    },
-			{ ".png",  ResourceType::Texture  },
-			{ ".jpg",  ResourceType::Texture  },
-			{ ".tga",  ResourceType::Texture  },
-			{ ".mat",  ResourceType::Material },
-			{ ".glsl", ResourceType::Shader   },
-			{ ".ttf",  ResourceType::Font     },
-			{ ".ini",  ResourceType::Config   }
+			{ ".fbx",   ResourceType::Model    },
+			{ ".obj",   ResourceType::Model    },
+			{ ".gltf",  ResourceType::Model    },
+			{ ".dae",   ResourceType::Model    },
+			{ ".blend", ResourceType::Model    },
+			{ ".png",   ResourceType::Texture  },
+			{ ".jpg",   ResourceType::Texture  },
+			{ ".tga",   ResourceType::Texture  },
+			{ ".mat",   ResourceType::Material },
+			{ ".glsl",  ResourceType::Shader   },
+			{ ".ttf",   ResourceType::Font     },
+			{ ".ini",   ResourceType::Config   }
 		};
 
 		std::string ext = path.extension().string();
@@ -133,7 +134,7 @@ namespace Equinox
 
 	const std::unordered_map<ResourceType, FileSystem::ResourceTypeInfo>& FileSystem::GetTypeInfo()
 	{
-		static const std::unordered_map<ResourceType, ResourceTypeInfo> typeInfo = 
+		static const std::unordered_map<ResourceType, ResourceTypeInfo> typeInfo =
 		{
 			{ ResourceType::Model,    { "Model",    "models",    ".fbx",  Vec4(0.4f, 0.8f, 1.0f, 1.0f) } },
 			{ ResourceType::Texture,  { "Texture",  "textures",  ".png",  Vec4(0.8f, 0.6f, 0.2f, 1.0f) } },

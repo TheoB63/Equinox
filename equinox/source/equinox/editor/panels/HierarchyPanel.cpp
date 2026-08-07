@@ -361,9 +361,15 @@ namespace Equinox
 						parent.GetChildren().push_back(child);
 
 						auto& meshRend = child.AddComponent<MeshRenderer>();
-						meshRend.ModelUUID = assetUuid;
 						meshRend.modelNamePreview = model->GetName();
-						meshRend.MeshIndex = meshIndex++;
+						meshRend.ModelUUID = assetUuid;
+						meshRend.MeshIndex = meshIndex;
+						if (!model->GetMaterials().empty())
+						{
+							meshRend.MaterialUUID = model->GetMaterials()[meshIndex];
+							meshRend.materialNamePreview = MaterialLibrary::Get(meshRend.MaterialUUID)->GetName();
+						}
+						meshIndex++;
 					}
 					break;
 				}

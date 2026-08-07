@@ -39,18 +39,20 @@ namespace Equinox
 		}
 
 		// Library management
-		static void Init()
+		static void Init() 
 		{
 			ModelLibrary::Init();
 			MaterialLibrary::Init();
 			ShaderLibrary::Init();
+			TextureCache::Init();
 		}
 
-		static void Shutdown()
+		static void Shutdown() 
 		{
 			ModelLibrary::Shutdown();
 			MaterialLibrary::Shutdown();
 			ShaderLibrary::Shutdown();
+			TextureCache::Shutdown();
 		}
 
 	private:
