@@ -15,6 +15,7 @@ namespace Equinox
 
 	void FileSystem::Init(const fs::path& engineRoot)
 	{
+		EQN_CORE_INFO("Initialized FileSystem");
 		s_EngineRoot = engineRoot.empty() ? fs::current_path() : engineRoot;
 		s_ProjectRoot = fs::current_path();
 		s_AssetsRoot = s_ProjectRoot / "assets";
@@ -134,12 +135,12 @@ namespace Equinox
 	{
 		static const std::unordered_map<ResourceType, ResourceTypeInfo> typeInfo = 
 		{
-			{ ResourceType::Model,    { "models",    ".fbx"  } },
-			{ ResourceType::Texture,  { "textures",  ".png"  } },
-			{ ResourceType::Material, { "materials", ".mat"  } },
-			{ ResourceType::Shader,   { "shaders",   ".glsl" } },
-			{ ResourceType::Font,     { "fonts",     ".ttf"  } },
-			{ ResourceType::Config,   { "config",    ".json" } }
+			{ ResourceType::Model,    { "Model",    "models",    ".fbx",  Vec4(0.4f, 0.8f, 1.0f, 1.0f) } },
+			{ ResourceType::Texture,  { "Texture",  "textures",  ".png",  Vec4(0.8f, 0.6f, 0.2f, 1.0f) } },
+			{ ResourceType::Material, { "Material", "materials", ".mat",  Vec4(0.2f, 0.9f, 0.4f, 1.0f) } },
+			{ ResourceType::Shader,   { "Shader",   "shaders",   ".glsl", Vec4(0.9f, 0.3f, 0.3f, 1.0f) } },
+			{ ResourceType::Font,     { "Font",     "fonts",     ".ttf",  Vec4(0.5f, 0.5f, 0.5f, 1.0f) } },
+			{ ResourceType::Config,   { "Config",   "config",    ".json", Vec4(0.5f, 0.5f, 0.5f, 1.0f) } }
 		};
 		return typeInfo;
 	}

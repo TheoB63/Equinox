@@ -8,12 +8,12 @@
 namespace Equinox
 {
     // Static member definitions
-    std::vector<std::unique_ptr<System>> Systems::s_Systems;
+    std::vector<std::shared_ptr<System>> Systems::s_Systems;
     std::shared_ptr<entt::registry> Systems::s_Registry;
 
     void Systems::Init()
     {
-        s_Registry = Editor::GetPanel<HierarchyPanel>()->GetContext()->RegistryPtr();
+        EQN_CORE_INFO("Initializing Systems...");
         AddSystem<RenderingSystem>();
     }
 
@@ -25,6 +25,7 @@ namespace Equinox
 
     void Systems::Update()
     {
+        if (!s_Registry) return;
         for (auto& system : s_Systems)
         {
             system->Update(*s_Registry);

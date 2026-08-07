@@ -83,6 +83,9 @@
     <ClInclude Include="source\equinox\editor\panels\ProjectPanel.h">
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\editor\panels\RenderPanel.h">
+      <Filter>equinox\editor\panels</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\editor\panels\ResourcePanel.h">
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
@@ -260,6 +263,7 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\utils\EquinoxIcons.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -282,6 +286,9 @@
       <Filter>equinox\editor\panels</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\editor\panels\ProjectPanel.cpp">
+      <Filter>equinox\editor\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\editor\panels\RenderPanel.cpp">
       <Filter>equinox\editor\panels</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp">

@@ -13,6 +13,14 @@ namespace Equinox
     class FileSystem
     {
     public:
+        struct ResourceTypeInfo 
+        {
+            std::string name;
+            fs::path directory;
+            std::string extension;
+            Vec4 color;
+        };
+
         static void Init(const fs::path& engineRoot = "");
 
         // Path operations
@@ -36,17 +44,11 @@ namespace Equinox
         static void CreateDirectories(const fs::path& path);
         static void EnsureBaseStructure();
 
+        static const std::unordered_map<ResourceType, ResourceTypeInfo>& GetTypeInfo();
+
     private:
         static fs::path s_EngineRoot;
         static fs::path s_ProjectRoot;
         static fs::path s_AssetsRoot;
-
-        struct ResourceTypeInfo
-        {
-            fs::path directory;
-            std::string extension;
-        };
-
-        static const std::unordered_map<ResourceType, ResourceTypeInfo>& GetTypeInfo();
     };
 }

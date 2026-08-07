@@ -263,6 +263,7 @@ namespace Equinox
 		AlignItemToCenter(100);
 		ButtonDropdown("Add Component", "inspector_addcomponent", [this]()
 			{
+#if defined(DEBUG)
 				if (!m_SelectedEntity.HasComponent<Tag>() && ImGui::MenuItem("Tag"))
 				{
 					m_SelectedEntity.AddOrReplaceComponent<Tag>();
@@ -278,6 +279,7 @@ namespace Equinox
 					m_SelectedEntity.AddOrReplaceComponent<Children>();
 					ImGui::CloseCurrentPopup();
 				}
+#endif
 				if (!m_SelectedEntity.HasComponent<Camera>() && ImGui::MenuItem("Camera"))
 				{
 					m_SelectedEntity.AddOrReplaceComponent<Camera>();
@@ -311,7 +313,14 @@ namespace Equinox
 				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 				if (ImGui::BeginCombo("##Shader", shader->GetName().c_str()))
 				{
-					// TODO: show available shaders
+					for (const auto& [uuid, s] : ShaderLibrary::GetAllShaders())
+					{
+						bool selected;
+						if (ImGui::Selectable(s.Shader->GetName().c_str(), &selected)) 
+						{
+							material->SetShaderUUID(uuid);
+						}
+					}
 					ImGui::EndCombo();
 				}
 			}

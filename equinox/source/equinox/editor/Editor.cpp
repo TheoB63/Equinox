@@ -10,6 +10,7 @@
 #include "equinox/editor/panels/ProjectPanel.h"
 #include "equinox/editor/panels/ResourcePanel.h"
 #include "equinox/editor/panels/ScenePanel.h"
+#include "equinox/editor/panels/RenderPanel.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -52,6 +53,7 @@ namespace Equinox
 		AddPanel(new ProjectPanel());
 		AddPanel(new ResourcePanel());
 		AddPanel(new ScenePanel());
+		AddPanel(new RenderPanel());
 
 		// Init all panels
 		for (auto& panel : s_Panels)
@@ -172,8 +174,15 @@ namespace Equinox
 
 	void Editor::SetCustomStyle()
 	{
-		//ImGuiIO& io = ImGui::GetIO();
+		ImGuiIO& io = ImGui::GetIO();
 		//io.Fonts->AddFontFromFileTTF(FileSystem::GetPath(ResourceType::Font, "OxygenMono-Regular.ttf").string().c_str(), 16.0f);
+
+		ImFont* defaultFont = io.Fonts->AddFontDefault();
+		ImFontConfig config;
+		config.MergeMode = false;
+		static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
+		m_IconFont = io.Fonts->AddFontFromFileTTF(
+			FileSystem::GetPath(ResourceType::Font, "equinox_icons.ttf").string().c_str(), 48.0f, &config, iconRanges);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		ImVec4* colors = style.Colors;

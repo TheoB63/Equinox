@@ -1,11 +1,17 @@
 #include "eqnpch.h"
+
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/editor/panels/ProjectPanel.h"
+
 #include "equinox/scene/Components.h"
+#include "equinox/scene/Systems.h"
+
 #include "equinox/resources/Resources.h"
 #include "equinox/resources/FileSystem.h"
 #include "equinox/resources/ResourceDB.h"
+
 #include "equinox/renderer/Renderer.h"
+
 #include "equinox/utils/ImGuiUtils.h"
 
 #include <imgui.h>
@@ -21,6 +27,7 @@ namespace Equinox
 
 	void HierarchyPanel::OnInit()
 	{
+		Systems::SetRegistry(m_Context->RegistryPtr());
 	}
 
 	void HierarchyPanel::OnRender()

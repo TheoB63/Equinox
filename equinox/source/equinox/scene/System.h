@@ -48,7 +48,7 @@ namespace Equinox
 					if (!material) material = MaterialLibrary::Get(UUID(7));
 
 					// Get shader and setup transform
-					auto shader = material->GetShader();
+					auto shader = m_Override ? m_ShaderOverride : material->GetShader();
 					if (!shader) 
 					{
 						EQN_CORE_WARN("Invalid shader for material");
@@ -65,6 +65,12 @@ namespace Equinox
 					// Draw the mesh
 					meshes[meshRend.MeshIndex]->Draw();
 				});
+		}
+
+		void SetShaderOverride(bool override, UUID uuid)
+		{
+			m_Override = override;
+			m_ShaderOverride = ShaderLibrary::Get(uuid);
 		}
 
 	private:
@@ -122,5 +128,9 @@ namespace Equinox
 			// TODO: Create a matrix from transform components
 			return glm::mat4(1.0f);
 		}
+
+		// Shader controls
+		std::shared_ptr<Shader> m_ShaderOverride;
+		bool m_Override = false;
 	};
 }

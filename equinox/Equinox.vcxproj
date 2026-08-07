@@ -166,6 +166,7 @@
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ProjectPanel.h" />
+    <ClInclude Include="source\equinox\editor\panels\RenderPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ResourcePanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ScenePanel.h" />
     <ClInclude Include="source\equinox\editor\panels\TestPanel.h" />
@@ -221,6 +222,7 @@
     <ClInclude Include="source\equinox\scene\System.h" />
     <ClInclude Include="source\equinox\scene\Systems.h" />
     <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
+    <ClInclude Include="source\equinox\utils\EquinoxIcons.h" />
     <ClInclude Include="source\equinox\utils\ImGuiUtils.h" />
     <ClInclude Include="source\equinox\utils\ImageUtils.h" />
     <ClInclude Include="source\equinox\window\WinWindow.h" />
@@ -237,6 +239,7 @@
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ProjectPanel.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\RenderPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp" />
