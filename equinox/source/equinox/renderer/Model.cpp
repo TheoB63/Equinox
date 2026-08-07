@@ -110,7 +110,9 @@ namespace Equinox
 
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(path.string(),
-			aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+			aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs |
+			aiProcess_CalcTangentSpace | aiProcess_FixInfacingNormals |
+			aiProcess_JoinIdenticalVertices);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 		{
