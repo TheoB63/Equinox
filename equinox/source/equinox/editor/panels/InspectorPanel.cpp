@@ -369,6 +369,12 @@ namespace Equinox
 					material->SetBlendDst(static_cast<RendererAPI::BlendFactor>(dstFactor));
 					ResourceDB::SetDirty(material->GetUUID());
 				}
+
+				bool fromDiffuse = material->IsAlphaFromDiffuseEnabled();
+				if (ImGui::Checkbox("Alpha from Diffuse", &fromDiffuse))
+				{
+					material->EnableAlphaFromDiffuse(fromDiffuse);
+				}
 			}
 			ImGui::Dummy({ 0, 4 });
 
@@ -424,6 +430,44 @@ namespace Equinox
 						ImGui::EndDragDropTarget();
 					}
 
+					// Texture speciffic
+					if (type == TextureType::Diffuse)
+					{
+						ImGui::SameLine();
+
+						Vec4 color = material->GetColor();
+						if (ImGui::ColorEdit4("##DiffuseColor", &color.r,
+							ImGuiColorEditFlags_NoInputs |
+							ImGuiColorEditFlags_AlphaBar |
+							ImGuiColorEditFlags_AlphaPreview))
+						{
+							material->SetColor(color);
+							ResourceDB::SetDirty(material->GetUUID());
+						}
+
+						if (ImGui::IsItemHovered()) 
+						{
+							ImGui::SetTooltip("Diffuse Color");
+						}
+					}
+					else if (type == TextureType::Alpha)
+					{
+						ImGui::SameLine();
+						float alpha = material->GetAlpha();
+						if (ImGui::SliderFloat("##Alpha Value", &alpha, 0.0f, 1.0f)) 
+						{
+							material->SetAlpha(alpha);
+							ResourceDB::SetDirty(material->GetUUID());
+						}
+					}
+
+					// [SUPR] Handle texture deletion
+					if (ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete)) 
+					{
+						material->SetTexture({ UUID(3), type, 0 });
+						ResourceDB::SetDirty(material->GetUUID());
+					}
+
 					// Texture properties
 					if (hasTexture)
 					{
@@ -443,8 +487,8 @@ namespace Equinox
 			DrawTextureProperty(TextureType::Metalness, "Metallic");
 			DrawTextureProperty(TextureType::Roughness, "Roughness");
 			DrawTextureProperty(TextureType::Specular, "Specular");
-			DrawTextureProperty(TextureType::Emissive, "Emissive");
 			DrawTextureProperty(TextureType::Oclusion, "Oclusion");
+			DrawTextureProperty(TextureType::Emissive, "Emissive");
 
 			// TODO: Could add color properties, sliders, etc. for each texture channel (too lazy :3)
 		}

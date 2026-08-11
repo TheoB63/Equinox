@@ -18,14 +18,14 @@ namespace Equinox
 {
 	enum class TextureType
 	{
-		Diffuse,
-		Alpha,
-		Normal,
-		Emissive,
-		Metalness,
-		Roughness,
-		Specular,
-		Oclusion
+		Diffuse = 0,
+		Alpha = 1,
+		Normal = 2,
+		Metalness = 3,
+		Roughness = 4,
+		Specular = 5,
+		Oclusion = 6,
+		Emissive = 7
 	};
 
 	struct TextureInfo
@@ -48,7 +48,12 @@ namespace Equinox
 
 		// Texture management
 		void AddTexture(const TextureInfo& texture) { m_Textures.push_back(texture); }
-		void SetTexture(const TextureInfo& texture) { m_Textures[(int)texture.type] = texture; }
+		void SetTexture(const TextureInfo& texture)
+		{
+			int index = static_cast<int>(texture.type);
+			if (index >= m_Textures.size()) AddTexture(texture);
+			else m_Textures[index] = texture;
+		}
 		const std::vector<TextureInfo>& GetTextures() const { return m_Textures; }
 
 		std::optional<u32> GetUVIndex(TextureType type) const
@@ -74,7 +79,7 @@ namespace Equinox
 		RendererAPI::RenderMode GetRenderMode() const { return m_RenderMode; }
 		void SetRenderMode(RendererAPI::RenderMode mode) { m_RenderMode = mode; }
 
-		// Alpha cutoff for Cutout
+		// Alpha cutoff for RenderMode::Cutout
 		float GetAlphaCutoff() const { return m_AlphaCutoff; }
 		void SetAlphaCutoff(float cutoff) { m_AlphaCutoff = cutoff; }
 
@@ -84,6 +89,15 @@ namespace Equinox
 
 		void SetBlendDst(RendererAPI::BlendFactor factor) { m_BlendDst = factor; }
 		RendererAPI::BlendFactor GetBlendDst() const { return m_BlendDst; }
+
+		void EnableAlphaFromDiffuse(bool enable) { m_AlphaFromDiffuse = enable; }
+		bool IsAlphaFromDiffuseEnabled() const { return m_AlphaFromDiffuse; }
+
+		Vec4 GetColor() const { return m_Color; }
+		void SetColor(Vec4 color) { m_Color = color; }
+
+		float GetAlpha() const { return m_Alpha; }
+		void SetAlpha(float alpha) { m_Alpha = alpha; }
 
 		// Serialization/Deserialization
 		void Serialize(nlohmann::json& json) const;
@@ -99,6 +113,10 @@ namespace Equinox
 		float m_AlphaCutoff = 0.5f;
 		RendererAPI::BlendFactor m_BlendSrc = RendererAPI::BlendFactor::SrcAlpha;
 		RendererAPI::BlendFactor m_BlendDst = RendererAPI::BlendFactor::OneMinusSrcAlpha;
+		bool m_AlphaFromDiffuse = false;
+
+		Vec4 m_Color = Vec4(1);
+		float m_Alpha = 1.0;
 	};
 
 	inline std::ostream& operator<<(std::ostream& os, const TextureType type)
