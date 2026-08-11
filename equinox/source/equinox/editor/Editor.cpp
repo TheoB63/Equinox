@@ -1,7 +1,10 @@
 #include "eqnpch.h"
 #include "equinox/editor/Editor.h"
-#include "equinox/renderer/Renderer.h"
 #include "equinox/window/WinWindow.h"
+
+#include "equinox/ECS/Systems.h"
+#include "equinox/ECS/systems/RenderingSystem.h"
+#include "equinox/renderer/Renderer.h"
 
 #include "equinox/resources/FileSystem.h"
 
@@ -47,12 +50,14 @@ namespace Equinox
 			EQN_CORE_WARN("ImGui not yet implemented for Vulkan");
 		}
 
+		auto technique = Systems::GetSystem<RenderingSystem>();
+
 		// Set Panels
 		AddPanel(new HierarchyPanel());
 		AddPanel(new InspectorPanel());
 		AddPanel(new ProjectPanel());
 		AddPanel(new ResourcePanel());
-		AddPanel(new ScenePanel());
+		AddPanel(new ScenePanel(technique));
 		AddPanel(new RenderPanel());
 
 		// Init all panels

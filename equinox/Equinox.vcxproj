@@ -162,6 +162,7 @@
     <ClInclude Include="source\equinox\core\ThreadPool.h" />
     <ClInclude Include="source\equinox\core\Time.h" />
     <ClInclude Include="source\equinox\core\UUID.h" />
+    <ClInclude Include="source\equinox\ECS\systems\RenderingSystem.h" />
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
@@ -185,7 +186,10 @@
     <ClInclude Include="source\equinox\renderer\Model.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
     <ClInclude Include="source\equinox\renderer\RendererAPI.h" />
+    <ClInclude Include="source\equinox\renderer\RenderPipeline.h" />
+    <ClInclude Include="source\equinox\renderer\RenderTechnique.h" />
     <ClInclude Include="source\equinox\renderer\Shader.h" />
+    <ClInclude Include="source\equinox\renderer\techniques\ForwardTechnique.h" />
     <ClInclude Include="source\equinox\renderer\Texture.h" />
     <ClInclude Include="source\equinox\renderer\VertexArray.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLBuffer.h" />
@@ -216,11 +220,11 @@
     <ClInclude Include="source\equinox\resources\libraries\ModelLibrary.h" />
     <ClInclude Include="source\equinox\resources\libraries\ShaderLibrary.h" />
     <ClInclude Include="source\equinox\resources\libraries\TextureCache.h" />
-    <ClInclude Include="source\equinox\scene\Components.h" />
-    <ClInclude Include="source\equinox\scene\Entity.h" />
-    <ClInclude Include="source\equinox\scene\Scene.h" />
-    <ClInclude Include="source\equinox\scene\System.h" />
-    <ClInclude Include="source\equinox\scene\Systems.h" />
+    <ClInclude Include="source\equinox\ECS\Components.h" />
+    <ClInclude Include="source\equinox\ECS\Entity.h" />
+    <ClInclude Include="source\equinox\ECS\Scene.h" />
+    <ClInclude Include="source\equinox\ECS\System.h" />
+    <ClInclude Include="source\equinox\ECS\Systems.h" />
     <ClInclude Include="source\equinox\utils\CustomFormatters.h" />
     <ClInclude Include="source\equinox\utils\EquinoxIcons.h" />
     <ClInclude Include="source\equinox\utils\ImGuiUtils.h" />
@@ -235,6 +239,7 @@
     <ClCompile Include="source\equinox\core\App.cpp" />
     <ClCompile Include="source\equinox\core\Log.cpp" />
     <ClCompile Include="source\equinox\core\UUID.cpp" />
+    <ClCompile Include="source\equinox\ECS\systems\RenderingSystem.cpp" />
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
@@ -251,7 +256,9 @@
     <ClCompile Include="source\equinox\renderer\Model.cpp" />
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
     <ClCompile Include="source\equinox\renderer\RendererAPI.cpp" />
+    <ClCompile Include="source\equinox\renderer\RenderPipeline.cpp" />
     <ClCompile Include="source\equinox\renderer\Shader.cpp" />
+    <ClCompile Include="source\equinox\renderer\techniques\ForwardTechnique.cpp" />
     <ClCompile Include="source\equinox\renderer\Texture.cpp" />
     <ClCompile Include="source\equinox\renderer\VertexArray.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLBuffer.cpp" />
@@ -279,9 +286,9 @@
     <ClCompile Include="source\equinox\resources\libraries\ModelLibrary.cpp" />
     <ClCompile Include="source\equinox\resources\libraries\ShaderLibrary.cpp" />
     <ClCompile Include="source\equinox\resources\libraries\TextureCache.cpp" />
-    <ClCompile Include="source\equinox\scene\Entity.cpp" />
-    <ClCompile Include="source\equinox\scene\Scene.cpp" />
-    <ClCompile Include="source\equinox\scene\Systems.cpp" />
+    <ClCompile Include="source\equinox\ECS\Entity.cpp" />
+    <ClCompile Include="source\equinox\ECS\Scene.cpp" />
+    <ClCompile Include="source\equinox\ECS\Systems.cpp" />
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp" />
     <ClCompile Include="source\equinox\window\WinWindow.cpp" />
     <ClCompile Include="source\equinox\window\Window.cpp" />

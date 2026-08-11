@@ -1,8 +1,9 @@
 #pragma once
 
 #include "equinox/core/Math.h"
-#include "equinox/scene/Entity.h"
 #include "equinox/core/UUID.h"
+
+#include "equinox/ECS/Entity.h"
 
 #include <entt/entt.hpp>
 #include <string>

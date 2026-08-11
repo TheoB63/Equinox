@@ -1,11 +1,12 @@
 #include "eqnpch.h"
-#include "equinox/scene/Entity.h"
-#include "equinox/scene/Components.h"
+#include "equinox/ECS/Entity.h"
+#include "equinox/ECS/Components.h"
 
 namespace Equinox
 {
     Entity::Entity(entt::entity handle, Scene* scene)
-        : m_EntityHandle(handle), m_Scene(scene) {
+        : m_EntityHandle(handle), m_Scene(scene) 
+    {
     }
 
     std::string Entity::GetName() const

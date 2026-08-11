@@ -11,7 +11,7 @@
 #include "equinox/editor/Editor.h"
 #include "equinox/editor/panels/ScenePanel.h"
 
-#include "equinox/scene/Systems.h"
+#include "equinox/ECS/Systems.h"
 
 namespace Equinox
 {
@@ -67,21 +67,16 @@ namespace Equinox
 
 			if (!m_Window->IsMinimized())
 			{
-				auto sceneFb = Editor::GetPanel<ScenePanel>()->GetFramebuffer();
-				Renderer::BindFramebuffer(sceneFb);
-				Renderer::Clear();
-				Systems::Update();
-				Renderer::DrawFrame();
-				Renderer::BindFramebuffer(nullptr);
-			}
+				Systems::Update<RenderingSystem>();
 
-			// Render UI
-			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-			{
-				Editor::BeginFrame();
-				Editor::Render();
-				OnUIRender();
-				Editor::EndFrame();
+				// Render UI (not yet implemented in vulkan)
+				if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+				{
+					Editor::BeginFrame();
+					Editor::Render();
+					OnUIRender();
+					Editor::EndFrame();
+				}
 			}
 
 			m_Window->SwapBuffers();

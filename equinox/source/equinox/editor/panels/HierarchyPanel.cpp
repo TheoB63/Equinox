@@ -3,8 +3,8 @@
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/editor/panels/ProjectPanel.h"
 
-#include "equinox/scene/Components.h"
-#include "equinox/scene/Systems.h"
+#include "equinox/ECS/Components.h"
+#include "equinox/ECS/Systems.h"
 
 #include "equinox/resources/Resources.h"
 #include "equinox/resources/FileSystem.h"

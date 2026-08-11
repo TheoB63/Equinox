@@ -3,7 +3,7 @@
 #include "equinox/editor/panels/InspectorPanel.h"
 #include "equinox/editor/panels/HierarchyPanel.h"
 
-#include "equinox/scene/Components.h"
+#include "equinox/ECS/Components.h"
 
 #include "equinox/resources/ResourceDB.h"
 #include "equinox/resources/libraries/MaterialLibrary.h"

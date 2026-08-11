@@ -3,8 +3,8 @@
 #include "equinox/editor/Editor.h"
 #include "equinox/editor/panels/InspectorPanel.h"
 
-#include "equinox/scene/Entity.h"
-#include "equinox/scene/Scene.h"
+#include "equinox/ECS/Entity.h"
+#include "equinox/ECS/Scene.h"
 
 namespace Equinox
 {

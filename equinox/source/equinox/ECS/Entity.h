@@ -1,7 +1,7 @@
 #pragma once
 
 #include "equinox/core/Math.h"
-#include "equinox/scene/Scene.h"
+#include "equinox/ECS/Scene.h"
 
 #include <entt/entt.hpp>
 

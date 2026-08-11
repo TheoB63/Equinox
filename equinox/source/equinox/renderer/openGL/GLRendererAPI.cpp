@@ -44,7 +44,8 @@ namespace Equinox
 		if (framebuffer)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->GetRendererID());
-			Renderer::SetViewport(0, 0, framebuffer->GetWidth(), framebuffer->GetHeight());
+			auto spec = framebuffer->GetSpecification();
+			Renderer::SetViewport(0, 0, spec.Width, spec.Height);
 		}
 		else 
 		{
@@ -81,6 +82,7 @@ namespace Equinox
 	{
 		GLboolean currentState;
 		glGetBooleanv(GL_DEPTH_WRITEMASK, &currentState);
+		EQN_GL_CHECK_ERROR();
 		return currentState == GL_TRUE;
 	}
 

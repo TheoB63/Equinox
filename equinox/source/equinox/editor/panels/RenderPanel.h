@@ -2,7 +2,7 @@
 
 #include "equinox/editor/Editor.h"
 #include "equinox/core/UUID.h"
-#include "equinox/scene/System.h"
+#include "equinox/ECS/systems/RenderingSystem.h"
 
 #include <map>
 #include <string>

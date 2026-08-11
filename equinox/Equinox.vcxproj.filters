@@ -233,19 +233,19 @@
     <ClInclude Include="source\equinox\resources\libraries\TextureCache.h">
       <Filter>equinox\resources\libraries</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\scene\Components.h">
+    <ClInclude Include="source\equinox\ECS\Components.h">
       <Filter>equinox\scene</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\scene\Entity.h">
+    <ClInclude Include="source\equinox\ECS\Entity.h">
       <Filter>equinox\scene</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\scene\Scene.h">
+    <ClInclude Include="source\equinox\ECS\Scene.h">
       <Filter>equinox\scene</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\scene\System.h">
+    <ClInclude Include="source\equinox\ECS\System.h">
       <Filter>equinox\scene</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\scene\Systems.h">
+    <ClInclude Include="source\equinox\ECS\Systems.h">
       <Filter>equinox\scene</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\utils\CustomFormatters.h">
@@ -266,6 +266,10 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\ECS\systems\RenderingSystem.h" />
+    <ClInclude Include="source\equinox\renderer\RenderPipeline.h" />
+    <ClInclude Include="source\equinox\renderer\RenderTechnique.h" />
+    <ClInclude Include="source\equinox\renderer\techniques\ForwardTechnique.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -410,13 +414,13 @@
     <ClCompile Include="source\equinox\resources\libraries\TextureCache.cpp">
       <Filter>equinox\resources\libraries</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\scene\Entity.cpp">
+    <ClCompile Include="source\equinox\ECS\Entity.cpp">
       <Filter>equinox\scene</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\scene\Scene.cpp">
+    <ClCompile Include="source\equinox\ECS\Scene.cpp">
       <Filter>equinox\scene</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\scene\Systems.cpp">
+    <ClCompile Include="source\equinox\ECS\Systems.cpp">
       <Filter>equinox\scene</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp">
@@ -428,5 +432,8 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\ECS\systems\RenderingSystem.cpp" />
+    <ClCompile Include="source\equinox\renderer\RenderPipeline.cpp" />
+    <ClCompile Include="source\equinox\renderer\techniques\ForwardTechnique.cpp" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,7 @@
 #include "eqnpch.h"
 
-#include "equinox/scene/Systems.h"
-
-#include "equinox/editor/Editor.h"
-#include "equinox/editor/panels/HierarchyPanel.h"
+#include "equinox/ECS/Systems.h"
+#include "equinox/ECS/systems/RenderingSystem.h"
 
 namespace Equinox
 {
