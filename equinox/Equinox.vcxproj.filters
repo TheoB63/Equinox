@@ -270,6 +270,7 @@
     <ClInclude Include="source\equinox\renderer\RenderPipeline.h" />
     <ClInclude Include="source\equinox\renderer\RenderTechnique.h" />
     <ClInclude Include="source\equinox\renderer\techniques\ForwardTechnique.h" />
+    <ClInclude Include="source\equinox\events\RenderEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />

@@ -2,7 +2,6 @@
 
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/renderer/Renderer.h"
-#include "equinox/events/EventBus.h"
 
 #include <functional>
 #include <memory>
@@ -17,7 +16,6 @@ namespace Equinox
 		bool VSync = false;
 		bool Fullscreen = false;
 		RendererAPI::API rendererAPI = RendererAPI::API::OpenGL;
-		std::shared_ptr<EventBus> EventBus;
 	};
 
 	class Window

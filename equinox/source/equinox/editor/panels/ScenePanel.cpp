@@ -8,32 +8,39 @@
 
 #include "equinox/utils/ImGuiUtils.h"
 
+#include "equinox/events/RenderEvent.h"
+
 namespace Equinox
 {
 	ScenePanel::ScenePanel(std::shared_ptr<RenderingSystem> renderingSystem)
-		: m_RenderingSystem(renderingSystem) 
+		: m_RenderingSystem(renderingSystem)
 	{
 		EQN_CORE_INFO("Created Scene panel");
+
+		EventBus::Subscribe<RenderResizeEvent>(BusType::MainThread, [this](Event& e)
+			{
+				HandleRenderResize(e);
+			});
 	}
 
 	void ScenePanel::OnInit() {}
 
 	void ScenePanel::OnRender()
 	{
-		if (ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_NoScrollbar)) 
+		if (ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_NoScrollbar))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
 			// Viewport sizing
-			const glm::vec2 newSize = ToGlmVec2(ImGui::GetContentRegionAvail());
+			const Vec2 newSize = ToGlmVec2(ImGui::GetContentRegionAvail());
 			if (newSize != m_ViewportSize && newSize.x > 0 && newSize.y > 0)
 			{
 				m_ViewportSize = newSize;
 
 				// Update rendering system and camera
-				m_RenderingSystem->Resize((u32)m_ViewportSize.x, (u32)m_ViewportSize.y);
+				EventBus::Enqueue<RenderResizeEvent>(BusType::MainThread, newSize.x, newSize.y);
 
-				/*if (m_ViewportCamera) 
+				/*if (m_ViewportCamera)
 				{
 					m_ViewportCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 				}*/
@@ -58,7 +65,7 @@ namespace Equinox
 		ImGui::End();
 	}
 
-	/*void ScenePanel::SetViewportCamera(const std::shared_ptr<Camera>& camera) 
+	/*void ScenePanel::SetViewportCamera(const std::shared_ptr<Camera>& camera)
 	  {
 		m_ViewportCamera = camera;
 		if (m_ViewportCamera)
@@ -66,6 +73,18 @@ namespace Equinox
 			m_ViewportCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 		}
 	}*/
+
+	void ScenePanel::HandleRenderResize(Event& e)
+	{
+		if (e.IsInCategory(EventCategoryRender))
+		{
+			auto& resizeEvent = static_cast<RenderResizeEvent&>(e);
+			m_RenderingSystem->Resize(resizeEvent.GetWidth(), resizeEvent.GetHeight());
+			m_EditorCamera.SetViewportSize(resizeEvent.GetWidth(), resizeEvent.GetHeight());
+			m_ViewportSize = { resizeEvent.GetWidth(), resizeEvent.GetHeight() };
+			e.m_Handled = true;
+		}
+	}
 
 
 	// Editor Camera

@@ -38,7 +38,6 @@ namespace Equinox
             u32 Height;
             bool VSync;
             bool Fullscreen;
-            std::shared_ptr<EventBus> EventBus;
         };
 
         WindowData m_Data;
