@@ -81,4 +81,14 @@ namespace Equinox
 	{
 		s_RendererAPI->DrawFrame();
 	}
+
+	void Renderer::InitFullscreenQuad()
+	{
+		s_RendererAPI->InitFullscreenQuad();
+	}
+
+	void Renderer::DrawFullscreenQuad()
+	{
+		s_RendererAPI->DrawFullscreenQuad();
+	}
 }

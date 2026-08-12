@@ -35,6 +35,9 @@ namespace Equinox
 		static void DrawIndexed(uint32_t count);
 		static void DrawFrame();	
 
+		static void InitFullscreenQuad();
+		static void DrawFullscreenQuad();
+
 		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 		static RendererAPI* GetRendererAPI() { return s_RendererAPI.get(); }
 

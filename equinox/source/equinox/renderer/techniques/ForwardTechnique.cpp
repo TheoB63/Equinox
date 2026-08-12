@@ -22,7 +22,10 @@ namespace Equinox
         m_MainFBO = Framebuffer::Create(spec);
     }
 
-    void ForwardTechnique::Shutdown() {}
+    void ForwardTechnique::Shutdown() 
+    {
+        m_MainFBO.reset();
+    }
 
     void ForwardTechnique::Render(entt::registry& registry,
         const Vec3& cameraPos,
@@ -58,10 +61,29 @@ namespace Equinox
 
         auto model = ModelLibrary::Get(meshRend.ModelUUID);
         auto material = MaterialLibrary::Get(meshRend.MaterialUUID);
-        if (!model || !material) return;
+
+        if (!model)
+        {
+            EQN_CORE_WARN("MeshRenderer missing model reference");
+            return;
+        }
+
+        // Validate mesh index
+        const auto& meshes = model->GetMeshes();
+        if (meshRend.MeshIndex >= meshes.size())
+        {
+            EQN_CORE_ERROR("Invalid mesh index: {0}", meshRend.MeshIndex);
+            return;
+        }
+
+        if (!material) material = MaterialLibrary::Get(UUID(7));
 
         auto shader = material->GetShader();
-        if (!shader) return;
+        if (!shader)
+        {
+            EQN_CORE_WARN("Invalid shader for material");
+            return;
+        }
 
         shader->Bind();
         shader->SetMat4("u_ViewProjection", m_ViewProjection);

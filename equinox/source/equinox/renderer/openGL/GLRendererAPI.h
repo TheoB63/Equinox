@@ -37,6 +37,9 @@ namespace Equinox
 		void DrawIndexed(u32 count) override;
 		void DrawFrame() override;
 
+		virtual void InitFullscreenQuad() override;
+		virtual void DrawFullscreenQuad() override;
+
 	private:
 		GLenum BlendFactorToGL(BlendFactor factor) const;
 		void CheckError(const char* file, int line);
@@ -46,5 +49,8 @@ namespace Equinox
 		glm::vec4 m_ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 		std::vector<std::shared_ptr<GLMesh>> m_Meshes;
+
+		GLuint quadVAO = 0;
+		GLuint quadVBO = 0;
 	};
 }

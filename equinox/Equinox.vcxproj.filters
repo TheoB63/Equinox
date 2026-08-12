@@ -4,6 +4,12 @@
     <Filter Include="equinox">
       <UniqueIdentifier>{0E2E9172-7A0D-100E-8325-9BE4EF83766F}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\ECS">
+      <UniqueIdentifier>{58799094-C42E-098A-4D23-0361B9D7FF8D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="equinox\ECS\systems">
+      <UniqueIdentifier>{7F3FE217-EBA0-BF25-740E-06D8E06EF6E4}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\core">
       <UniqueIdentifier>{46D7B026-323A-40CB-DBBF-7881C7010C4E}</UniqueIdentifier>
     </Filter>
@@ -25,6 +31,9 @@
     <Filter Include="equinox\renderer\openGL">
       <UniqueIdentifier>{68EC98F2-D423-E189-DD2D-45AD49E40783}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\renderer\techniques">
+      <UniqueIdentifier>{DCB149FE-48BF-77E4-D1A5-73CF3DB2439B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\renderer\vulkan">
       <UniqueIdentifier>{B4504B03-2088-939A-2992-F7BD9548BA93}</UniqueIdentifier>
     </Filter>
@@ -33,9 +42,6 @@
     </Filter>
     <Filter Include="equinox\resources\libraries">
       <UniqueIdentifier>{A4AED0C5-10BC-FEAB-99A2-FA9605AFCA62}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="equinox\scene">
-      <UniqueIdentifier>{CB7DE6FD-373E-6234-0079-ABB16CF8A610}</UniqueIdentifier>
     </Filter>
     <Filter Include="equinox\utils">
       <UniqueIdentifier>{0E1214FE-7AD2-8F34-430D-D9B1AF8CD410}</UniqueIdentifier>
@@ -47,6 +53,24 @@
   <ItemGroup>
     <ClInclude Include="source\Equinox.h" />
     <ClInclude Include="source\eqnpch.h" />
+    <ClInclude Include="source\equinox\ECS\Components.h">
+      <Filter>equinox\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\ECS\Entity.h">
+      <Filter>equinox\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\ECS\Scene.h">
+      <Filter>equinox\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\ECS\System.h">
+      <Filter>equinox\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\ECS\Systems.h">
+      <Filter>equinox\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\ECS\systems\RenderingSystem.h">
+      <Filter>equinox\ECS\systems</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\core\App.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
@@ -113,6 +137,9 @@
     <ClInclude Include="source\equinox\events\MouseEvent.h">
       <Filter>equinox\events</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\events\RenderEvent.h">
+      <Filter>equinox\events</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\input\Input.h">
       <Filter>equinox\input</Filter>
     </ClInclude>
@@ -132,6 +159,12 @@
       <Filter>equinox\renderer</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\Model.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\RenderPipeline.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\RenderTechnique.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\Renderer.h">
@@ -166,6 +199,12 @@
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\openGL\GLVertexArray.h">
       <Filter>equinox\renderer\openGL</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\techniques\DeferredTechnique.h">
+      <Filter>equinox\renderer\techniques</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\techniques\ForwardTechnique.h">
+      <Filter>equinox\renderer\techniques</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\vulkan\VKBuffer.h">
       <Filter>equinox\renderer\vulkan</Filter>
@@ -233,21 +272,6 @@
     <ClInclude Include="source\equinox\resources\libraries\TextureCache.h">
       <Filter>equinox\resources\libraries</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\ECS\Components.h">
-      <Filter>equinox\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\ECS\Entity.h">
-      <Filter>equinox\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\ECS\Scene.h">
-      <Filter>equinox\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\ECS\System.h">
-      <Filter>equinox\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\ECS\Systems.h">
-      <Filter>equinox\scene</Filter>
-    </ClInclude>
     <ClInclude Include="source\equinox\utils\CustomFormatters.h">
       <Filter>equinox\utils</Filter>
     </ClInclude>
@@ -266,14 +290,21 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\ECS\systems\RenderingSystem.h" />
-    <ClInclude Include="source\equinox\renderer\RenderPipeline.h" />
-    <ClInclude Include="source\equinox\renderer\RenderTechnique.h" />
-    <ClInclude Include="source\equinox\renderer\techniques\ForwardTechnique.h" />
-    <ClInclude Include="source\equinox\events\RenderEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
+    <ClCompile Include="source\equinox\ECS\Entity.cpp">
+      <Filter>equinox\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\ECS\Scene.cpp">
+      <Filter>equinox\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\ECS\Systems.cpp">
+      <Filter>equinox\ECS</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\ECS\systems\RenderingSystem.cpp">
+      <Filter>equinox\ECS\systems</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\core\App.cpp">
       <Filter>equinox\core</Filter>
     </ClCompile>
@@ -325,6 +356,9 @@
     <ClCompile Include="source\equinox\renderer\Model.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\RenderPipeline.cpp">
+      <Filter>equinox\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\renderer\Renderer.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
@@ -357,6 +391,12 @@
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\openGL\GLVertexArray.cpp">
       <Filter>equinox\renderer\openGL</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\techniques\DeferredTechnique.cpp">
+      <Filter>equinox\renderer\techniques</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\techniques\ForwardTechnique.cpp">
+      <Filter>equinox\renderer\techniques</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\vulkan\VKBuffer.cpp">
       <Filter>equinox\renderer\vulkan</Filter>
@@ -415,15 +455,6 @@
     <ClCompile Include="source\equinox\resources\libraries\TextureCache.cpp">
       <Filter>equinox\resources\libraries</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\ECS\Entity.cpp">
-      <Filter>equinox\scene</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\ECS\Scene.cpp">
-      <Filter>equinox\scene</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\ECS\Systems.cpp">
-      <Filter>equinox\scene</Filter>
-    </ClCompile>
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp">
       <Filter>equinox\utils</Filter>
     </ClCompile>
@@ -433,8 +464,5 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\ECS\systems\RenderingSystem.cpp" />
-    <ClCompile Include="source\equinox\renderer\RenderPipeline.cpp" />
-    <ClCompile Include="source\equinox\renderer\techniques\ForwardTechnique.cpp" />
   </ItemGroup>
 </Project>

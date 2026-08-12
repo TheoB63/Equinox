@@ -283,6 +283,10 @@ namespace Equinox
 		}
 	}
 
+	void VKRendererAPI::InitFullscreenQuad() {}
+
+	void VKRendererAPI::DrawFullscreenQuad() {}
+
 	void VKRendererAPI::CreateInstance()
 	{
 		if (m_EnableValidationLayers && !CheckValidationLayerSupport())

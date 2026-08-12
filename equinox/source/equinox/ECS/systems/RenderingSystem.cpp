@@ -1,6 +1,7 @@
 #include "eqnpch.h"
 #include "equinox/ECS/systems/RenderingSystem.h"
 #include "equinox/renderer/techniques/ForwardTechnique.h"
+#include "equinox/renderer/techniques/DeferredTechnique.h"
 #include "equinox/resources/libraries/MaterialLibrary.h"
 
 #include <entt/entt.hpp>
@@ -10,7 +11,7 @@ namespace Equinox
 	RenderingSystem::RenderingSystem()
 	{
 		// Default to forward rendering
-		m_ActiveTechnique = std::make_shared<ForwardTechnique>();
+		m_ActiveTechnique = std::make_shared<DeferredTechnique>();
 		m_ActiveTechnique->Init(1280, 720);
 	}
 
