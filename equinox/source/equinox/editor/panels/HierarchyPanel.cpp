@@ -279,6 +279,7 @@ namespace Equinox
 			{
 				auto camera = m_Context->CreateEntity("Directional Light");
 				camera.AddComponent<DirectionalLight>();
+				camera.GetComponent<Transform>().m_Rotation = Vec3(-1);
 			}
 			if (ImGui::MenuItem("Point Light")) 
 			{
