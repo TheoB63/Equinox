@@ -17,6 +17,8 @@ namespace Equinox
 	{
 		EQN_CORE_INFO("Created Scene panel");
 
+		m_EditorCamera = EditorCamera(70, 1.77, 0.1, 5000);
+
 		EventBus::Subscribe<RenderResizeEvent>(BusType::MainThread, [this](Event& e)
 			{
 				HandleRenderResize(e);
@@ -39,11 +41,6 @@ namespace Equinox
 
 				// Update rendering system and camera
 				EventBus::Enqueue<RenderResizeEvent>(BusType::MainThread, newSize.x, newSize.y);
-
-				/*if (m_ViewportCamera)
-				{
-					m_ViewportCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-				}*/
 			}
 
 			// Get final output from active rendering technique
@@ -67,10 +64,10 @@ namespace Equinox
 
 	/*void ScenePanel::SetViewportCamera(const std::shared_ptr<Camera>& camera)
 	  {
-		m_ViewportCamera = camera;
-		if (m_ViewportCamera)
+		m_EditorCamera = camera;
+		if (m_EditorCamera)
 		{
-			m_ViewportCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 		}
 	}*/
 

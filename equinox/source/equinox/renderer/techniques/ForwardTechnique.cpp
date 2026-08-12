@@ -1,7 +1,11 @@
 #include "eqnpch.h"
 #include "equinox/renderer/techniques/ForwardTechnique.h"
+
 #include "equinox/resources/libraries/MaterialLibrary.h"
 #include "equinox/resources/libraries/ModelLibrary.h"
+
+#include "equinox/editor/Editor.h"
+#include "equinox/editor/panels/ScenePanel.h"
 
 namespace Equinox
 {
@@ -89,9 +93,12 @@ namespace Equinox
             return;
         }
 
+        //EditorCamera cam = Editor::GetPanel<ScenePanel>()->GetEditorCamera();
+
         shader->Bind();
-        shader->SetMat4("u_ViewProjection", m_ViewProjection);
-        shader->SetMat4("u_Model", transform.GetTransform());
+        //shader->SetMat4("u_Model", transform.GetTransform());
+        //shader->SetMat4("u_View", cam.GetViewMatrix());
+        //shader->SetMat4("u_Projection", cam.GetProjectionMatrix());
 
         // Material properties
         shader->SetInt("u_RenderMode", static_cast<int>(material->GetRenderMode()));

@@ -66,6 +66,8 @@ namespace Equinox
 		original.CopyComponentIfExists<Transform>(duplicate);
 		original.CopyComponentIfExists<Camera>(duplicate);
 		original.CopyComponentIfExists<MeshRenderer>(duplicate);
+		original.CopyComponentIfExists<DirectionalLight>(duplicate);
+		original.CopyComponentIfExists<PointLight>(duplicate);
 		// Add other component copies here...
 
 		// Handle parent relationship if not skipped

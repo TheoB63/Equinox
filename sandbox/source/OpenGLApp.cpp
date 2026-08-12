@@ -23,7 +23,7 @@ namespace Equinox
 
     void OpenGLApp::OnInit()
     {
-        InitUniformBuffer();
+        //InitUniformBuffer();
     }
 
     void OpenGLApp::OnUpdate()
@@ -38,7 +38,7 @@ namespace Equinox
             //Vec3(40.0f, 20.0f, 40.0f),        // robots
             //Vec3(250.0f, 200.0f, 250.0f),     // mf 
             Vec3(400.0f, 220.0f, 400.0f),     // porsche
-            Vec3(0.0f, 0.0f, 0.0f),
+            Vec3(0.0f, 50.0f, 0.0f),
             Vec3(0.0f, 1.0f, 0.0f)
         );
         Mat4 proj = glm::perspective(
@@ -47,7 +47,7 @@ namespace Equinox
             0.1f, 10000.0f
         );
 
-        UpdateUniforms(model, view, proj);
+        //UpdateUniforms(model, view, proj);
     }
 
     void OpenGLApp::OnUIRender()

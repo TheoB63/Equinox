@@ -193,66 +193,79 @@ namespace Equinox
 
 		DrawComponent<MeshRenderer>("Mesh Renderer", m_SelectedEntity, [](Entity entity, MeshRenderer& meshRenderer)
 			{
-			// Model Selection
-			ImGui::Text("Mesh");
-			ImGui::SameLine();
-
-			// Model UUID drag target
-			if (ImGui::Button(meshRenderer.modelNamePreview.empty() ?
-				"Drop Model Here" : meshRenderer.modelNamePreview.c_str()))
-			{
-				// TODO: Open model selection window
-			}
-
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID")) 
-				{
-					const UUID* droppedUUID = static_cast<const UUID*>(payload->Data);
-					if (auto model = ModelLibrary::Get(*droppedUUID))
-					{
-						meshRenderer.ModelUUID = *droppedUUID;
-						meshRenderer.modelNamePreview = model->GetName();
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
-			ImGui::SameLine();
-
-			// Mesh Index Selection
-			if (auto model = ModelLibrary::Get(meshRenderer.ModelUUID))
-			{
-				const uint32_t meshCount = model->GetMeshes().size();
-				ImGui::Text("#");
+				// Model Selection
+				ImGui::Text("Mesh");
 				ImGui::SameLine();
-				ImGui::SetNextItemWidth(20);
-				ImGui::DragInt("##MeshIndex", reinterpret_cast<int*>(&meshRenderer.MeshIndex), 1.0f, 0, meshCount - 1);
-			}
 
-			// Material Selection
-			ImGui::Text("Material");
-			ImGui::SameLine();
-
-			if (ImGui::Button(meshRenderer.materialNamePreview.empty() ?
-				"Drop Material Here" : meshRenderer.materialNamePreview.c_str()))
-			{
-				// TODO: Open material selection window
-			}
-
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID"))
+				// Model UUID drag target
+				if (ImGui::Button(meshRenderer.modelNamePreview.empty() ?
+					"Drop Model Here" : meshRenderer.modelNamePreview.c_str()))
 				{
-					const UUID droppedUUID = *static_cast<const UUID*>(payload->Data);
-					if (auto material = MaterialLibrary::Get(droppedUUID)) {
-						meshRenderer.MaterialUUID = droppedUUID;
-						meshRenderer.materialNamePreview = material->GetName();
-						ResourceDB::SetDirty(meshRenderer.ModelUUID);
-						ModelLibrary::Get(meshRenderer.ModelUUID)->AddMaterial(droppedUUID, meshRenderer.MeshIndex);
-					}
+					// TODO: Open model selection window
 				}
-				ImGui::EndDragDropTarget();
-			}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID"))
+					{
+						const UUID* droppedUUID = static_cast<const UUID*>(payload->Data);
+						if (auto model = ModelLibrary::Get(*droppedUUID))
+						{
+							meshRenderer.ModelUUID = *droppedUUID;
+							meshRenderer.modelNamePreview = model->GetName();
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+				ImGui::SameLine();
+
+				// Mesh Index Selection
+				if (auto model = ModelLibrary::Get(meshRenderer.ModelUUID))
+				{
+					const uint32_t meshCount = model->GetMeshes().size();
+					ImGui::Text("#");
+					ImGui::SameLine();
+					ImGui::SetNextItemWidth(20);
+					ImGui::DragInt("##MeshIndex", reinterpret_cast<int*>(&meshRenderer.MeshIndex), 1.0f, 0, meshCount - 1);
+				}
+
+				// Material Selection
+				ImGui::Text("Material");
+				ImGui::SameLine();
+
+				if (ImGui::Button(meshRenderer.materialNamePreview.empty() ?
+					"Drop Material Here" : meshRenderer.materialNamePreview.c_str()))
+				{
+					// TODO: Open material selection window
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID"))
+					{
+						const UUID droppedUUID = *static_cast<const UUID*>(payload->Data);
+						if (auto material = MaterialLibrary::Get(droppedUUID)) {
+							meshRenderer.MaterialUUID = droppedUUID;
+							meshRenderer.materialNamePreview = material->GetName();
+							ResourceDB::SetDirty(meshRenderer.ModelUUID);
+							ModelLibrary::Get(meshRenderer.ModelUUID)->AddMaterial(droppedUUID, meshRenderer.MeshIndex);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+			});
+
+		DrawComponent<DirectionalLight>("Directional Light", m_SelectedEntity, [](Entity entity, DirectionalLight& dirLight)
+			{
+				ImGui::ColorEdit3("Color", &dirLight.Color.x);
+				ImGui::DragFloat("Intensity", &dirLight.Intensity, 0.01f, 0.0f, 1000.0f);
+			});
+
+		DrawComponent<PointLight>("Point Light", m_SelectedEntity, [](Entity entity, PointLight& pointLight)
+			{
+				ImGui::ColorEdit3("Color", &pointLight.Color.x);
+				ImGui::DragFloat("Intensity", &pointLight.Intensity, 0.01f, 0.0f, 1000.0f);
+				ImGui::DragFloat("Range", &pointLight.Range, 0.1f, 0.0f, 10000.0f);
 			});
 
 		// Add Component button
@@ -288,6 +301,16 @@ namespace Equinox
 					m_SelectedEntity.AddOrReplaceComponent<MeshRenderer>();
 					ImGui::CloseCurrentPopup();
 				}
+				if (!m_SelectedEntity.HasComponent<DirectionalLight>() && ImGui::MenuItem("Directional Light"))
+				{
+					m_SelectedEntity.AddOrReplaceComponent<DirectionalLight>();
+					ImGui::CloseCurrentPopup();
+				}
+				if (!m_SelectedEntity.HasComponent<PointLight>() && ImGui::MenuItem("Point Light"))
+				{
+					m_SelectedEntity.AddOrReplaceComponent<PointLight>();
+					ImGui::CloseCurrentPopup();
+				}
 				// Add more components here as needed
 			});
 	}
@@ -314,7 +337,7 @@ namespace Equinox
 					for (const auto& [uuid, s] : ShaderLibrary::GetAllShaders())
 					{
 						bool selected;
-						if (ImGui::Selectable(s.Shader->GetName().c_str(), &selected)) 
+						if (ImGui::Selectable(s.Shader->GetName().c_str(), &selected))
 						{
 							material->SetShaderUUID(uuid);
 							ResourceDB::SetDirty(material->GetUUID());
@@ -341,7 +364,7 @@ namespace Equinox
 				ResourceDB::SetDirty(material->GetUUID());
 			}
 
-			if (material->GetRenderMode() == RendererAPI::RenderMode::Cutout) 
+			if (material->GetRenderMode() == RendererAPI::RenderMode::Cutout)
 			{
 				float cutoff = material->GetAlphaCutoff();
 				if (ImGui::SliderFloat("Alpha Cutoff", &cutoff, 0.0f, 1.0f))
@@ -389,7 +412,7 @@ namespace Equinox
 					{
 						if (texInfo.type == type)
 						{
-							if (texture = TextureCache::Get(texInfo.Uuid)) 
+							if (texture = TextureCache::Get(texInfo.Uuid))
 							{
 								hasTexture = true;
 								break;
@@ -408,7 +431,7 @@ namespace Equinox
 					ImGui::Indent();
 
 					// Texture slot with drag-drop support
-					if (hasTexture) 
+					if (hasTexture)
 					{
 						ImGui::ImageButton(label, (ImTextureID)texture->GetRendererID(), { 32, 32 }, { 0, 1 }, { 1, 0 });
 					}
@@ -419,7 +442,7 @@ namespace Equinox
 					}
 					ImGui::PopStyleVar();
 
-					if (ImGui::BeginDragDropTarget()) 
+					if (ImGui::BeginDragDropTarget())
 					{
 						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID"))
 						{
@@ -445,7 +468,7 @@ namespace Equinox
 							ResourceDB::SetDirty(material->GetUUID());
 						}
 
-						if (ImGui::IsItemHovered()) 
+						if (ImGui::IsItemHovered())
 						{
 							ImGui::SetTooltip("Diffuse Color");
 						}
@@ -454,7 +477,7 @@ namespace Equinox
 					{
 						ImGui::SameLine();
 						float alpha = material->GetAlpha();
-						if (ImGui::SliderFloat("##Alpha Value", &alpha, 0.0f, 1.0f)) 
+						if (ImGui::SliderFloat("##Alpha Value", &alpha, 0.0f, 1.0f))
 						{
 							material->SetAlpha(alpha);
 							ResourceDB::SetDirty(material->GetUUID());
@@ -462,7 +485,7 @@ namespace Equinox
 					}
 
 					// [SUPR] Handle texture deletion
-					if (ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete)) 
+					if (ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete))
 					{
 						material->SetTexture({ UUID(3), type, 0 });
 						ResourceDB::SetDirty(material->GetUUID());
