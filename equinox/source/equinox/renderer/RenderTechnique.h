@@ -19,6 +19,7 @@ namespace Equinox
     class RenderTechnique
     {
     public:
+        explicit RenderTechnique(std::string name) : m_Name(std::move(name)) {}
         virtual ~RenderTechnique() = default;
 
         virtual void Init(u32 width, u32 height) = 0;
@@ -32,11 +33,16 @@ namespace Equinox
 
         virtual u32 GetFinalColorAttachment() const = 0;
 
+        const std::string& GetName() const { return m_Name; }
+
         u32 GetWidth() const { return m_Width; }
         u32 GetHeight() const { return m_Height; }
 
     protected:
         u32 m_Width = 0;
         u32 m_Height = 0;
+
+    private:
+        std::string m_Name;
     };
 }
