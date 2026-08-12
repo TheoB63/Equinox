@@ -47,6 +47,7 @@ namespace Equinox
 
         // Getters
         u32 GetRendererID() const { return m_RendererID; }
+        std::vector<std::pair<std::string, u32>> GetAllAttachments() const;
         u32 GetColorAttachmentID(u32 index = 0) const;
         u32 GetDepthAttachmentID() const;
         const Spec& GetSpecification() const { return m_Spec; }

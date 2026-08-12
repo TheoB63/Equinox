@@ -1,49 +1,57 @@
 {
-    "alpha_cutoff": 0.5,
-    "blend_dst": 1,
-    "blend_src": 1,
-    "render_mode": 2,
-    "shader": "0000000000000064",
-    "textures": [
-        {
-            "type": 0,
-            "uuid": "6803c6a2ecd8fa21",
-            "uv": 0
-        },
-        {
-            "type": 1,
-            "uuid": "0000000000000003",
-            "uv": 0
-        },
-        {
-            "type": 2,
-            "uuid": "5fc452cdef9b0ebf",
-            "uv": 0
-        },
-        {
-            "type": 3,
-            "uuid": "b1f9d3fd6910f9bc",
-            "uv": 0
-        },
-        {
-            "type": 4,
-            "uuid": "b610b4d87d9aa0d5",
-            "uv": 0
-        },
-        {
-            "type": 5,
-            "uuid": "0000000000000003",
-            "uv": 0
-        },
-        {
-            "type": 6,
-            "uuid": "d7235c697e0bf134",
-            "uv": 0
-        },
-        {
-            "type": 7,
-            "uuid": "840ff595c05650ae",
-            "uv": 0
-        }
-    ]
+  "alpha": 1.0,
+  "alpha_cutoff": 0.5,
+  "alpha_from_diffuse": 1,
+  "blend_dst": 3,
+  "blend_src": 2,
+  "color": [
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "render_mode": 2,
+  "shader": "0000000000000064",
+  "textures": [
+    {
+      "type": 0,
+      "uuid": "6803c6a2ecd8fa21",
+      "uv": 0
+    },
+    {
+      "type": 1,
+      "uuid": "0000000000000003",
+      "uv": 0
+    },
+    {
+      "type": 2,
+      "uuid": "5fc452cdef9b0ebf",
+      "uv": 0
+    },
+    {
+      "type": 3,
+      "uuid": "b1f9d3fd6910f9bc",
+      "uv": 0
+    },
+    {
+      "type": 4,
+      "uuid": "b610b4d87d9aa0d5",
+      "uv": 0
+    },
+    {
+      "type": 5,
+      "uuid": "0000000000000003",
+      "uv": 0
+    },
+    {
+      "type": 6,
+      "uuid": "d7235c697e0bf134",
+      "uv": 0
+    },
+    {
+      "type": 7,
+      "uuid": "840ff595c05650ae",
+      "uv": 0
+    }
+  ]
 }

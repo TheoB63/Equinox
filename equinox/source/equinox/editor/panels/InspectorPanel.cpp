@@ -370,6 +370,7 @@ namespace Equinox
 				if (ImGui::SliderFloat("Alpha Cutoff", &cutoff, 0.0f, 1.0f))
 				{
 					material->SetAlphaCutoff(cutoff);
+					ResourceDB::SetDirty(material->GetUUID());
 				}
 			}
 
@@ -397,6 +398,7 @@ namespace Equinox
 				if (ImGui::Checkbox("Alpha from Diffuse", &fromDiffuse))
 				{
 					material->EnableAlphaFromDiffuse(fromDiffuse);
+					ResourceDB::SetDirty(material->GetUUID());
 				}
 			}
 			ImGui::Dummy({ 0, 4 });

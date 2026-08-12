@@ -9,7 +9,7 @@
 
 namespace Equinox
 {
-    void DeferredTechnique::Init(uint32_t width, uint32_t height)
+    void DeferredTechnique::Init(u32 width, u32 height)
     {
         m_Width = width;
         m_Height = height;
@@ -52,7 +52,7 @@ namespace Equinox
         Renderer::EnableBlending(false);
     }
 
-    void DeferredTechnique::Resize(uint32_t width, uint32_t height)
+    void DeferredTechnique::Resize(u32 width, u32 height)
     {
         m_Width = width;
         m_Height = height;
@@ -65,9 +65,15 @@ namespace Equinox
         m_ViewProjection = vp;
     }
 
-    uint32_t DeferredTechnique::GetFinalColorAttachment() const
+    u32 DeferredTechnique::GetFinalColorAttachment() const
     {
         return m_LightBuffer->GetColorAttachmentID();
+    }
+
+    std::vector<std::pair<std::string, u32>> DeferredTechnique::GetAllAttachments() const
+    {
+        // TODO: FIXME only returning one fb!!!
+        return m_GBuffer->GetAllAttachments();
     }
 
     // Private implementation

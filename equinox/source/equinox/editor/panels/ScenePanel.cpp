@@ -1,5 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/ScenePanel.h"
+#include "equinox/editor/panels/RenderPanel.h"
 #include "equinox/editor/panels/HierarchyPanel.h"
 
 #include "equinox/ECS/Components.h"
@@ -51,7 +52,8 @@ namespace Equinox
 			// Get final output from active rendering technique
 			if (auto technique = m_RenderingSystem->GetActiveTechnique())
 			{
-				const uint32_t textureID = technique->GetFinalColorAttachment();
+				i32 textureID = Editor::GetPanel<RenderPanel>()->GetSelectedAttachment();
+				if (textureID == -1) textureID = (i32)technique->GetFinalColorAttachment();
 				ImGui::Image(textureID, ToImVec2(m_ViewportSize), { 0, 1 }, { 1, 0 });
 			}
 

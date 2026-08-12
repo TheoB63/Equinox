@@ -175,4 +175,9 @@ namespace Equinox
         m_Height = height;
         m_MainFBO->Resize(width, height);
     }
+
+    std::vector<std::pair<std::string, u32>> ForwardTechnique::GetAllAttachments() const
+    {
+        return m_MainFBO->GetAllAttachments();
+    }
 }
