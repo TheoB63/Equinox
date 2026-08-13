@@ -3,7 +3,7 @@
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/UUID.h"
 
-#include "equinox/renderer/Renderer.h"
+#include "equinox/renderer/RendererAPI.h"
 
 #include "equinox/resources/Resource.h"
 #include "equinox/resources/libraries/ShaderLibrary.h"

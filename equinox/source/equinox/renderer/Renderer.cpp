@@ -39,9 +39,9 @@ namespace Equinox
 		s_RendererAPI->SetClearColor(color);
 	}
 
-	void Renderer::Clear()
+	void Renderer::Clear(BufferBit bits)
 	{
-		s_RendererAPI->Clear();
+		s_RendererAPI->Clear(bits);
 	}
 
 	void Renderer::EnableDepthMask(bool enable)

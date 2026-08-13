@@ -79,7 +79,7 @@ namespace Equinox
 			}
 
 			m_Window->SwapBuffers();
-			Renderer::Clear();
+			Renderer::Clear(BufferBit::Color | BufferBit::Depth);
 		}
 		OnShutdown();
 		Close();
