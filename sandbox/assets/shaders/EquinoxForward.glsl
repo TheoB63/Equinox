@@ -14,7 +14,7 @@ layout(location = 3) out vec3 v_Tangent;
 layout(location = 4) out vec3 v_Bitangent;
 layout(location = 5) out vec3 v_WorldPos;
 
-layout(std140, binding = 0) uniform TransformUBO
+layout(std140, binding = 0) uniform TransformUBO 
 {
     mat4 view;
     mat4 projection;
@@ -52,9 +52,11 @@ layout(location = 4) in vec3 v_Bitangent;
 layout(location = 5) in vec3 v_WorldPos;
 
 layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 gPosition;
+layout(location = 2) out vec3 gNormal;
 
 // ========== UBO Definitions ==========
-layout(std140, binding = 0) uniform TransformUBO
+layout(std140, binding = 0) uniform TransformUBO 
 {
     mat4 view;
     mat4 projection;
@@ -64,7 +66,7 @@ layout(std140, binding = 0) uniform TransformUBO
 #define MAX_DIR_LIGHTS 4
 #define MAX_POINT_LIGHTS 16
 
-struct DirLight
+struct DirLight 
 {
     vec3 color;
     float intensity;
@@ -72,7 +74,7 @@ struct DirLight
     float padding;
 };
 
-struct PointLight
+struct PointLight 
 {
     vec3 color;
     float intensity;
@@ -89,32 +91,46 @@ layout(std140, binding = 1) uniform LightsUBO
     PointLight pointLights[MAX_POINT_LIGHTS];
 };
 
-// ========== Material Uniforms ==========
-// Texture samplers
-uniform sampler2D u_TexDiffuse;
-uniform sampler2D u_TexAlpha;
-uniform sampler2D u_TexNormal;
-uniform sampler2D u_TexEmissive;
-uniform sampler2D u_TexMetallic;
-uniform sampler2D u_TexRoughness;
-uniform sampler2D u_TexSpecular;
-uniform sampler2D u_TexOclusion;
+// ========== Material Uniforms =========
+#define Diffuse   0
+#define Alpha     1
+#define Normal    2
+#define Metal     3
+#define Rough     4
+#define Specular  5
+#define Oclusion  6
+#define Emissive  7
+#define Thickness 8
 
-// Per texture UV Set selection
-uniform int u_UVIndexDiffuse;
-uniform int u_UVIndexAlpha;
-uniform int u_UVIndexNormal;
-uniform int u_UVIndexEmissive;
-uniform int u_UVIndexMetallic;
-uniform int u_UVIndexRoughness;
-uniform int u_UVIndexSpecular;
-uniform int u_UVIndexOclusion;
+struct Map
+{
+    bool useMap;
+    bool useTexture;
+    sampler2D texture;
+    int uvIndex;
+};
+
+struct Subsurface 
+{
+    vec3 color;
+    float strength;
+    float thicknessScale;
+};
+
+uniform Map u_Maps[9];
 
 uniform int u_RenderMode;       // 0 = Opaque, 1 = Cutout, 2 = Transparent, 3 = Fade
 uniform float u_AlphaCutoff;    // For cutout mode
 uniform int u_AlphaFromDiffuse;
+uniform int u_IsGloss;
+uniform int u_IsSingleChannel;
+
 uniform vec4 u_Color;
 uniform float u_Alpha;
+uniform float u_Metalness;
+uniform float u_Roughness;
+uniform vec3 u_Emissive;
+uniform Subsurface u_Subsurface;
 
 // ========== PBR Functions ==========
 const float PI = 3.14159265359;
@@ -127,7 +143,7 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
     return a2 / (PI * pow(NdotH*NdotH*(a2 - 1.0) + 1.0, 2.0));
 }
 
-float GeometrySchlickGGX(float NdotV, float roughness)
+float GeometrySchlickGGX(float NdotV, float roughness) 
 {
     float r = (roughness + 1.0);
     float k = (r*r) / 8.0;
@@ -156,8 +172,7 @@ vec3 ACESFilm(vec3 x)
 }
 
 // ========== Light Calculation ==========
-vec3 CalculateLight(vec3 L, vec3 radiance, vec3 V, vec3 N, vec3 albedo, float metallic, float roughness) 
-{
+vec3 CalculateLight(vec3 L, vec3 radiance, vec3 V, vec3 N, vec3 albedo, float metallic, float roughness) {
     vec3 H = normalize(V + L);
     
     vec3 F0 = mix(vec3(0.04), albedo, metallic);
@@ -176,44 +191,134 @@ vec3 CalculateLight(vec3 L, vec3 radiance, vec3 V, vec3 N, vec3 albedo, float me
     return (diffuse + specular) * radiance * max(dot(N, L), 0.0);
 }
 
+vec3 CalculateSubsurface(vec3 L, vec3 radiance, vec3 V, vec3 N, vec3 albedo, float metallic, float thickness) 
+{
+    if (!u_Maps[Thickness].useTexture) return vec3(0.0);
+    
+    vec3 transL = -L;
+    float wrap = 0.5; // Wrapped lighting factor
+    float transDot = max(0.0, dot(N, transL) + wrap) / (1.0 + wrap);
+    float transView = max(0.0, dot(V, transL));
+    
+    // Combine factors with thickness
+    float trans = transDot * transView * thickness * u_Subsurface.strength;
+    
+    // Apply subsurface color and energy conservation
+    return mix(u_Subsurface.color, albedo, 0.5) *  radiance *  trans * (1.0 - metallic);
+}
+
 // ========== Main Shader ==========
 void main()
 {
-    vec4 albedoRGBA = texture(u_TexDiffuse,   u_UVIndexDiffuse   == 0 ? v_TexCoord0 : v_TexCoord1).rgba;
+    // Diffuse color handling
+    vec4 albedoRGBA = vec4(1.0);
+    if (u_Maps[Diffuse].useTexture) 
+    {
+        vec2 uv = u_Maps[Diffuse].uvIndex == 0 ? v_TexCoord0 : v_TexCoord1;
+        albedoRGBA = texture(u_Maps[Diffuse].texture, uv);
+    }
     vec3 albedo = albedoRGBA.rgb * u_Color.rgb;
-    float alpha = u_AlphaFromDiffuse == 1 ? albedoRGBA.a : texture(u_TexAlpha, u_UVIndexAlpha == 0 ? v_TexCoord0 : v_TexCoord1).r * u_Alpha;    
-    vec3 normal     = texture(u_TexNormal,    u_UVIndexNormal    == 0 ? v_TexCoord0 : v_TexCoord1).rgb;
-    vec3 emissive   = texture(u_TexEmissive,  u_UVIndexEmissive  == 0 ? v_TexCoord0 : v_TexCoord1).rgb;
-    float metallic  = texture(u_TexMetallic,  u_UVIndexMetallic  == 0 ? v_TexCoord0 : v_TexCoord1).r;
-    float roughness = texture(u_TexRoughness, u_UVIndexRoughness == 0 ? v_TexCoord0 : v_TexCoord1).r;
-    //float specular  = texture(u_TexSpecular,  u_UVIndexSpecular  == 0 ? v_TexCoord0 : v_TexCoord1).r;
-    float ao        = texture(u_TexOclusion,  u_UVIndexOclusion  == 0 ? v_TexCoord0 : v_TexCoord1).r;
+
+    // Alpha handling
+    float alpha = u_Alpha;
+    if (u_AlphaFromDiffuse == 1) 
+    {
+        alpha *= albedoRGBA.a;
+    } 
+    else if (u_Maps[Alpha].useTexture) 
+    {
+        vec2 uv = u_Maps[Alpha].uvIndex == 0 ? v_TexCoord0 : v_TexCoord1;
+        alpha *= texture(u_Maps[Alpha].texture, uv).r;
+    }
+
+    // Normal mapping
+    vec3 N;
+    if (u_Maps[Normal].useTexture)
+    {
+        vec2 uv = u_Maps[Normal].uvIndex == 0 ? v_TexCoord0 : v_TexCoord1;
+        mat3 TBN = mat3(normalize(v_Tangent), normalize(v_Bitangent), normalize(v_Normal));
+        vec3 normalMap = texture(u_Maps[Normal].texture, uv).rgb * 2.0 - 1.0;
+        N = normalize(TBN * normalMap);
+    } 
+    else 
+    {
+        N = normalize(v_Normal);
+    }
+
+    // Metallic workflow
+    float metallic = u_Metalness;
+    if (u_Maps[Metal].useTexture) 
+    {
+        vec2 uv = u_Maps[Metal].uvIndex == 0 ? v_TexCoord0 : v_TexCoord1;
+        metallic = texture(u_Maps[Metal].texture, uv).r;
+    }
+
+    // Roughness workflow
+    float roughness = u_Roughness;
+    if (u_Maps[Rough].useTexture) 
+    {
+        vec2 uv = u_Maps[Rough].uvIndex == 0 ? v_TexCoord0 : v_TexCoord1;
+        roughness = texture(u_Maps[Rough].texture, uv).r;
+    }
+    if (u_IsGloss == 1) roughness = 1.0 - roughness;
+
+    // Ambient occlusion
+    float ao = 1.0;
+    if (u_Maps[Oclusion].useTexture)
+    {
+        vec2 uv = u_Maps[Oclusion].uvIndex == 0 ? v_TexCoord0 : v_TexCoord1;
+        ao = texture(u_Maps[Oclusion].texture, uv).r;
+    }
+
+    // Emissive
+    vec3 emissive = u_Emissive;
+    if (u_Maps[Emissive].useTexture) 
+    {
+        vec2 uv = u_Maps[Emissive].uvIndex == 0 ? v_TexCoord0 : v_TexCoord1;
+        vec3 texEmissive = texture(u_Maps[Emissive].texture, uv).rgb;
+        if (u_IsSingleChannel == 1) texEmissive = vec3(texEmissive.r);
+        emissive *= texEmissive;
+    }
+
+    // Thickness
+    float thickness = u_Subsurface.thicknessScale;
+    if (u_Maps[Thickness].useTexture) 
+    {
+        vec2 uv = u_Maps[Thickness].uvIndex == 0 ? v_TexCoord0 : v_TexCoord1;
+        thickness *= texture(u_Maps[Thickness].texture, uv).r;
+    }
 
     // Handle render modes
     if (u_RenderMode == 1 && alpha < u_AlphaCutoff) discard;
     if (u_RenderMode == 0) alpha = 1.0;
-
-    // Normal mapping
-    mat3 TBN = mat3(normalize(v_Tangent), normalize(v_Bitangent), normalize(v_Normal));
-    vec3 N = normalize(TBN * (texture(u_TexNormal, u_UVIndexNormal == 0 ? v_TexCoord0 : v_TexCoord1).rgb * 2.0 - 1.0));
 
     // View direction
     mat4 invView = inverse(view);
     vec3 viewPos = invView[3].xyz;
     vec3 V = normalize(viewPos - v_WorldPos);
 
+    // Lighting calculations
     vec3 Lo = vec3(0.0);
 
-    // Process directional lights
-    for(int i = 0; i < dirLightCount && i < MAX_DIR_LIGHTS; i++)
+    // Directional lights
+    for(int i = 0; i < dirLightCount && i < MAX_DIR_LIGHTS; i++) 
     {
         vec3 L = normalize(-dirLights[i].direction);
         vec3 radiance = dirLights[i].color * dirLights[i].intensity;
-        Lo += CalculateLight(L, radiance, V, N, albedo, metallic, roughness);
+        float NdotL = dot(N, L);
+    
+        if (NdotL > 0.0) 
+        {
+            Lo += CalculateLight(L, radiance, V, N, albedo, metallic, roughness);
+        } 
+        else 
+        {
+            Lo += CalculateSubsurface(L, radiance, V, N, albedo, metallic, thickness);
+        }
     }
 
-    // Process point lights
-    for(int i = 0; i < pointLightCount && i < MAX_POINT_LIGHTS; i++) 
+    // Point lights
+    for(int i = 0; i < pointLightCount && i < MAX_POINT_LIGHTS; i++)
     {
         vec3 toLight = pointLights[i].position - v_WorldPos;
         float distance = length(toLight);
@@ -224,14 +329,22 @@ void main()
         // Physically based attenuation
         float attenuation = 1.0 / (distance * distance);
         attenuation = clamp(1.0 - pow(scaledDistance, 4.0), 0.0, 1.0);
-        
         vec3 L = normalize(toLight);
         vec3 radiance = pointLights[i].color * pointLights[i].intensity * attenuation;
-        Lo += CalculateLight(L, radiance, V, N, albedo, metallic, roughness);
+        float NdotL = dot(N, L);
+    
+        if(NdotL > 0.0) 
+        {
+            Lo += CalculateLight(L, radiance, V, N, albedo, metallic, roughness);
+        } 
+        else 
+        {
+            Lo += CalculateSubsurface(L, radiance, V, N, albedo, metallic, thickness);
+        }
     }
 
     // Combine lighting
-    vec3 ambient = vec3(0.04) * albedo * ao;
+    vec3 ambient = vec3(0.1) * albedo * ao;// * mix(1.0, thickness, u_Subsurface.strength);
     vec3 color = ambient + Lo + emissive;
 
     // Tone mapping and gamma correction
@@ -239,4 +352,6 @@ void main()
     color = pow(color, vec3(1.0/2.2));
 
     FragColor = vec4(color, alpha);
+    gPosition = vec4(v_WorldPos, 1.0);
+    gNormal = normalize(N);
 }

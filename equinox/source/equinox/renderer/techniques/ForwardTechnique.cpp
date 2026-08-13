@@ -9,175 +9,171 @@
 
 namespace Equinox
 {
-    void ForwardTechnique::Init(u32 width, u32 height)
-    {
-        m_Width = width;
-        m_Height = height;
+	void ForwardTechnique::Init(u32 width, u32 height)
+	{
+		m_Width = width;
+		m_Height = height;
 
-        Framebuffer::Spec spec
-        {
-            .Width = width,
-            .Height = height,
-            .ColorAttachments = 
-            {
-                {.InternalFormat = GL_RGBA16F},
-            },
-            .DepthStencilAttachment = 
-            {
-                {.InternalFormat = GL_DEPTH24_STENCIL8, .IsTexture = false}
-            }
-        };
-        m_MainFBO = Framebuffer::Create(spec);
-    }
+		Framebuffer::Spec spec
+		{
+			.Width = width,
+			.Height = height,
+			.ColorAttachments =
+			{
+				{.InternalFormat = GL_RGBA16F},     // Final Color
+				{.InternalFormat = GL_RGB16F},      // Position
+				{.InternalFormat = GL_RGB16F},      // Normal
+			},
+			.DepthStencilAttachment =
+			{
+				{.InternalFormat = GL_DEPTH24_STENCIL8, .IsTexture = false}
+			}
+		};
+		m_MainFBO = Framebuffer::Create(spec);
+	}
 
-    void ForwardTechnique::Shutdown() 
-    {
-        m_MainFBO.reset();
-    }
+	void ForwardTechnique::Shutdown()
+	{
+		m_MainFBO.reset();
+	}
 
-    void ForwardTechnique::Render(entt::registry& registry,
-        const Vec3& cameraPos,
-        const std::vector<RenderCommand>& opaque,
-        const std::vector<RenderCommand>& transparent)
-    {
-        m_MainFBO->Bind();
-        Renderer::Clear(/*GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT*/);
+	void ForwardTechnique::Render(entt::registry& registry,
+		const Vec3& cameraPos,
+		const std::vector<RenderCommand>& opaque,
+		const std::vector<RenderCommand>& transparent)
+	{
+		m_MainFBO->Bind();
+		Renderer::Clear(/*GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT*/);
 
-        // Opaque objects
-        Renderer::EnableBlending(false);
-        for (const auto& cmd : opaque) 
-        {
-            RenderMesh(cmd, true);
-        }
+		// Opaque objects
+		Renderer::EnableBlending(false);
+		for (const auto& cmd : opaque)
+		{
+			RenderMesh(cmd, true);
+		}
 
-        // Transparent objects
-        Renderer::EnableBlending(true);
-        //Renderer::EnableDepthTest(false);
-        for (const auto& cmd : transparent) 
-        {
-            RenderMesh(cmd, false);
-        }
-        //Renderer::EnableDepthTest(true);
+		// Transparent objects
+		Renderer::EnableBlending(true);
+		Renderer::EnableDepthTest(false);
+		for (const auto& cmd : transparent)
+		{
+			RenderMesh(cmd, false);
+		}
+		Renderer::EnableDepthTest(true);
 
-        m_MainFBO->Unbind();
-    }
+		m_MainFBO->Unbind();
+	}
 
-    void ForwardTechnique::RenderMesh(const RenderCommand& cmd, bool isOpaque)
-    {
-        auto& transform = *cmd.transform;
-        auto& meshRend = *cmd.meshRend;
+	void ForwardTechnique::RenderMesh(const RenderCommand& cmd, bool isOpaque)
+	{
+		auto& transform = *cmd.transform;
+		auto& meshRend = *cmd.meshRend;
 
-        auto model = ModelLibrary::Get(meshRend.ModelUUID);
-        auto material = MaterialLibrary::Get(meshRend.MaterialUUID);
+		auto model = ModelLibrary::Get(meshRend.ModelUUID);
+		auto material = MaterialLibrary::Get(meshRend.MaterialUUID);
 
-        if (!model)
-        {
-            EQN_CORE_WARN("MeshRenderer missing model reference");
-            return;
-        }
+		if (!model)
+		{
+			EQN_CORE_WARN("MeshRenderer missing model reference");
+			return;
+		}
 
-        // Validate mesh index
-        const auto& meshes = model->GetMeshes();
-        if (meshRend.MeshIndex >= meshes.size())
-        {
-            EQN_CORE_ERROR("Invalid mesh index: {0}", meshRend.MeshIndex);
-            return;
-        }
+		// Validate mesh index
+		const auto& meshes = model->GetMeshes();
+		if (meshRend.MeshIndex >= meshes.size())
+		{
+			EQN_CORE_ERROR("Invalid mesh index: {0}", meshRend.MeshIndex);
+			return;
+		}
 
-        if (!material) material = MaterialLibrary::Get(UUID(7));
+		if (!material) material = MaterialLibrary::Get(UUID(7));
 
-        auto shader = material->GetShader();
-        if (!shader)
-        {
-            EQN_CORE_WARN("Invalid shader for material");
-            return;
-        }
+		auto shader = material->GetShader();
+		if (!shader)
+		{
+			EQN_CORE_WARN("Invalid shader for material");
+			return;
+		}
 
-        shader->Bind();
-        //shader->SetMat4("u_Model", transform.GetTransform());
+		shader->Bind();
+		//shader->SetMat4("u_Model", transform.GetTransform());
 
-        // Material properties
-        shader->SetInt("u_RenderMode", static_cast<int>(material->GetRenderMode()));
-        shader->SetVec4("u_Color", material->GetColor());
+		// Material properties
+		shader->SetInt("u_RenderMode", static_cast<int>(material->GetRenderMode()));
 
-        if (material->GetRenderMode() == RendererAPI::RenderMode::Cutout) 
-        {
-            shader->SetFloat("u_AlphaCutoff", material->GetAlphaCutoff());
-        }
-        else if (material->GetRenderMode() == RendererAPI::RenderMode::Transparent)
-        {
-            shader->SetFloat("u_Alpha", material->GetAlpha());
-        }
+		if (material->GetRenderMode() == RendererAPI::RenderMode::Cutout)
+		{
+			shader->SetFloat("u_AlphaCutoff", material->GetAlphaCutoff());
+		}
+		else if (material->GetRenderMode() == RendererAPI::RenderMode::Transparent)
+		{
+			shader->SetFloat("u_Alpha", material->GetAlpha());
+		}
 
-        BindMaterialTextures(material, shader);
-        model->GetMeshes()[meshRend.MeshIndex]->Draw();
-    }
+		BindMaterialTextures(material, shader);
+		model->GetMeshes()[meshRend.MeshIndex]->Draw();
+	}
 
-    void ForwardTechnique::BindMaterialTextures(const std::shared_ptr<Material>& material,
-        const std::shared_ptr<Shader>& shader)
-    {
-        int slot = 0;
-        for (const auto& texInfo : material->GetTextures())
-        {
-            auto texture = TextureCache::Get(texInfo.Uuid);
+	void ForwardTechnique::BindMaterialTextures(const std::shared_ptr<Material>& material,
+		const std::shared_ptr<Shader>& shader)
+	{
+		int slot = 0;
+		for (const auto& texInfo : material->GetTextures())
+		{
+			auto texture = TextureCache::Get(texInfo.TextureUuid);
+			const int mapIndex = static_cast<int>(texInfo.type);
 
-            switch (texInfo.type) 
-            {
-            case TextureType::Diffuse:
-                if (!texture) texture = TextureCache::GetDefaultWhite();
-                shader->SetInt("u_TexDiffuse", slot);
-                shader->SetInt("u_UVIndexDiffuse", texInfo.uvIndex);
-                break;
-            case TextureType::Alpha:
-                if (!texture) texture = TextureCache::GetDefaultWhite();
-                shader->SetInt("u_TexAlpha", slot);
-                shader->SetInt("u_UVIndexAlpha", texInfo.uvIndex);
-                break;
-            case TextureType::Normal:
-                if (!texture) texture = TextureCache::GetDefaultNormal();
-                shader->SetInt("u_TexNormal", slot);
-                shader->SetInt("u_UVIndexNormal", texInfo.uvIndex);
-                break;
-            case TextureType::Emissive:
-                if (!texture) texture = TextureCache::GetDefaultBlack();
-                shader->SetInt("u_TexEmissive", slot);
-                shader->SetInt("u_UVIndexEmissive", texInfo.uvIndex);
-                break;
-            case TextureType::Metalness:
-                if (!texture) texture = TextureCache::GetDefaultGrey();
-                shader->SetInt("u_TexMetallic", slot);
-                shader->SetInt("u_UVIndexMetallic", texInfo.uvIndex);
-                break;
-            case TextureType::Roughness:
-                if (!texture) texture = TextureCache::GetDefaultGrey();
-                shader->SetInt("u_TexRoughness", slot);
-                shader->SetInt("u_UVIndexRoughness", texInfo.uvIndex);
-                break;
-            case TextureType::Specular:
-                if (!texture) texture = TextureCache::GetDefaultGrey();
-                shader->SetInt("u_TexSpecular", slot);
-                shader->SetInt("u_UVIndexSpecular", texInfo.uvIndex);
-                break;
-            case TextureType::Oclusion:
-                if (!texture) texture = TextureCache::GetDefaultWhite();
-                shader->SetInt("u_TexOclusion", slot);
-                shader->SetInt("u_UVIndexOclusion", texInfo.uvIndex);
-                break;
-            }
+			// Get appropriate default texture if needed
+			if (!texture)
+			{
+				switch (texInfo.type)
+				{
+				case MapType::Diffuse:      texture = TextureCache::GetDefaultWhite();  break;
+				case MapType::Alpha:        texture = TextureCache::GetDefaultWhite();  break;
+				case MapType::Normal:       texture = TextureCache::GetDefaultNormal(); break;
+				case MapType::Metalness:    texture = TextureCache::GetDefaultGrey();   break;
+				case MapType::Roughness:    texture = TextureCache::GetDefaultGrey();   break;
+				case MapType::Specular:     texture = TextureCache::GetDefaultGrey();   break;
+				case MapType::Oclusion:     texture = TextureCache::GetDefaultWhite();  break;
+				case MapType::Emissive:     texture = TextureCache::GetDefaultBlack();  break;
+				case MapType::Thickness:    texture = TextureCache::GetDefaultBlack();  break;
+				}
+			}
 
-            texture->Bind(slot++);
-        }
-    }
+			// Bind texture to slot
+			texture->Bind(slot);
 
-    void ForwardTechnique::Resize(u32 width, u32 height)
-    {
-        m_Width = width;
-        m_Height = height;
-        m_MainFBO->Resize(width, height);
-    }
+			// Set struct properties
+			const std::string prefix = "u_Maps[" + std::to_string(mapIndex) + "]";
+			shader->SetBool(prefix + ".useTexture", texInfo.useTexture);
+			shader->SetInt(prefix + ".uvIndex", texInfo.uvIndex);
+			shader->SetInt(prefix + ".texture", slot);
 
-    std::vector<std::pair<std::string, u32>> ForwardTechnique::GetAllAttachments() const
-    {
-        return m_MainFBO->GetAllAttachments();
-    }
+			slot++;
+		}
+
+		// Set material uniforms
+		shader->SetVec4("u_Color", material->GetColor());
+		shader->SetFloat("u_Alpha", material->GetAlpha());
+		shader->SetFloat("u_Metalness", material->GetMetal());
+		shader->SetFloat("u_Roughness", material->GetRough());
+		shader->SetVec3("u_Emissive", material->GetEmissive());
+		shader->SetBool("u_IsGloss", material->IsGloss());
+		shader->SetBool("u_IsSingleChannel", material->IsSingleChannel());
+		shader->SetVec3("u_Subsurface.color", material->GetSubsurface().color);
+		shader->SetFloat("u_Subsurface.strength", material->GetSubsurface().strength);
+		shader->SetFloat("u_Subsurface.thicknessScale", material->GetSubsurface().thicknessScale);
+	}
+
+	void ForwardTechnique::Resize(u32 width, u32 height)
+	{
+		m_Width = width;
+		m_Height = height;
+		m_MainFBO->Resize(width, height);
+	}
+
+	std::vector<std::pair<std::string, u32>> ForwardTechnique::GetAllAttachments() const
+	{
+		return m_MainFBO->GetAllAttachments();
+	}
 }

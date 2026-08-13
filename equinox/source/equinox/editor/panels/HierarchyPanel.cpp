@@ -367,6 +367,8 @@ namespace Equinox
 					auto parent = m_Context->CreateEntity(model->GetName());
 					parent.AddComponent<Children>();
 
+					auto materials = model->GetMaterials();
+
 					int meshIndex = 0;
 					for (const auto& mesh : model->GetMeshesData())
 					{
@@ -380,9 +382,9 @@ namespace Equinox
 						meshRend.modelNamePreview = model->GetName();
 						meshRend.ModelUUID = assetUuid;
 						meshRend.MeshIndex = meshIndex;
-						if (!model->GetMaterials().empty())
+						if (!model->GetMaterials().empty() && meshIndex < materials.size()) 
 						{
-							meshRend.MaterialUUID = model->GetMaterials()[meshIndex];
+							meshRend.MaterialUUID = materials[meshIndex];
 							meshRend.materialNamePreview = MaterialLibrary::Get(meshRend.MaterialUUID)->GetName();
 						}
 						meshIndex++;

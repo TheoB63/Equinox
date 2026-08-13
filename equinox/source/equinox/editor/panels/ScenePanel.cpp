@@ -20,7 +20,7 @@ namespace Equinox
 	{
 		EQN_CORE_INFO("Created Scene panel");
 
-		m_EditorCamera = EditorCamera(70, 1.77, 0.1, 5000);
+		m_EditorCamera = EditorCamera(50, 1.77, 0.1, 5000);
 
 		EventBus::Subscribe<RenderResizeEvent>(BusType::MainThread, [this](Event& e)
 			{

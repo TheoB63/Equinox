@@ -10,7 +10,7 @@ namespace Equinox
     
     struct DirectoryNode
     {
-        UUID Uuid;
+        UUID TextureUuid;
         std::string Name;
         ResourceType Type;
         std::vector<DirectoryNode> Directories;

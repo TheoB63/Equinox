@@ -15,13 +15,25 @@ namespace Equinox
 
 		json["color"] = { m_Color.r, m_Color.g, m_Color.b, m_Color.a };
 		json["alpha"] = m_Alpha;
+		json["metal"] = m_Metal;
+		json["rough"] = m_Rough;
+		json["emissive"] = { m_Emissive.r, m_Emissive.g, m_Emissive.b };
+		json["is_gloss"] = static_cast<int>(m_IsGloss);
+		json["is_single_channel"] = static_cast<int>(m_IsSingleChannel);
+
+		json["subsurface"] =
+		{
+			{"color", {m_Subsurface.color.r, m_Subsurface.color.g, m_Subsurface.color.b}},
+			{"strength", m_Subsurface.strength},
+			{"thickness_scale", m_Subsurface.thicknessScale}
+		};
 
 		json["textures"] = nlohmann::json::array();
-		for (const auto& tex : m_Textures)
+		for (const auto& tex : m_Maps)
 		{
 			nlohmann::json texJson;
 			texJson["type"] = static_cast<int>(tex.type);
-			texJson["uuid"] = tex.Uuid.ToString();
+			texJson["uuid"] = tex.TextureUuid.ToString();
 			texJson["uv"] = tex.uvIndex;
 			json["textures"].push_back(texJson);
 		}
@@ -39,37 +51,68 @@ namespace Equinox
 			static_cast<int>(RendererAPI::BlendFactor::OneMinusSrcAlpha)));
 		m_AlphaFromDiffuse = static_cast<bool>(json.value("alpha_from_diffuse", 0));
 
-		if (json.contains("color")) 
+		if (json.contains("color"))
 		{
 			auto& jc = json["color"];
 			m_Color = glm::vec4(jc[0].get<float>(), jc[1].get<float>(),
 				jc[2].get<float>(), jc[3].get<float>());
 		}
 		m_Alpha = json.value("alpha", 1.0f);
+		m_Metal = json.value("metal", 0.0f);
+		m_Rough = json.value("rough", 1.0f);
 
-		m_Textures.clear();
+		if (json.contains("emissive")) {
+			auto& je = json["emissive"];
+			m_Emissive = glm::vec3(je[0].get<float>(), je[1].get<float>(), je[2].get<float>());
+		}
+		else {
+			m_Emissive = glm::vec3(0.0f);
+		}
+
+		m_IsGloss = static_cast<bool>(json.value("is_gloss", 0));
+		m_IsSingleChannel = static_cast<bool>(json.value("is_single_channel", 0));
+
+		if (json.contains("subsurface")) 
+		{
+			const auto& subsurfaceJson = json["subsurface"];
+
+			if (subsurfaceJson.contains("color")) 
+			{
+				auto& jc = subsurfaceJson["color"];
+				m_Subsurface.color = glm::vec3(jc[0].get<float>(), jc[1].get<float>(), jc[2].get<float>());
+			}
+			m_Subsurface.strength = subsurfaceJson.value("strength", 1.0f);
+			m_Subsurface.thicknessScale = subsurfaceJson.value("thickness_scale", 1.0f);
+		}
+		else 
+		{
+			m_Subsurface = Subsurface{};
+		}
+
+		m_Maps.clear();
 		for (const auto& texJson : json["textures"])
 		{
-			TextureInfo tex;
-			tex.type = static_cast<TextureType>(texJson["type"].get<int>());
-			UUID::FromString(texJson["uuid"].get<std::string>(), tex.Uuid);
+			MapInfo tex;
+			tex.type = static_cast<MapType>(texJson["type"].get<int>());
+			UUID::FromString(texJson["uuid"].get<std::string>(), tex.TextureUuid);
 			tex.uvIndex = texJson["uv"].get<u32>();
-			m_Textures.push_back(tex);
+			tex.useTexture = static_cast<bool>(texJson.value("useTexture", 0));
+			m_Maps.push_back(tex);
 		}
 	}
 
-	const char* Material::ToString(TextureType type)
+	const char* Material::ToString(MapType type)
 	{
 		switch (type)
 		{
-		case TextureType::Diffuse:   return "Diffuse";
-		case TextureType::Alpha:     return "Alpha";
-		case TextureType::Normal:    return "Normal";
-		case TextureType::Emissive:  return "Emissive";
-		case TextureType::Metalness: return "Metalness";
-		case TextureType::Roughness: return "Roughness";
-		case TextureType::Specular:  return "Specular";
-		case TextureType::Oclusion:  return "Oclusion";
+		case MapType::Diffuse:   return "Diffuse";
+		case MapType::Alpha:     return "Alpha";
+		case MapType::Normal:    return "Normal";
+		case MapType::Emissive:  return "Emissive";
+		case MapType::Metalness: return "Metalness";
+		case MapType::Roughness: return "Roughness";
+		case MapType::Specular:  return "Specular";
+		case MapType::Oclusion:  return "Oclusion";
 		default: return "Unknown";
 		}
 	}
