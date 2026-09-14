@@ -2,6 +2,8 @@
 #include "equinox/editor/panels/RenderPanel.h"
 #include "equinox/resources/libraries/ShaderLibrary.h"
 #include "equinox/ECS/Systems.h"
+#include "equinox/ECS/Systems/RenderingSystem.h"
+#include "equinox/renderer/techniques/ForwardTechnique.h"
 
 namespace Equinox
 {
@@ -80,6 +82,21 @@ namespace Equinox
                     }
                     ImGui::EndCombo();
                 }
+            }
+
+            if (currentTech->GetName() == "Forward")
+            {
+                std::shared_ptr<ForwardTechnique> ft = std::dynamic_pointer_cast<ForwardTechnique>(currentTech);
+                // Rendeing Settings
+                if (ImGui::SliderFloat("SSAO Radius", &ft->m_SSAORadius, 0.0f, 10.0f));
+                if (ImGui::SliderFloat("SSAO Bias", &ft->m_SSAOBias, 0.0f, 0.5f));
+                if (ImGui::SliderFloat("SSAO Strength", &ft->m_SSAOStrength, 0.0f, 10.0f));
+
+                if (ImGui::SliderInt("Bloom Blur Passes", &ft->m_BloomBlurPasses, 0.0f, 32.0f));
+                if (ImGui::SliderFloat("Bloom Threshold", &ft->m_BloomThreshold, 0.0f, 10.0f));
+                if (ImGui::SliderFloat("Bloom Strength", &ft->m_BloomStrength, 0.0f, 10.0f));
+
+                if (ImGui::SliderFloat("Exposure", &ft->m_Exposure, 0.0f, 10.0f));
             }
         }
 

@@ -25,6 +25,7 @@ namespace Equinox
 		UUID bloom = ResourceDB::PathToUuid(FileSystem::GetPath(ResourceType::Shader, "EquinoxBloomExtract"));
 		UUID bloomBlur = ResourceDB::PathToUuid(FileSystem::GetPath(ResourceType::Shader, "EquinoxBloomBlur"));
 		UUID composite = ResourceDB::PathToUuid(FileSystem::GetPath(ResourceType::Shader, "EquinoxComposite"));
+
 		m_GeoShader = ShaderLibrary::Get(geo);
 		m_SSAOShader = ShaderLibrary::Get(ssao);
 		m_SSAOBlurShader = ShaderLibrary::Get(ssaoBlur);
@@ -47,7 +48,8 @@ namespace Equinox
 			.ColorAttachments = {
 				{.InternalFormat = GL_RGB16F, .Name = "Position"},
 				{.InternalFormat = GL_RGB16F, .Name = "Normal"}
-			}
+			},
+			.DepthStencilAttachment = {{.InternalFormat = GL_DEPTH24_STENCIL8}}
 			});
 
 		// SSAO buffers
@@ -73,6 +75,13 @@ namespace Equinox
 		m_PingPongFBO[0] = Framebuffer::Create(bloomSpec);
 		m_PingPongFBO[1] = Framebuffer::Create(bloomSpec);
 
+		// Composite buffer
+		m_CompositeFBO = Framebuffer::Create({
+			.Width = width,
+			.Height = height,
+			.ColorAttachments = {{.InternalFormat = GL_RGBA16F}}
+			});
+
 		InitSSAOKernel();
 		InitNoiseTexture();
 	}
@@ -89,16 +98,18 @@ namespace Equinox
 	{
 		// Geometry Pre-Pass
 		m_GeometryFBO->Bind();
-		Renderer::Clear(BufferBit::Color);
+		Renderer::Clear(BufferBit::Color | BufferBit::Depth);
 		RenderGeometryPrepass(opaque);
-		m_GeometryFBO->Unbind();
 
 		// Main Forward Pass
 		m_MainFBO->Bind();
 		Renderer::Clear(BufferBit::Color | BufferBit::Depth);
-		RenderForwardPass(opaque, cameraPos, true);
-		RenderForwardPass(transparent, cameraPos, false);
-		m_MainFBO->Unbind();
+		RenderForwardPass(opaque, cameraPos);
+		Renderer::EnableBlending(true);
+		//Renderer::EnableDepthMask(false);
+		RenderForwardPass(transparent, cameraPos);
+		Renderer::EnableBlending(false);
+		//Renderer::EnableDepthMask(true);
 
 		// Post-Processing
 		RenderSSAOPass();
@@ -111,10 +122,11 @@ namespace Equinox
 		m_Width = width;
 		m_Height = height;
 
-		m_MainFBO->Resize(width, height);
 		m_GeometryFBO->Resize(width, height);
+		m_MainFBO->Resize(width, height);
 		m_SSAOFBO->Resize(width, height);
 		m_SSAOBlurFBO->Resize(width, height);
+		m_CompositeFBO->Resize(width, height);
 
 		// Bloom buffers stay at half resolution
 		u32 bloomWidth = width / 2, bloomHeight = height / 2;
@@ -125,19 +137,20 @@ namespace Equinox
 
 	u32 ForwardTechnique::GetFinalColorAttachment() const
 	{
-		return m_MainFBO->GetColorAttachmentID(0);
+		return m_CompositeFBO->GetColorAttachmentID(0);
 	}
 
 	std::vector<std::pair<std::string, u32>> ForwardTechnique::GetAllAttachments() const
 	{
-		return 
+		return
 		{
 			{ "Main Color", m_MainFBO->GetColorAttachmentID(0)        },
 			{ "Position",   m_GeometryFBO->GetColorAttachmentID(0)    },
 			{ "Normal",     m_GeometryFBO->GetColorAttachmentID(1)    },
 			{ "SSAO Raw",   m_SSAOFBO->GetColorAttachmentID(0)        },
 			{ "SSAO Blur",  m_SSAOBlurFBO->GetColorAttachmentID(0)    },
-			{ "Bloom",      m_PingPongFBO[0]->GetColorAttachmentID(0) }
+			{ "Bloom Ext",  m_BrightnessFBO->GetColorAttachmentID(0)  },
+			{ "Bloom Blur", m_PingPongFBO[0]->GetColorAttachmentID(0) }
 		};
 	}
 
@@ -147,85 +160,85 @@ namespace Equinox
 
 		for (const auto& cmd : commands)
 		{
-			RenderMesh(cmd, true);
+			RenderMesh(cmd, *m_GeoShader);
 		}
 	}
 
-	void ForwardTechnique::RenderForwardPass(const std::vector<RenderCommand>& commands,
-		const Vec3& cameraPos, bool isOpaque)
+	void ForwardTechnique::RenderForwardPass(const std::vector<RenderCommand>& commands, const Vec3& cameraPos)
 	{
-		m_SSAOBlurFBO->BindColorAsTexture(0, 5); // SSAO
+		//m_SSAOBlurFBO->BindColorAsTexture(0, 5); // SSAO
 
-		for (const auto& cmd : commands) 
+		for (const auto& cmd : commands)
 		{
-			RenderMesh(cmd, isOpaque);
+			// Fetch & bind material + shader
+			auto& meshRend = *cmd.meshRend;
+			auto  material = MaterialLibrary::Get(meshRend.MaterialUUID);
+			if (!material) material = MaterialLibrary::Get(UUID(7));
+
+			auto shader = material->GetShader();
+			if (!shader)
+			{
+				EQN_CORE_WARN("Invalid shader for material");
+				continue;
+			}
+			shader->Bind();
+			//shader->SetMat4("u_Model", transform.GetTransform());
+
+			// Material properties
+			shader->SetInt("u_RenderMode", static_cast<int>(material->GetRenderMode()));
+
+			if (material->GetRenderMode() == RendererAPI::RenderMode::Cutout)
+			{
+				shader->SetFloat("u_AlphaCutoff", material->GetAlphaCutoff());
+			}
+			else if (material->GetRenderMode() == RendererAPI::RenderMode::Transparent)
+			{
+				shader->SetBool("u_AlphaFromDiffuse", material->IsAlphaFromDiffuseEnabled());
+				shader->SetFloat("u_Alpha", material->GetAlpha());
+			}
+
+			BindMaterialTextures(material, shader);
+			RenderMesh(cmd, *shader);
 		}
 	}
 
-	void ForwardTechnique::RenderMesh(const RenderCommand& cmd, bool isOpaque)
+	void ForwardTechnique::RenderMesh(const RenderCommand& cmd, Shader& shader)
 	{
-		auto& transform = *cmd.transform;
 		auto& meshRend = *cmd.meshRend;
 
 		auto model = ModelLibrary::Get(meshRend.ModelUUID);
-		auto material = MaterialLibrary::Get(meshRend.MaterialUUID);
 
-		if (!model) 
+		if (!model)
 		{
 			EQN_CORE_WARN("MeshRenderer missing model reference");
 			return;
 		}
 
-		// Validate mesh index
 		const auto& meshes = model->GetMeshes();
-		if (meshRend.MeshIndex >= meshes.size()) 
+		if (meshRend.MeshIndex >= meshes.size())
 		{
 			EQN_CORE_ERROR("Invalid mesh index: {0}", meshRend.MeshIndex);
 			return;
 		}
 
-		if (!material) material = MaterialLibrary::Get(UUID(7));
+		shader.SetMat4("u_Model", cmd.transform->GetTransform());
 
-		auto shader = material->GetShader();
-		if (!shader)
-		{
-			EQN_CORE_WARN("Invalid shader for material");
-			return;
-		}
-
-		shader->Bind();
-		//shader->SetMat4("u_Model", transform.GetTransform());
-
-		// Material properties
-		shader->SetInt("u_RenderMode", static_cast<int>(material->GetRenderMode()));
-
-		if (material->GetRenderMode() == RendererAPI::RenderMode::Cutout) 
-		{
-			shader->SetFloat("u_AlphaCutoff", material->GetAlphaCutoff());
-		}
-		else if (material->GetRenderMode() == RendererAPI::RenderMode::Transparent) 
-		{
-			shader->SetBool("u_AlphaFromDiffuse", material->IsAlphaFromDiffuseEnabled());
-			shader->SetFloat("u_Alpha", material->GetAlpha());
-		}
-
-		BindMaterialTextures(material, shader);
-		model->GetMeshes()[meshRend.MeshIndex]->Draw();
+		meshes[meshRend.MeshIndex]->Draw();
 	}
 
 	void ForwardTechnique::BindMaterialTextures(const std::shared_ptr<Material>& material,
 		const std::shared_ptr<Shader>& shader)
 	{
 		int slot = 0;
-		for (const auto& texInfo : material->GetTextures()) 
+		for (const auto& texInfo : material->GetTextures())
 		{
 			auto texture = TextureCache::Get(texInfo.TextureUuid);
 			const int mapIndex = static_cast<int>(texInfo.type);
 
 			// Get appropriate default texture if needed
-			if (!texture) 
+			if (!texture)
 			{
-				switch (texInfo.type) 
+				switch (texInfo.type)
 				{
 				case MapType::Diffuse:      texture = TextureCache::GetDefaultWhite();  break;
 				case MapType::Alpha:        texture = TextureCache::GetDefaultWhite();  break;
@@ -268,22 +281,27 @@ namespace Equinox
 	{
 		// Calculate SSAO
 		m_SSAOFBO->Bind();
+		Renderer::Clear(BufferBit::Color);
 		m_SSAOShader->Bind();
 
-		m_GeometryFBO->BindColorAsTexture(0, 0); // Position
-		m_GeometryFBO->BindColorAsTexture(1, 1); // Normal
-		//m_NoiseTexture->Bind(2);
+		m_GeometryFBO->BindColorAsTexture(0, 0);    // Position
+		m_GeometryFBO->BindColorAsTexture(1, 1);    // Normal
+		m_NoiseTexture->Bind(2);                    // Noise
+		m_SSAOShader->SetInt("gPosition", 0);
+		m_SSAOShader->SetInt("gNormal", 1);
+		m_SSAOShader->SetInt("u_Noise", 2);
 
-		//m_SSAOShader->SetMat4("u_Projection", camera.GetProjectionMatrix());
-		//m_SSAOShader->SetUniform("u_Samples", m_SSAOKernel.data(), m_SSAOKernel.size());
-		//m_SSAOShader->SetFloat("u_Radius", m_SSAORadius);
+		m_SSAOShader->SetVec2("u_NoiseScale", { m_Width / 4, m_Height / 4 });
+		m_SSAOShader->SetFloat("u_Radius", m_SSAORadius);
+		m_SSAOShader->SetFloat("u_Bias", m_SSAOBias);
 		Renderer::DrawFullscreenQuad();
-		m_SSAOFBO->Unbind();
 
 		// Blur SSAO
 		m_SSAOBlurFBO->Bind();
+		Renderer::Clear(BufferBit::Color);
 		m_SSAOBlurShader->Bind();
 		m_SSAOFBO->BindColorAsTexture(0, 0);
+		m_SSAOBlurShader->SetVec2("u_BlurScale", { 1.0f, 1.0f });
 		Renderer::DrawFullscreenQuad();
 		m_SSAOBlurFBO->Unbind();
 	}
@@ -293,6 +311,9 @@ namespace Equinox
 		// Brightness extraction
 		{
 			m_BrightnessFBO->Bind();
+			Renderer::SetClearColor({ 0.0, 0.0, 0.0, 1.0 });
+			Renderer::Clear(BufferBit::Color);
+			Renderer::SetClearColor({ 0.15, 0.15, 0.15, 1.0 });
 			m_BloomExtShader->Bind();
 
 			// Bind main color texture at full resolution
@@ -306,11 +327,12 @@ namespace Equinox
 		// Gaussian blur passes (ping-pong between two buffers)
 		bool horizontal = true;
 		bool firstIteration = true;
-		const float blurStrength = 1.0f; // Adjust based on resolution
+		const float blurStrength = 2.0f; // Adjust based on resolution
 
 		for (int i = 0; i < m_BloomBlurPasses * 2; i++)
 		{
 			m_PingPongFBO[horizontal]->Bind();
+			Renderer::Clear(BufferBit::Color);
 			m_BloomBlurShader->Bind();
 
 			// Bind input texture
@@ -319,14 +341,14 @@ namespace Equinox
 				m_BrightnessFBO->BindColorAsTexture(0, 0);
 				firstIteration = false;
 			}
-			else 
+			else
 			{
 				m_PingPongFBO[!horizontal]->BindColorAsTexture(0, 0);
 			}
 
 			// Set blur parameters
 			m_BloomBlurShader->SetFloat("u_Horizontal", horizontal);
-			m_BloomBlurShader->SetFloat("u_BlurStrength", blurStrength);
+			m_BloomBlurShader->SetFloat("m_BloomStrength", blurStrength);
 
 			Renderer::DrawFullscreenQuad();
 			m_PingPongFBO[horizontal]->Unbind();
@@ -337,16 +359,23 @@ namespace Equinox
 
 	void ForwardTechnique::RenderCompositePass()
 	{
-		Framebuffer::Unbind();
+		m_CompositeFBO->Bind();
+		Renderer::Clear(BufferBit::Color);
 		m_CompositeShader->Bind();
 
 		m_MainFBO->BindColorAsTexture(0, 0);        // Main color
 		m_SSAOBlurFBO->BindColorAsTexture(0, 1);    // SSAO
 		m_PingPongFBO[0]->BindColorAsTexture(0, 2); // Bloom
 
-		m_CompositeShader->SetFloat("u_Exposure", 1.0f);
-		m_CompositeShader->SetFloat("u_BloomStrength", 0.04f);
+		m_CompositeShader->SetInt("u_Scene", 0);
+		m_CompositeShader->SetInt("u_SSAO", 1);
+		m_CompositeShader->SetInt("u_Bloom", 2);
+
+		m_CompositeShader->SetFloat("u_Exposure", m_Exposure);
+		m_CompositeShader->SetFloat("u_BloomStrength", m_BloomStrength);
+		m_CompositeShader->SetFloat("u_SSAOStrength", m_SSAOStrength);
 		Renderer::DrawFullscreenQuad();
+		m_CompositeFBO->Unbind();
 	}
 
 	void ForwardTechnique::InitSSAOKernel()
@@ -354,7 +383,7 @@ namespace Equinox
 		std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0);
 		std::default_random_engine generator;
 
-		for (unsigned int i = 0; i < 64; ++i) 
+		for (unsigned int i = 0; i < 64; ++i)
 		{
 			Vec3 sample(
 				randomFloats(generator) * 2.0 - 1.0,
@@ -365,25 +394,38 @@ namespace Equinox
 			sample *= randomFloats(generator);
 			m_SSAOKernel.push_back(sample);
 		}
+		glGenBuffers(1, &m_SSBOKernel);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_SSBOKernel);
+		glBufferData(GL_SHADER_STORAGE_BUFFER, m_SSAOKernel.size() * sizeof(Vec3), m_SSAOKernel.data(), GL_STATIC_READ);
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, m_SSBOKernel);
+		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 	}
 
 	void ForwardTechnique::InitNoiseTexture()
 	{
+		constexpr int NOISE_SIZE = 4; // 4x4 texture
 		std::vector<Vec3> noise;
-		std::uniform_real_distribution<GLfloat> randomFloats(0.0, 1.0);
+		std::uniform_real_distribution<GLfloat> randomFloats(-1.0, 1.0);
 		std::default_random_engine generator;
 
-		for (unsigned int i = 0; i < 16; i++)
+		// Generate 4x4 noise data (16 pixels)
+		noise.reserve(NOISE_SIZE * NOISE_SIZE);
+		for (int i = 0; i < NOISE_SIZE * NOISE_SIZE; i++)
 		{
-			noise.push_back(Vec3(
+			noise.emplace_back(
 				randomFloats(generator) * 2.0 - 1.0,
 				randomFloats(generator) * 2.0 - 1.0,
 				0.0f
-			));
+			);
 		}
 
-		//m_NoiseTexture = Texture2D::Create();
-		//m_NoiseTexture->SetData(4, 4, noise.data());
-		//m_NoiseTexture->SetFilter(GL_NEAREST);
+		m_NoiseTexture = Equinox::Texture::Create(
+			NOISE_SIZE, NOISE_SIZE,
+			TextureFormat::RGB8,
+			reinterpret_cast<const float*>(noise.data())
+		);
+
+		m_NoiseTexture->SetWrapMode(TextureWrapMode::Repeat);
+		m_NoiseTexture->SetFilterMode(TextureFilterMode::Nearest, TextureFilterMode::Nearest);
 	}
 }

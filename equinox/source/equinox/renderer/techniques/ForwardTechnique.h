@@ -24,9 +24,8 @@ namespace Equinox
 
     private:
         void RenderGeometryPrepass(const std::vector<RenderCommand>& commands);
-        void RenderForwardPass(const std::vector<RenderCommand>& commands,
-            const Vec3& cameraPos, bool isOpaque);
-        void RenderMesh(const RenderCommand& cmd, bool isOpaque);
+        void RenderForwardPass(const std::vector<RenderCommand>& commands, const Vec3& cameraPos);
+        void RenderMesh(const RenderCommand& cmd, Shader& shader);
         void BindMaterialTextures(const std::shared_ptr<Material>& material,
             const std::shared_ptr<Shader>& shader);
         void RenderSSAOPass();
@@ -36,12 +35,13 @@ namespace Equinox
         void InitNoiseTexture();
 
         // Framebuffers
-        std::shared_ptr<Framebuffer> m_MainFBO;
         std::shared_ptr<Framebuffer> m_GeometryFBO;
+        std::shared_ptr<Framebuffer> m_MainFBO;
         std::shared_ptr<Framebuffer> m_SSAOFBO;
         std::shared_ptr<Framebuffer> m_SSAOBlurFBO;
         std::shared_ptr<Framebuffer> m_BrightnessFBO;
         std::array<std::shared_ptr<Framebuffer>, 2> m_PingPongFBO;
+        std::shared_ptr<Framebuffer> m_CompositeFBO;
 
         // Shaders
         std::shared_ptr<Shader> m_GeoShader;
@@ -52,13 +52,21 @@ namespace Equinox
         std::shared_ptr<Shader> m_CompositeShader;
 
         // SSAO resources
+        u32 m_SSBOKernel;
         std::vector<Vec3> m_SSAOKernel;
         std::shared_ptr<Texture> m_NoiseTexture;
 
+    public:
         // Configuration
         u32 m_Width, m_Height;
-        float m_SSAORadius = 0.5f;
+        float m_SSAORadius = 1.0f;
+        float m_SSAOBias = 0.03f;
+
         float m_BloomThreshold = 1.0f;
         int m_BloomBlurPasses = 8;
+
+        float m_Exposure = 1.0f;
+        float m_BloomStrength = 1.5f;
+        float m_SSAOStrength = 1.0f;
     };
 }

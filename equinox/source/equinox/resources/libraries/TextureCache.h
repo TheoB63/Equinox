@@ -45,7 +45,7 @@ namespace Equinox
 	private:
 		static std::shared_ptr<Texture> Create(const fs::path& path);
 		static std::shared_ptr<Texture> Create(u32 width, u32 height,
-			u32 format, const unsigned char* data);
+			TextureFormat format, const void* data);
 
 		static void CreateDefaultTextures();
 
