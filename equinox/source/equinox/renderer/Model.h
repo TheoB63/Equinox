@@ -14,25 +14,28 @@ namespace Equinox
 {
 	struct Vertex
 	{
-		glm::vec3 position;
-		glm::vec3 normal;
-		glm::vec2 texCoord0;
-		glm::vec2 texCoord1;
-		glm::vec3 tangent;
+		glm::vec3 Position;
+		glm::vec3 Normal;
+		glm::vec2 TexCoord0;
+		glm::vec2 TexCoord1;
+		glm::vec3 Tangent;
 	};
 
 	struct MeshData
 	{
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
-		uint32_t materialIndex = 0;
-		std::string name;
+		std::vector<Vertex> Vertices;
+		std::vector<uint32_t> Indices;
+		uint32_t MaterialIndex = 0;
+		std::string Name;
 	};
 
 	class Model : public Resource
 	{
 	public:
 		Model(const fs::path& path);
+		virtual ~Model() = default;
+
+		void Init();
 
 		std::vector<MeshData>& GetMeshesData() { return m_MeshesData; }
 		std::vector<std::shared_ptr<Mesh>>& GetMeshes() { return m_Meshes; }
@@ -47,6 +50,9 @@ namespace Equinox
 		}
 		std::vector<UUID>& GetMaterials() { return m_Materials; }
 
+		bool IsSkinned() const { return m_IsSkinned; }
+		void SetIsSkinned(bool value) { m_IsSkinned = value; }
+
 		void Serialize(nlohmann::json& json) const;
 		void Deserialize(const nlohmann::json& json);
 
@@ -58,10 +64,14 @@ namespace Equinox
 		void LoadMaterials(const fs::path& path);
 		Mat4 AxisCorrectionMatrix(const aiScene* scene);
 
-		void ProcessMeshData();
+		virtual void ProcessMeshData();
 
+	protected:
+		fs::path m_Path;
 		std::vector<MeshData> m_MeshesData;
 		std::vector<std::shared_ptr<Mesh>> m_Meshes;
 		std::vector<UUID> m_Materials;
+
+		bool m_IsSkinned = false;
 	};
 }

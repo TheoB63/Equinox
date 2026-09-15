@@ -42,6 +42,7 @@ namespace Equinox
         std::shared_ptr<Framebuffer> m_BrightnessFBO;
         std::array<std::shared_ptr<Framebuffer>, 2> m_PingPongFBO;
         std::shared_ptr<Framebuffer> m_CompositeFBO;
+        std::shared_ptr<Framebuffer> m_BonesFBO;
 
         // Shaders
         std::shared_ptr<Shader> m_GeoShader;
@@ -50,6 +51,7 @@ namespace Equinox
         std::shared_ptr<Shader> m_BloomExtShader;
         std::shared_ptr<Shader> m_BloomBlurShader;
         std::shared_ptr<Shader> m_CompositeShader;
+        std::shared_ptr<Shader> m_BonesShader;
 
         // SSAO resources
         u32 m_SSBOKernel;

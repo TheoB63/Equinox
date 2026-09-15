@@ -1,6 +1,7 @@
 #include "eqnpch.h"
 #include "equinox/resources/libraries/ModelLibrary.h"
 #include "equinox/resources/ResourceDB.h"
+#include "equinox/resources/ModelLoader.h"
 
 namespace Equinox
 {
@@ -89,7 +90,7 @@ namespace Equinox
             return existing;
         }
 
-        auto model = std::make_shared<Model>(path);
+        auto model = ModelLoader::Load(path);
         if (!model || model->GetMeshes().empty())
         {
             EQN_CORE_ERROR("Failed to load Model from {0}", path.string());

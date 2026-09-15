@@ -264,6 +264,11 @@ namespace Equinox
 				}
 			});
 
+		DrawComponent<Animation>("Animation", m_SelectedEntity, [](Entity entity, Animation& animation)
+			{
+				// TODO: Implement animation component properties
+			});
+
 		DrawComponent<DirectionalLight>("Directional Light", m_SelectedEntity, [](Entity entity, DirectionalLight& dirLight)
 			{
 				ImGui::Text("Color"); ImGui::SameLine();
@@ -589,7 +594,7 @@ namespace Equinox
 							}
 
 							float strength = material->GetSubsurface().strength;
-							if (ImGui::SliderFloat("##ThicknessStrength", &strength, 0.0f, 1.0f)) 
+							if (ImGui::SliderFloat("##ThicknessStrength", &strength, 0.0f, 1.0f))
 							{
 								material->SetSubsurfaceStrength(strength);
 								ResourceDB::SetDirty(material->GetUUID());

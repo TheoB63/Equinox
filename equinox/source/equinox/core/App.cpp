@@ -12,6 +12,8 @@
 #include "equinox/editor/panels/ScenePanel.h"
 
 #include "equinox/ECS/Systems.h"
+#include "equinox/ECS/systems/AnimationSystem.h"
+#include "equinox/ECS/systems/RenderingSystem.h"
 
 namespace Equinox
 {
@@ -66,6 +68,7 @@ namespace Equinox
 
 			if (!m_Window->IsMinimized())
 			{
+				Systems::Update<AnimationSystem>();
 				Systems::Update<RenderingSystem>();
 
 				// Render UI (not yet implemented in vulkan)

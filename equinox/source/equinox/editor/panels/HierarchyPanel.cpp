@@ -367,12 +367,14 @@ namespace Equinox
 					auto parent = m_Context->CreateEntity(model->GetName());
 					parent.AddComponent<Children>();
 
+					if (model->IsSkinned()) parent.AddComponent<Animation>(assetUuid);
+
 					auto materials = model->GetMaterials();
 
 					int meshIndex = 0;
 					for (const auto& mesh : model->GetMeshesData())
 					{
-						auto child = m_Context->CreateEntity(mesh.name);
+						auto child = m_Context->CreateEntity(mesh.Name);
 
 						child.AddComponent<Parent>();
 						child.SetParent(parent);

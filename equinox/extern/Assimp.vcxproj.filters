@@ -22,6 +22,9 @@
     <Filter Include="code\AssetLib\IQM">
       <UniqueIdentifier>{FC079647-681E-94DD-B195-1FFF1DEB6465}</UniqueIdentifier>
     </Filter>
+    <Filter Include="code\AssetLib\MD5">
+      <UniqueIdentifier>{3B179647-A72D-94DD-F0A4-1FFF5CFA6465}</UniqueIdentifier>
+    </Filter>
     <Filter Include="code\AssetLib\Obj">
       <UniqueIdentifier>{D0239647-3C3A-94DD-85B1-1FFFF1066565}</UniqueIdentifier>
     </Filter>
@@ -152,6 +155,12 @@
     </ClInclude>
     <ClInclude Include="source\assimp\code\AssetLib\IQM\iqm.h">
       <Filter>code\AssetLib\IQM</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\MD5\MD5Loader.h">
+      <Filter>code\AssetLib\MD5</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\MD5\MD5Parser.h">
+      <Filter>code\AssetLib\MD5</Filter>
     </ClInclude>
     <ClInclude Include="source\assimp\code\AssetLib\Obj\ObjExporter.h">
       <Filter>code\AssetLib\Obj</Filter>
@@ -472,6 +481,12 @@
     </ClCompile>
     <ClCompile Include="source\assimp\code\AssetLib\IQM\IQMImporter.cpp">
       <Filter>code\AssetLib\IQM</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\MD5\MD5Loader.cpp">
+      <Filter>code\AssetLib\MD5</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\MD5\MD5Parser.cpp">
+      <Filter>code\AssetLib\MD5</Filter>
     </ClCompile>
     <ClCompile Include="source\assimp\code\AssetLib\Obj\ObjExporter.cpp">
       <Filter>code\AssetLib\Obj</Filter>

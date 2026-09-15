@@ -34,9 +34,13 @@ namespace Equinox
 	void GLMesh::CreateVAO()
 	{
 		glGenVertexArrays(1, &m_VAO);
+		EQN_CORE_TRACE("Generated VAO with ID: {}", m_VAO);
+
 		glBindVertexArray(m_VAO);
+		EQN_CORE_TRACE("Bound VAO {}", m_VAO);
 
 		m_VertexBuffer->Bind();
+		//EQN_CORE_TRACE("Bound vertex buffer with ID: {}", m_VertexBuffer->GetID());
 
 		const auto& layout = m_VertexBuffer->GetLayout();
 		uint32_t index = 0;
@@ -45,19 +49,34 @@ namespace Equinox
 		for (const auto& element : layout.GetElements())
 		{
 			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(
-				index,
-				element.GetComponentCount(),
-				ShaderDataTypeToGLType(element.Type),
-				element.Normalized ? GL_TRUE : GL_FALSE,
-				stride,
-				(const void*)(intptr_t)element.Offset);
+			GLenum glType = ShaderDataTypeToGLType(element.Type);
+			if (glType == GL_INT || glType == GL_UNSIGNED_INT)
+			{
+				glVertexAttribIPointer(
+					index,
+					element.GetComponentCount(),
+					glType,
+					stride,
+					(const void*)(intptr_t)element.Offset);
+			}
+			else 
+			{
+				glVertexAttribPointer(
+					index,
+					element.GetComponentCount(),
+					glType,
+					element.Normalized ? GL_TRUE : GL_FALSE,
+					stride,
+					(const void*)(intptr_t)element.Offset);
+			}
 			index++;
 		}
 
 		m_IndexBuffer->Bind();
+		//EQN_CORE_TRACE("Bound index buffer with ID: {}", m_IndexBuffer->GetID());
 
 		glBindVertexArray(0);
+		EQN_CORE_TRACE("Unbound VAO {}", m_VAO);
 	}
 
 	GLenum GLMesh::ShaderDataTypeToGLType(ShaderDataType type)

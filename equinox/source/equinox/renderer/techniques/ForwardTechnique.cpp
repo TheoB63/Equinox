@@ -25,6 +25,7 @@ namespace Equinox
 		UUID bloom = ResourceDB::PathToUuid(FileSystem::GetPath(ResourceType::Shader, "EquinoxBloomExtract"));
 		UUID bloomBlur = ResourceDB::PathToUuid(FileSystem::GetPath(ResourceType::Shader, "EquinoxBloomBlur"));
 		UUID composite = ResourceDB::PathToUuid(FileSystem::GetPath(ResourceType::Shader, "EquinoxComposite"));
+		UUID bones = ResourceDB::PathToUuid(FileSystem::GetPath(ResourceType::Shader, "EquinoxBones"));
 
 		m_GeoShader = ShaderLibrary::Get(geo);
 		m_SSAOShader = ShaderLibrary::Get(ssao);
@@ -32,6 +33,7 @@ namespace Equinox
 		m_BloomExtShader = ShaderLibrary::Get(bloom);
 		m_BloomBlurShader = ShaderLibrary::Get(bloomBlur);
 		m_CompositeShader = ShaderLibrary::Get(composite);
+		m_BonesShader = ShaderLibrary::Get(bones);
 
 		// Main forward buffer
 		m_MainFBO = Framebuffer::Create({
@@ -82,6 +84,13 @@ namespace Equinox
 			.ColorAttachments = {{.InternalFormat = GL_RGBA16F}}
 			});
 
+		// Composite buffer
+		m_BonesFBO = Framebuffer::Create({
+			.Width = width,
+			.Height = height,
+			.ColorAttachments = {{.InternalFormat = GL_RGBA16F}}
+			});
+
 		InitSSAOKernel();
 		InitNoiseTexture();
 	}
@@ -115,6 +124,12 @@ namespace Equinox
 		RenderSSAOPass();
 		RenderBloomPass();
 		RenderCompositePass();
+
+		// Bones
+		/*m_BonesFBO->Bind();
+		Renderer::Clear(BufferBit::Color | BufferBit::Depth);
+		m_BonesShader->Bind();
+		m_BonesFBO->Unbind();*/
 	}
 
 	void ForwardTechnique::Resize(u32 width, u32 height)
@@ -127,6 +142,7 @@ namespace Equinox
 		m_SSAOFBO->Resize(width, height);
 		m_SSAOBlurFBO->Resize(width, height);
 		m_CompositeFBO->Resize(width, height);
+		m_BonesFBO->Resize(width, height);
 
 		// Bloom buffers stay at half resolution
 		u32 bloomWidth = width / 2, bloomHeight = height / 2;
@@ -150,7 +166,8 @@ namespace Equinox
 			{ "SSAO Raw",   m_SSAOFBO->GetColorAttachmentID(0)        },
 			{ "SSAO Blur",  m_SSAOBlurFBO->GetColorAttachmentID(0)    },
 			{ "Bloom Ext",  m_BrightnessFBO->GetColorAttachmentID(0)  },
-			{ "Bloom Blur", m_PingPongFBO[0]->GetColorAttachmentID(0) }
+			{ "Bloom Blur", m_PingPongFBO[0]->GetColorAttachmentID(0) },
+			{ "Bones",      m_BonesFBO->GetColorAttachmentID(0)       }
 		};
 	}
 

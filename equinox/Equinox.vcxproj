@@ -159,6 +159,7 @@
     <ClInclude Include="source\equinox\ECS\Scene.h" />
     <ClInclude Include="source\equinox\ECS\System.h" />
     <ClInclude Include="source\equinox\ECS\Systems.h" />
+    <ClInclude Include="source\equinox\ECS\systems\AnimationSystem.h" />
     <ClInclude Include="source\equinox\ECS\systems\RenderingSystem.h" />
     <ClInclude Include="source\equinox\core\App.h" />
     <ClInclude Include="source\equinox\core\EntryPoint.h" />
@@ -195,12 +196,15 @@
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
     <ClInclude Include="source\equinox\renderer\RendererAPI.h" />
     <ClInclude Include="source\equinox\renderer\Shader.h" />
+    <ClInclude Include="source\equinox\renderer\SkeletonRenderer.h" />
+    <ClInclude Include="source\equinox\renderer\SkinnedModel.h" />
     <ClInclude Include="source\equinox\renderer\Texture.h" />
     <ClInclude Include="source\equinox\renderer\VertexArray.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLBuffer.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLMesh.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLRendererAPI.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLShader.h" />
+    <ClInclude Include="source\equinox\renderer\openGL\GLSkeletonRenderer.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLTexture.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLVertexArray.h" />
     <ClInclude Include="source\equinox\renderer\techniques\DeferredTechnique.h" />
@@ -220,6 +224,7 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKVertexArray.h" />
     <ClInclude Include="source\equinox\resources\FileSystem.h" />
     <ClInclude Include="source\equinox\resources\MetaFile.h" />
+    <ClInclude Include="source\equinox\resources\ModelLoader.h" />
     <ClInclude Include="source\equinox\resources\Resource.h" />
     <ClInclude Include="source\equinox\resources\ResourceDB.h" />
     <ClInclude Include="source\equinox\resources\Resources.h" />
@@ -263,12 +268,15 @@
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
     <ClCompile Include="source\equinox\renderer\RendererAPI.cpp" />
     <ClCompile Include="source\equinox\renderer\Shader.cpp" />
+    <ClCompile Include="source\equinox\renderer\SkeletonRenderer.cpp" />
+    <ClCompile Include="source\equinox\renderer\SkinnedModel.cpp" />
     <ClCompile Include="source\equinox\renderer\Texture.cpp" />
     <ClCompile Include="source\equinox\renderer\VertexArray.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLBuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLMesh.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLRendererAPI.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLShader.cpp" />
+    <ClCompile Include="source\equinox\renderer\openGL\GLSkeletonRenderer.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLTexture.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLVertexArray.cpp" />
     <ClCompile Include="source\equinox\renderer\techniques\DeferredTechnique.cpp" />
@@ -287,6 +295,7 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp" />
     <ClCompile Include="source\equinox\resources\FileSystem.cpp" />
     <ClCompile Include="source\equinox\resources\MetaFile.cpp" />
+    <ClCompile Include="source\equinox\resources\ModelLoader.cpp" />
     <ClCompile Include="source\equinox\resources\ResourceDB.cpp" />
     <ClCompile Include="source\equinox\resources\libraries\MaterialLibrary.cpp" />
     <ClCompile Include="source\equinox\resources\libraries\ModelLibrary.cpp" />

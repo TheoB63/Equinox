@@ -95,18 +95,19 @@ namespace Equinox
 	{
 		static const std::unordered_map<std::string, ResourceType> extensionMap =
 		{
-			{ ".fbx",   ResourceType::Model    },
-			{ ".obj",   ResourceType::Model    },
-			{ ".gltf",  ResourceType::Model    },
-			{ ".dae",   ResourceType::Model    },
-			{ ".blend", ResourceType::Model    },
-			{ ".png",   ResourceType::Texture  },
-			{ ".jpg",   ResourceType::Texture  },
-			{ ".tga",   ResourceType::Texture  },
-			{ ".mat",   ResourceType::Material },
-			{ ".glsl",  ResourceType::Shader   },
-			{ ".ttf",   ResourceType::Font     },
-			{ ".ini",   ResourceType::Config   }
+			{ ".fbx",     ResourceType::Model    },
+			{ ".obj",     ResourceType::Model    },
+			{ ".gltf",    ResourceType::Model    },
+			{ ".dae",     ResourceType::Model    },
+			{ ".blend",   ResourceType::Model    },
+			{ ".md5mesh", ResourceType::Model    },
+			{ ".png",     ResourceType::Texture  },
+			{ ".jpg",     ResourceType::Texture  },
+			{ ".tga",     ResourceType::Texture  },
+			{ ".mat",     ResourceType::Material },
+			{ ".glsl",    ResourceType::Shader   },
+			{ ".ttf",     ResourceType::Font     },
+			{ ".ini",     ResourceType::Config   }
 		};
 
 		std::string ext = path.extension().string();
