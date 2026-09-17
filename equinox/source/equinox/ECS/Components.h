@@ -157,6 +157,7 @@ namespace Equinox::Component
         UUID ModelUUID;
         uint32_t MeshIndex = 0;
         UUID MaterialUUID;
+        bool isSkinned;
 
         // Tmp state for ImGui
         std::string modelNamePreview;

@@ -191,6 +191,9 @@
     <ClInclude Include="source\equinox\renderer\Material.h" />
     <ClInclude Include="source\equinox\renderer\Mesh.h" />
     <ClInclude Include="source\equinox\renderer\Model.h" />
+    <ClInclude Include="source\equinox\renderer\pipeline\RenderPass.h" />
+    <ClInclude Include="source\equinox\renderer\pipeline\RenderPipeline.h" />
+    <ClInclude Include="source\equinox\renderer\pipeline\RenderUtils.h" />
     <ClInclude Include="source\equinox\renderer\RenderPipeline.h" />
     <ClInclude Include="source\equinox\renderer\RenderTechnique.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
@@ -207,6 +210,11 @@
     <ClInclude Include="source\equinox\renderer\openGL\GLSkeletonRenderer.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLTexture.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLVertexArray.h" />
+    <ClInclude Include="source\equinox\renderer\pipeline\passes\GeometryPass.h" />
+    <ClInclude Include="source\equinox\renderer\pipeline\passes\LightingPass.h" />
+    <ClInclude Include="source\equinox\renderer\pipeline\passes\PostProcessPass.h" />
+    <ClInclude Include="source\equinox\renderer\pipeline\passes\SSAOPass.h" />
+    <ClInclude Include="source\equinox\renderer\pipeline\passes\TransparentPass.h" />
     <ClInclude Include="source\equinox\renderer\techniques\DeferredTechnique.h" />
     <ClInclude Include="source\equinox\renderer\techniques\ForwardTechnique.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKBuffer.h" />
@@ -264,6 +272,7 @@
     <ClCompile Include="source\equinox\renderer\Material.cpp" />
     <ClCompile Include="source\equinox\renderer\Mesh.cpp" />
     <ClCompile Include="source\equinox\renderer\Model.cpp" />
+    <ClCompile Include="source\equinox\renderer\pipeline\RenderPipeline.cpp" />
     <ClCompile Include="source\equinox\renderer\RenderPipeline.cpp" />
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
     <ClCompile Include="source\equinox\renderer\RendererAPI.cpp" />
@@ -279,6 +288,11 @@
     <ClCompile Include="source\equinox\renderer\openGL\GLSkeletonRenderer.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLTexture.cpp" />
     <ClCompile Include="source\equinox\renderer\openGL\GLVertexArray.cpp" />
+    <ClCompile Include="source\equinox\renderer\pipeline\passes\GeometryPass.cpp" />
+    <ClCompile Include="source\equinox\renderer\pipeline\passes\LightingPass.cpp" />
+    <ClCompile Include="source\equinox\renderer\pipeline\passes\PostProcessPass.cpp" />
+    <ClCompile Include="source\equinox\renderer\pipeline\passes\SSAOPass.cpp" />
+    <ClCompile Include="source\equinox\renderer\pipeline\passes\TransparentPass.cpp" />
     <ClCompile Include="source\equinox\renderer\techniques\DeferredTechnique.cpp" />
     <ClCompile Include="source\equinox\renderer\techniques\ForwardTechnique.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKBuffer.cpp" />

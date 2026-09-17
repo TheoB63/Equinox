@@ -17,6 +17,7 @@ namespace Equinox
         struct ShaderRecord
         {
             std::shared_ptr<Shader> Shader;
+            std::string Name;
             fs::path SourcePath;
             fs::file_time_type LastModified;
         };
@@ -30,6 +31,7 @@ namespace Equinox
         static bool Contains(const UUID& uuid);
 
         static std::shared_ptr<Shader> Get(const UUID& uuid);
+        static std::shared_ptr<Shader> Get(const std::string& name);
         static std::vector<UUID> GetAllUuids();
         static std::unordered_map<UUID, ShaderRecord, UUIDHash> GetAllShaders();
 
@@ -44,5 +46,6 @@ namespace Equinox
     private:
         static std::shared_mutex s_Mutex;
         static std::unordered_map<UUID, ShaderRecord, UUIDHash> s_Shaders;
+        static std::unordered_map<std::string, UUID> s_NameToUuidMap;
     };
 }
