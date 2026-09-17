@@ -16,8 +16,8 @@ namespace Equinox
 	struct RenderCommand
 	{
 		entt::entity entity;
-		Transform* transform;
-		MeshRenderer meshRend;
+		WorldTransform* transform;
+		MeshRenderer* meshRend;
 		float distance;
 	};
 

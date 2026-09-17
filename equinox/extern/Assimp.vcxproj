@@ -76,7 +76,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <PreprocessorDefinitions>ASSIMP_BUILD_NO_OWN_ZLIB;ASSIMP_BUILD_NO_3D_IMPORTER;ASSIMP_BUILD_NO_3DS_IMPORTER;ASSIMP_BUILD_NO_3MF_IMPORTER;ASSIMP_BUILD_NO_AC_IMPORTER;ASSIMP_BUILD_NO_AMF_IMPORTER;ASSIMP_BUILD_NO_ASE_IMPORTER;ASSIMP_BUILD_NO_B3D_IMPORTER;ASSIMP_BUILD_NO_BVH_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_COB_IMPORTER;ASSIMP_BUILD_NO_CSM_IMPORTER;ASSIMP_BUILD_NO_DXF_IMPORTER;ASSIMP_BUILD_NO_GLTF_IMPORTER;ASSIMP_BUILD_NO_GLTF2_IMPORTER;ASSIMP_BUILD_NO_HMP_IMPORTER;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_IRR_IMPORTER;ASSIMP_BUILD_NO_IRRMESH_IMPORTER;ASSIMP_BUILD_NO_LWO_IMPORTER;ASSIMP_BUILD_NO_LWS_IMPORTER;ASSIMP_BUILD_NO_M3D_IMPORTER;ASSIMP_BUILD_NO_MD2_IMPORTER;ASSIMP_BUILD_NO_MD3_IMPORTER;ASSIMP_BUILD_NO_MDC_IMPORTER;ASSIMP_BUILD_NO_MDL_IMPORTER;ASSIMP_BUILD_NO_MMD_IMPORTER;ASSIMP_BUILD_NO_MS3D_IMPORTER;ASSIMP_BUILD_NO_NDO_IMPORTER;ASSIMP_BUILD_NO_NFF_IMPORTER;ASSIMP_BUILD_NO_OFF_IMPORTER;ASSIMP_BUILD_NO_OGRE_IMPORTER;ASSIMP_BUILD_NO_OPENGEX_IMPORTER;ASSIMP_BUILD_NO_PBRT_IMPORTER;ASSIMP_BUILD_NO_PLY_IMPORTER;ASSIMP_BUILD_NO_Q3BSP_IMPORTER;ASSIMP_BUILD_NO_Q3D_IMPORTER;ASSIMP_BUILD_NO_RAW_IMPORTER;ASSIMP_BUILD_NO_SIB_IMPORTER;ASSIMP_BUILD_NO_SMD_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_STL_IMPORTER;ASSIMP_BUILD_NO_TERRAGEN_IMPORTER;ASSIMP_BUILD_NO_USD_IMPORTER;ASSIMP_BUILD_NO_X_IMPORTER;ASSIMP_BUILD_NO_X3D_IMPORTER;ASSIMP_BUILD_NO_XGL_IMPORTER;ASSIMP_BUILD_NO_3DS_EXPORTER;ASSIMP_BUILD_NO_3MF_EXPORTER;ASSIMP_BUILD_NO_ASSJSON_EXPORTER;ASSIMP_BUILD_NO_ASSXML_EXPORTER;ASSIMP_BUILD_NO_COLLADA_EXPORTER;ASSIMP_BUILD_NO_FBX_EXPORTER;ASSIMP_BUILD_NO_GLTF_EXPORTER;ASSIMP_BUILD_NO_M3D_EXPORTER;ASSIMP_BUILD_NO_OBJ_EXPORTER;ASSIMP_BUILD_NO_PBRT_EXPORTER;ASSIMP_BUILD_NO_PLY_EXPORTER;ASSIMP_BUILD_NO_STEP_EXPORTER;ASSIMP_BUILD_NO_STL_EXPORTER;ASSIMP_BUILD_NO_USD_EXPORTER;ASSIMP_BUILD_NO_X3D_EXPORTER;ASSIMP_BUILD_NO_X_EXPORTER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;ASSIMP_BUILD_NO_OWN_ZLIB;ASSIMP_BUILD_NO_3D_IMPORTER;ASSIMP_BUILD_NO_3DS_IMPORTER;ASSIMP_BUILD_NO_3MF_IMPORTER;ASSIMP_BUILD_NO_AC_IMPORTER;ASSIMP_BUILD_NO_AMF_IMPORTER;ASSIMP_BUILD_NO_ASE_IMPORTER;ASSIMP_BUILD_NO_B3D_IMPORTER;ASSIMP_BUILD_NO_BVH_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_COB_IMPORTER;ASSIMP_BUILD_NO_CSM_IMPORTER;ASSIMP_BUILD_NO_DXF_IMPORTER;ASSIMP_BUILD_NO_HMP_IMPORTER;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_IRR_IMPORTER;ASSIMP_BUILD_NO_IRRMESH_IMPORTER;ASSIMP_BUILD_NO_LWO_IMPORTER;ASSIMP_BUILD_NO_LWS_IMPORTER;ASSIMP_BUILD_NO_M3D_IMPORTER;ASSIMP_BUILD_NO_MD2_IMPORTER;ASSIMP_BUILD_NO_MD3_IMPORTER;ASSIMP_BUILD_NO_MDC_IMPORTER;ASSIMP_BUILD_NO_MDL_IMPORTER;ASSIMP_BUILD_NO_MMD_IMPORTER;ASSIMP_BUILD_NO_MS3D_IMPORTER;ASSIMP_BUILD_NO_NDO_IMPORTER;ASSIMP_BUILD_NO_NFF_IMPORTER;ASSIMP_BUILD_NO_OFF_IMPORTER;ASSIMP_BUILD_NO_OGRE_IMPORTER;ASSIMP_BUILD_NO_OPENGEX_IMPORTER;ASSIMP_BUILD_NO_PBRT_IMPORTER;ASSIMP_BUILD_NO_PLY_IMPORTER;ASSIMP_BUILD_NO_Q3BSP_IMPORTER;ASSIMP_BUILD_NO_Q3D_IMPORTER;ASSIMP_BUILD_NO_RAW_IMPORTER;ASSIMP_BUILD_NO_SIB_IMPORTER;ASSIMP_BUILD_NO_SMD_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_STL_IMPORTER;ASSIMP_BUILD_NO_TERRAGEN_IMPORTER;ASSIMP_BUILD_NO_USD_IMPORTER;ASSIMP_BUILD_NO_X_IMPORTER;ASSIMP_BUILD_NO_X3D_IMPORTER;ASSIMP_BUILD_NO_XGL_IMPORTER;ASSIMP_BUILD_NO_3DS_EXPORTER;ASSIMP_BUILD_NO_3MF_EXPORTER;ASSIMP_BUILD_NO_ASSJSON_EXPORTER;ASSIMP_BUILD_NO_ASSXML_EXPORTER;ASSIMP_BUILD_NO_COLLADA_EXPORTER;ASSIMP_BUILD_NO_FBX_EXPORTER;ASSIMP_BUILD_NO_GLTF_EXPORTER;ASSIMP_BUILD_NO_M3D_EXPORTER;ASSIMP_BUILD_NO_OBJ_EXPORTER;ASSIMP_BUILD_NO_PBRT_EXPORTER;ASSIMP_BUILD_NO_PLY_EXPORTER;ASSIMP_BUILD_NO_STEP_EXPORTER;ASSIMP_BUILD_NO_STL_EXPORTER;ASSIMP_BUILD_NO_USD_EXPORTER;ASSIMP_BUILD_NO_X3D_EXPORTER;ASSIMP_BUILD_NO_X_EXPORTER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>config-headers;config-headers\assimp;source\assimp;source\assimp\contrib;source\assimp\contrib\irrXML;source\assimp\contrib\unzip;source\assimp\contrib\rapidjson\include;source\assimp\contrib\pugixml\src;source\assimp\contrib\zlib;source\assimp\contrib\utf8cpp\source;source\assimp\code;source\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>MaxSpeed</Optimization>
@@ -101,7 +101,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <PreprocessorDefinitions>ASSIMP_BUILD_NO_OWN_ZLIB;ASSIMP_BUILD_NO_3D_IMPORTER;ASSIMP_BUILD_NO_3DS_IMPORTER;ASSIMP_BUILD_NO_3MF_IMPORTER;ASSIMP_BUILD_NO_AC_IMPORTER;ASSIMP_BUILD_NO_AMF_IMPORTER;ASSIMP_BUILD_NO_ASE_IMPORTER;ASSIMP_BUILD_NO_B3D_IMPORTER;ASSIMP_BUILD_NO_BVH_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_COB_IMPORTER;ASSIMP_BUILD_NO_CSM_IMPORTER;ASSIMP_BUILD_NO_DXF_IMPORTER;ASSIMP_BUILD_NO_GLTF_IMPORTER;ASSIMP_BUILD_NO_GLTF2_IMPORTER;ASSIMP_BUILD_NO_HMP_IMPORTER;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_IRR_IMPORTER;ASSIMP_BUILD_NO_IRRMESH_IMPORTER;ASSIMP_BUILD_NO_LWO_IMPORTER;ASSIMP_BUILD_NO_LWS_IMPORTER;ASSIMP_BUILD_NO_M3D_IMPORTER;ASSIMP_BUILD_NO_MD2_IMPORTER;ASSIMP_BUILD_NO_MD3_IMPORTER;ASSIMP_BUILD_NO_MDC_IMPORTER;ASSIMP_BUILD_NO_MDL_IMPORTER;ASSIMP_BUILD_NO_MMD_IMPORTER;ASSIMP_BUILD_NO_MS3D_IMPORTER;ASSIMP_BUILD_NO_NDO_IMPORTER;ASSIMP_BUILD_NO_NFF_IMPORTER;ASSIMP_BUILD_NO_OFF_IMPORTER;ASSIMP_BUILD_NO_OGRE_IMPORTER;ASSIMP_BUILD_NO_OPENGEX_IMPORTER;ASSIMP_BUILD_NO_PBRT_IMPORTER;ASSIMP_BUILD_NO_PLY_IMPORTER;ASSIMP_BUILD_NO_Q3BSP_IMPORTER;ASSIMP_BUILD_NO_Q3D_IMPORTER;ASSIMP_BUILD_NO_RAW_IMPORTER;ASSIMP_BUILD_NO_SIB_IMPORTER;ASSIMP_BUILD_NO_SMD_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_STL_IMPORTER;ASSIMP_BUILD_NO_TERRAGEN_IMPORTER;ASSIMP_BUILD_NO_USD_IMPORTER;ASSIMP_BUILD_NO_X_IMPORTER;ASSIMP_BUILD_NO_X3D_IMPORTER;ASSIMP_BUILD_NO_XGL_IMPORTER;ASSIMP_BUILD_NO_3DS_EXPORTER;ASSIMP_BUILD_NO_3MF_EXPORTER;ASSIMP_BUILD_NO_ASSJSON_EXPORTER;ASSIMP_BUILD_NO_ASSXML_EXPORTER;ASSIMP_BUILD_NO_COLLADA_EXPORTER;ASSIMP_BUILD_NO_FBX_EXPORTER;ASSIMP_BUILD_NO_GLTF_EXPORTER;ASSIMP_BUILD_NO_M3D_EXPORTER;ASSIMP_BUILD_NO_OBJ_EXPORTER;ASSIMP_BUILD_NO_PBRT_EXPORTER;ASSIMP_BUILD_NO_PLY_EXPORTER;ASSIMP_BUILD_NO_STEP_EXPORTER;ASSIMP_BUILD_NO_STL_EXPORTER;ASSIMP_BUILD_NO_USD_EXPORTER;ASSIMP_BUILD_NO_X3D_EXPORTER;ASSIMP_BUILD_NO_X_EXPORTER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;ASSIMP_BUILD_NO_OWN_ZLIB;ASSIMP_BUILD_NO_3D_IMPORTER;ASSIMP_BUILD_NO_3DS_IMPORTER;ASSIMP_BUILD_NO_3MF_IMPORTER;ASSIMP_BUILD_NO_AC_IMPORTER;ASSIMP_BUILD_NO_AMF_IMPORTER;ASSIMP_BUILD_NO_ASE_IMPORTER;ASSIMP_BUILD_NO_B3D_IMPORTER;ASSIMP_BUILD_NO_BVH_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_COB_IMPORTER;ASSIMP_BUILD_NO_CSM_IMPORTER;ASSIMP_BUILD_NO_DXF_IMPORTER;ASSIMP_BUILD_NO_HMP_IMPORTER;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_IRR_IMPORTER;ASSIMP_BUILD_NO_IRRMESH_IMPORTER;ASSIMP_BUILD_NO_LWO_IMPORTER;ASSIMP_BUILD_NO_LWS_IMPORTER;ASSIMP_BUILD_NO_M3D_IMPORTER;ASSIMP_BUILD_NO_MD2_IMPORTER;ASSIMP_BUILD_NO_MD3_IMPORTER;ASSIMP_BUILD_NO_MDC_IMPORTER;ASSIMP_BUILD_NO_MDL_IMPORTER;ASSIMP_BUILD_NO_MMD_IMPORTER;ASSIMP_BUILD_NO_MS3D_IMPORTER;ASSIMP_BUILD_NO_NDO_IMPORTER;ASSIMP_BUILD_NO_NFF_IMPORTER;ASSIMP_BUILD_NO_OFF_IMPORTER;ASSIMP_BUILD_NO_OGRE_IMPORTER;ASSIMP_BUILD_NO_OPENGEX_IMPORTER;ASSIMP_BUILD_NO_PBRT_IMPORTER;ASSIMP_BUILD_NO_PLY_IMPORTER;ASSIMP_BUILD_NO_Q3BSP_IMPORTER;ASSIMP_BUILD_NO_Q3D_IMPORTER;ASSIMP_BUILD_NO_RAW_IMPORTER;ASSIMP_BUILD_NO_SIB_IMPORTER;ASSIMP_BUILD_NO_SMD_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_STL_IMPORTER;ASSIMP_BUILD_NO_TERRAGEN_IMPORTER;ASSIMP_BUILD_NO_USD_IMPORTER;ASSIMP_BUILD_NO_X_IMPORTER;ASSIMP_BUILD_NO_X3D_IMPORTER;ASSIMP_BUILD_NO_XGL_IMPORTER;ASSIMP_BUILD_NO_3DS_EXPORTER;ASSIMP_BUILD_NO_3MF_EXPORTER;ASSIMP_BUILD_NO_ASSJSON_EXPORTER;ASSIMP_BUILD_NO_ASSXML_EXPORTER;ASSIMP_BUILD_NO_COLLADA_EXPORTER;ASSIMP_BUILD_NO_FBX_EXPORTER;ASSIMP_BUILD_NO_GLTF_EXPORTER;ASSIMP_BUILD_NO_M3D_EXPORTER;ASSIMP_BUILD_NO_OBJ_EXPORTER;ASSIMP_BUILD_NO_PBRT_EXPORTER;ASSIMP_BUILD_NO_PLY_EXPORTER;ASSIMP_BUILD_NO_STEP_EXPORTER;ASSIMP_BUILD_NO_STL_EXPORTER;ASSIMP_BUILD_NO_USD_EXPORTER;ASSIMP_BUILD_NO_X3D_EXPORTER;ASSIMP_BUILD_NO_X_EXPORTER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>config-headers;config-headers\assimp;source\assimp;source\assimp\contrib;source\assimp\contrib\irrXML;source\assimp\contrib\unzip;source\assimp\contrib\rapidjson\include;source\assimp\contrib\pugixml\src;source\assimp\contrib\zlib;source\assimp\contrib\utf8cpp\source;source\assimp\code;source\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -124,7 +124,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <PreprocessorDefinitions>ASSIMP_BUILD_NO_OWN_ZLIB;ASSIMP_BUILD_NO_3D_IMPORTER;ASSIMP_BUILD_NO_3DS_IMPORTER;ASSIMP_BUILD_NO_3MF_IMPORTER;ASSIMP_BUILD_NO_AC_IMPORTER;ASSIMP_BUILD_NO_AMF_IMPORTER;ASSIMP_BUILD_NO_ASE_IMPORTER;ASSIMP_BUILD_NO_B3D_IMPORTER;ASSIMP_BUILD_NO_BVH_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_COB_IMPORTER;ASSIMP_BUILD_NO_CSM_IMPORTER;ASSIMP_BUILD_NO_DXF_IMPORTER;ASSIMP_BUILD_NO_GLTF_IMPORTER;ASSIMP_BUILD_NO_GLTF2_IMPORTER;ASSIMP_BUILD_NO_HMP_IMPORTER;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_IRR_IMPORTER;ASSIMP_BUILD_NO_IRRMESH_IMPORTER;ASSIMP_BUILD_NO_LWO_IMPORTER;ASSIMP_BUILD_NO_LWS_IMPORTER;ASSIMP_BUILD_NO_M3D_IMPORTER;ASSIMP_BUILD_NO_MD2_IMPORTER;ASSIMP_BUILD_NO_MD3_IMPORTER;ASSIMP_BUILD_NO_MDC_IMPORTER;ASSIMP_BUILD_NO_MDL_IMPORTER;ASSIMP_BUILD_NO_MMD_IMPORTER;ASSIMP_BUILD_NO_MS3D_IMPORTER;ASSIMP_BUILD_NO_NDO_IMPORTER;ASSIMP_BUILD_NO_NFF_IMPORTER;ASSIMP_BUILD_NO_OFF_IMPORTER;ASSIMP_BUILD_NO_OGRE_IMPORTER;ASSIMP_BUILD_NO_OPENGEX_IMPORTER;ASSIMP_BUILD_NO_PBRT_IMPORTER;ASSIMP_BUILD_NO_PLY_IMPORTER;ASSIMP_BUILD_NO_Q3BSP_IMPORTER;ASSIMP_BUILD_NO_Q3D_IMPORTER;ASSIMP_BUILD_NO_RAW_IMPORTER;ASSIMP_BUILD_NO_SIB_IMPORTER;ASSIMP_BUILD_NO_SMD_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_STL_IMPORTER;ASSIMP_BUILD_NO_TERRAGEN_IMPORTER;ASSIMP_BUILD_NO_USD_IMPORTER;ASSIMP_BUILD_NO_X_IMPORTER;ASSIMP_BUILD_NO_X3D_IMPORTER;ASSIMP_BUILD_NO_XGL_IMPORTER;ASSIMP_BUILD_NO_3DS_EXPORTER;ASSIMP_BUILD_NO_3MF_EXPORTER;ASSIMP_BUILD_NO_ASSJSON_EXPORTER;ASSIMP_BUILD_NO_ASSXML_EXPORTER;ASSIMP_BUILD_NO_COLLADA_EXPORTER;ASSIMP_BUILD_NO_FBX_EXPORTER;ASSIMP_BUILD_NO_GLTF_EXPORTER;ASSIMP_BUILD_NO_M3D_EXPORTER;ASSIMP_BUILD_NO_OBJ_EXPORTER;ASSIMP_BUILD_NO_PBRT_EXPORTER;ASSIMP_BUILD_NO_PLY_EXPORTER;ASSIMP_BUILD_NO_STEP_EXPORTER;ASSIMP_BUILD_NO_STL_EXPORTER;ASSIMP_BUILD_NO_USD_EXPORTER;ASSIMP_BUILD_NO_X3D_EXPORTER;ASSIMP_BUILD_NO_X_EXPORTER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING=1;ASSIMP_BUILD_NO_OWN_ZLIB;ASSIMP_BUILD_NO_3D_IMPORTER;ASSIMP_BUILD_NO_3DS_IMPORTER;ASSIMP_BUILD_NO_3MF_IMPORTER;ASSIMP_BUILD_NO_AC_IMPORTER;ASSIMP_BUILD_NO_AMF_IMPORTER;ASSIMP_BUILD_NO_ASE_IMPORTER;ASSIMP_BUILD_NO_B3D_IMPORTER;ASSIMP_BUILD_NO_BVH_IMPORTER;ASSIMP_BUILD_NO_C4D_IMPORTER;ASSIMP_BUILD_NO_COB_IMPORTER;ASSIMP_BUILD_NO_CSM_IMPORTER;ASSIMP_BUILD_NO_DXF_IMPORTER;ASSIMP_BUILD_NO_HMP_IMPORTER;ASSIMP_BUILD_NO_IFC_IMPORTER;ASSIMP_BUILD_NO_IRR_IMPORTER;ASSIMP_BUILD_NO_IRRMESH_IMPORTER;ASSIMP_BUILD_NO_LWO_IMPORTER;ASSIMP_BUILD_NO_LWS_IMPORTER;ASSIMP_BUILD_NO_M3D_IMPORTER;ASSIMP_BUILD_NO_MD2_IMPORTER;ASSIMP_BUILD_NO_MD3_IMPORTER;ASSIMP_BUILD_NO_MDC_IMPORTER;ASSIMP_BUILD_NO_MDL_IMPORTER;ASSIMP_BUILD_NO_MMD_IMPORTER;ASSIMP_BUILD_NO_MS3D_IMPORTER;ASSIMP_BUILD_NO_NDO_IMPORTER;ASSIMP_BUILD_NO_NFF_IMPORTER;ASSIMP_BUILD_NO_OFF_IMPORTER;ASSIMP_BUILD_NO_OGRE_IMPORTER;ASSIMP_BUILD_NO_OPENGEX_IMPORTER;ASSIMP_BUILD_NO_PBRT_IMPORTER;ASSIMP_BUILD_NO_PLY_IMPORTER;ASSIMP_BUILD_NO_Q3BSP_IMPORTER;ASSIMP_BUILD_NO_Q3D_IMPORTER;ASSIMP_BUILD_NO_RAW_IMPORTER;ASSIMP_BUILD_NO_SIB_IMPORTER;ASSIMP_BUILD_NO_SMD_IMPORTER;ASSIMP_BUILD_NO_STEP_IMPORTER;ASSIMP_BUILD_NO_STL_IMPORTER;ASSIMP_BUILD_NO_TERRAGEN_IMPORTER;ASSIMP_BUILD_NO_USD_IMPORTER;ASSIMP_BUILD_NO_X_IMPORTER;ASSIMP_BUILD_NO_X3D_IMPORTER;ASSIMP_BUILD_NO_XGL_IMPORTER;ASSIMP_BUILD_NO_3DS_EXPORTER;ASSIMP_BUILD_NO_3MF_EXPORTER;ASSIMP_BUILD_NO_ASSJSON_EXPORTER;ASSIMP_BUILD_NO_ASSXML_EXPORTER;ASSIMP_BUILD_NO_COLLADA_EXPORTER;ASSIMP_BUILD_NO_FBX_EXPORTER;ASSIMP_BUILD_NO_GLTF_EXPORTER;ASSIMP_BUILD_NO_M3D_EXPORTER;ASSIMP_BUILD_NO_OBJ_EXPORTER;ASSIMP_BUILD_NO_PBRT_EXPORTER;ASSIMP_BUILD_NO_PLY_EXPORTER;ASSIMP_BUILD_NO_STEP_EXPORTER;ASSIMP_BUILD_NO_STL_EXPORTER;ASSIMP_BUILD_NO_USD_EXPORTER;ASSIMP_BUILD_NO_X3D_EXPORTER;ASSIMP_BUILD_NO_X_EXPORTER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>config-headers;config-headers\assimp;source\assimp;source\assimp\contrib;source\assimp\contrib\irrXML;source\assimp\contrib\unzip;source\assimp\contrib\rapidjson\include;source\assimp\contrib\pugixml\src;source\assimp\contrib\zlib;source\assimp\contrib\utf8cpp\source;source\assimp\code;source\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -185,6 +185,19 @@
     <ClInclude Include="source\assimp\code\AssetLib\Obj\ObjFileMtlImporter.h" />
     <ClInclude Include="source\assimp\code\AssetLib\Obj\ObjFileParser.h" />
     <ClInclude Include="source\assimp\code\AssetLib\Obj\ObjTools.h" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFAsset.h" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFAsset.inl" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFAssetWriter.h" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFAssetWriter.inl" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFCommon.h" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFExporter.h" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFImporter.h" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2Asset.h" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2Asset.inl" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2AssetWriter.h" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2AssetWriter.inl" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2Exporter.h" />
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2Importer.h" />
     <ClInclude Include="source\assimp\code\CApi\CInterfaceIOWrapper.h" />
     <ClInclude Include="source\assimp\code\Common\BaseProcess.h" />
     <ClInclude Include="source\assimp\code\Common\Compression.h" />
@@ -239,6 +252,44 @@
     <ClInclude Include="source\assimp\code\PostProcessing\TextureTransform.h" />
     <ClInclude Include="source\assimp\code\PostProcessing\TriangulateProcess.h" />
     <ClInclude Include="source\assimp\code\PostProcessing\ValidateDataStructure.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\allocators.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\cursorstreamwrapper.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\document.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\encodedstream.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\encodings.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\error\en.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\error\error.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\filereadstream.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\filewritestream.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\fwd.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\biginteger.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\clzll.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\diyfp.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\dtoa.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\ieee754.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\itoa.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\meta.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\pow10.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\regex.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\stack.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\strtod.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\swap.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\memorybuffer.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\memorystream.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\msinttypes\inttypes.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\msinttypes\stdint.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\pointer.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\prettywriter.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\rapidjson.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\reader.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\schema.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\stream.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\stringbuffer.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\uri.h" />
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\writer.h" />
     <ClInclude Include="source\assimp\contrib\unzip\crypt.h" />
     <ClInclude Include="source\assimp\contrib\unzip\ioapi.h" />
     <ClInclude Include="source\assimp\contrib\unzip\unzip.h" />
@@ -293,6 +344,11 @@
     <ClCompile Include="source\assimp\code\AssetLib\Obj\ObjFileImporter.cpp" />
     <ClCompile Include="source\assimp\code\AssetLib\Obj\ObjFileMtlImporter.cpp" />
     <ClCompile Include="source\assimp\code\AssetLib\Obj\ObjFileParser.cpp" />
+    <ClCompile Include="source\assimp\code\AssetLib\glTF\glTFCommon.cpp" />
+    <ClCompile Include="source\assimp\code\AssetLib\glTF\glTFExporter.cpp" />
+    <ClCompile Include="source\assimp\code\AssetLib\glTF\glTFImporter.cpp" />
+    <ClCompile Include="source\assimp\code\AssetLib\glTF2\glTF2Exporter.cpp" />
+    <ClCompile Include="source\assimp\code\AssetLib\glTF2\glTF2Importer.cpp" />
     <ClCompile Include="source\assimp\code\CApi\AssimpCExport.cpp" />
     <ClCompile Include="source\assimp\code\CApi\CInterfaceIOWrapper.cpp" />
     <ClCompile Include="source\assimp\code\Common\AssertHandler.cpp" />
@@ -379,6 +435,8 @@
     <ClCompile Include="source\assimp\contrib\zlib\zutil.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="source\assimp\contrib\rapidjson\license.txt" />
+    <None Include="source\assimp\contrib\rapidjson\readme.md" />
     <None Include="source\assimp\contrib\unzip\MiniZip64_info.txt" />
     <None Include="source\assimp\contrib\zlib\CMakeLists.txt" />
     <None Include="source\assimp\contrib\zlib\ChangeLog" />

@@ -180,7 +180,7 @@ namespace Equinox
 	void Editor::SetCustomStyle()
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		//io.Fonts->AddFontFromFileTTF(FileSystem::GetPath(ResourceType::Font, "OxygenMono-Regular.ttf").string().c_str(), 16.0f);
+		io.Fonts->AddFontFromFileTTF(FileSystem::GetPath(ResourceType::Font, "Roboto-Regular.ttf").string().c_str(), 14.0f);
 
 		ImFont* defaultFont = io.Fonts->AddFontDefault();
 		ImFontConfig config;
@@ -282,6 +282,13 @@ namespace Equinox
 		// Font
 		ImGuiIO& io = ImGui::GetIO();
 		io.Fonts->AddFontFromFileTTF(FileSystem::GetPath(ResourceType::Font, "HoneySalt.otf").string().c_str(), 20.0f);
+
+		ImFont* defaultFont = io.Fonts->AddFontDefault();
+		ImFontConfig config;
+		config.MergeMode = false;
+		static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
+		m_IconFont = io.Fonts->AddFontFromFileTTF(
+			FileSystem::GetPath(ResourceType::Font, "equinox_icons.ttf").string().c_str(), 48.0f, &config, iconRanges);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 

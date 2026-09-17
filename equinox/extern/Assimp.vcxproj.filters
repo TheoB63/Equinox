@@ -28,6 +28,12 @@
     <Filter Include="code\AssetLib\Obj">
       <UniqueIdentifier>{D0239647-3C3A-94DD-85B1-1FFFF1066565}</UniqueIdentifier>
     </Filter>
+    <Filter Include="code\AssetLib\glTF">
+      <UniqueIdentifier>{E2EE673A-CED2-2890-3733-23E323361312}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="code\AssetLib\glTF2">
+      <UniqueIdentifier>{54CB6587-C02C-4395-499A-8947B5FA7954}</UniqueIdentifier>
+    </Filter>
     <Filter Include="code\CApi">
       <UniqueIdentifier>{ECAE986F-5819-4DE6-A157-FE8B0D012B3B}</UniqueIdentifier>
     </Filter>
@@ -45,6 +51,24 @@
     </Filter>
     <Filter Include="contrib">
       <UniqueIdentifier>{16D079D3-82AF-F86E-8BC7-8345F7255FD0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="contrib\rapidjson">
+      <UniqueIdentifier>{4FEDF7D3-BB03-F669-047B-818B70D0C6F1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="contrib\rapidjson\include">
+      <UniqueIdentifier>{C2F388FC-2EB6-BC86-7766-4B13E3679564}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="contrib\rapidjson\include\rapidjson">
+      <UniqueIdentifier>{FB97D822-6751-43CD-F0B0-5DA75C69F93C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="contrib\rapidjson\include\rapidjson\error">
+      <UniqueIdentifier>{94FF0D6D-001A-710E-493C-81A2B5959815}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="contrib\rapidjson\include\rapidjson\internal">
+      <UniqueIdentifier>{A764287B-9377-28D4-3C61-05C12853C521}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="contrib\rapidjson\include\rapidjson\msinttypes">
+      <UniqueIdentifier>{EACC88D0-D64A-D969-BF42-9701AB5F1B92}</UniqueIdentifier>
     </Filter>
     <Filter Include="contrib\unzip">
       <UniqueIdentifier>{BB173D2F-27D8-B865-F012-02E35C92FD41}</UniqueIdentifier>
@@ -179,6 +203,45 @@
     </ClInclude>
     <ClInclude Include="source\assimp\code\AssetLib\Obj\ObjTools.h">
       <Filter>code\AssetLib\Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFAsset.h">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFAsset.inl">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFAssetWriter.h">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFAssetWriter.inl">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFCommon.h">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFExporter.h">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF\glTFImporter.h">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2Asset.h">
+      <Filter>code\AssetLib\glTF2</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2Asset.inl">
+      <Filter>code\AssetLib\glTF2</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2AssetWriter.h">
+      <Filter>code\AssetLib\glTF2</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2AssetWriter.inl">
+      <Filter>code\AssetLib\glTF2</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2Exporter.h">
+      <Filter>code\AssetLib\glTF2</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\code\AssetLib\glTF2\glTF2Importer.h">
+      <Filter>code\AssetLib\glTF2</Filter>
     </ClInclude>
     <ClInclude Include="source\assimp\code\CApi\CInterfaceIOWrapper.h">
       <Filter>code\CApi</Filter>
@@ -342,6 +405,120 @@
     <ClInclude Include="source\assimp\code\PostProcessing\ValidateDataStructure.h">
       <Filter>code\PostProcessing</Filter>
     </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\allocators.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\cursorstreamwrapper.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\document.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\encodedstream.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\encodings.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\error\en.h">
+      <Filter>contrib\rapidjson\include\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\error\error.h">
+      <Filter>contrib\rapidjson\include\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\filereadstream.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\filewritestream.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\fwd.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\biginteger.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\clzll.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\diyfp.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\dtoa.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\ieee754.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\itoa.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\meta.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\pow10.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\regex.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\stack.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\strfunc.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\strtod.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\internal\swap.h">
+      <Filter>contrib\rapidjson\include\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\istreamwrapper.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\memorybuffer.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\memorystream.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\msinttypes\inttypes.h">
+      <Filter>contrib\rapidjson\include\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\msinttypes\stdint.h">
+      <Filter>contrib\rapidjson\include\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\ostreamwrapper.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\pointer.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\prettywriter.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\rapidjson.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\reader.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\schema.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\stream.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\stringbuffer.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\uri.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\assimp\contrib\rapidjson\include\rapidjson\writer.h">
+      <Filter>contrib\rapidjson\include\rapidjson</Filter>
+    </ClInclude>
     <ClInclude Include="source\assimp\contrib\unzip\crypt.h">
       <Filter>contrib\unzip</Filter>
     </ClInclude>
@@ -499,6 +676,21 @@
     </ClCompile>
     <ClCompile Include="source\assimp\code\AssetLib\Obj\ObjFileParser.cpp">
       <Filter>code\AssetLib\Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\glTF\glTFCommon.cpp">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\glTF\glTFExporter.cpp">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\glTF\glTFImporter.cpp">
+      <Filter>code\AssetLib\glTF</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\glTF2\glTF2Exporter.cpp">
+      <Filter>code\AssetLib\glTF2</Filter>
+    </ClCompile>
+    <ClCompile Include="source\assimp\code\AssetLib\glTF2\glTF2Importer.cpp">
+      <Filter>code\AssetLib\glTF2</Filter>
     </ClCompile>
     <ClCompile Include="source\assimp\code\CApi\AssimpCExport.cpp">
       <Filter>code\CApi</Filter>
@@ -754,6 +946,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="source\assimp\contrib\rapidjson\license.txt">
+      <Filter>contrib\rapidjson</Filter>
+    </None>
+    <None Include="source\assimp\contrib\rapidjson\readme.md">
+      <Filter>contrib\rapidjson</Filter>
+    </None>
     <None Include="source\assimp\contrib\unzip\MiniZip64_info.txt">
       <Filter>contrib\unzip</Filter>
     </None>

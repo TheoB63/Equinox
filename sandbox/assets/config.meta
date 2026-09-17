@@ -1,6 +1,8 @@
 {
     "dependencies": [],
-    "type_settings": null,
-    "uuid": "30a2e84e37168a5a",
+    "type_settings": {
+        "is_folder": true
+    },
+    "uuid": "2b477a511bcecf11",
     "version": 1
 }

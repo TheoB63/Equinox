@@ -21,17 +21,21 @@ layout(location = 6) flat out ivec4 v_BoneIDs;
 layout(location = 7) out vec4 v_BoneWeights;
 
 // Uniform Buffers
-layout(std140, binding = 0) uniform TransformUBO {
+layout(std140, binding = 0) uniform TransformUBO
+{
     mat4 view;
     mat4 projection;
     mat4 model;
 };
 
+uniform mat4 u_Model;
+
 // Bone Transformations
 const int MAX_BONES = 512;
 const int MAX_BONE_INFLUENCE = 4;
 
-layout(std140, binding = 2) uniform BonesUBO {
+layout(std140, binding = 2) uniform BonesUBO 
+{
     mat4 u_BoneMatrices[MAX_BONES];
 };
 
@@ -50,7 +54,7 @@ void main()
 
     // Position transformation
     vec4 skinnedPosition = boneTransform * vec4(a_Position, 1.0);
-    v_WorldPos = vec3(model * skinnedPosition);
+    v_WorldPos = vec3(u_Model * skinnedPosition);
     gl_Position = projection * view * vec4(v_WorldPos, 1.0);
     
     // Normal/tangent transformation
@@ -58,7 +62,7 @@ void main()
     vec3 skinnedNormal = boneRotation * a_Normal;
     vec3 skinnedTangent = boneRotation * a_Tangent;
     
-    mat3 modelNormalMatrix = transpose(inverse(mat3(model)));
+    mat3 modelNormalMatrix = transpose(inverse(mat3(u_Model)));
     v_Normal = normalize(modelNormalMatrix * skinnedNormal);
     v_Tangent = normalize(modelNormalMatrix * skinnedTangent);
     v_Bitangent = normalize(cross(v_Normal, v_Tangent));

@@ -34,13 +34,9 @@ namespace Equinox
 	void GLMesh::CreateVAO()
 	{
 		glGenVertexArrays(1, &m_VAO);
-		EQN_CORE_TRACE("Generated VAO with ID: {}", m_VAO);
-
 		glBindVertexArray(m_VAO);
-		EQN_CORE_TRACE("Bound VAO {}", m_VAO);
 
 		m_VertexBuffer->Bind();
-		//EQN_CORE_TRACE("Bound vertex buffer with ID: {}", m_VertexBuffer->GetID());
 
 		const auto& layout = m_VertexBuffer->GetLayout();
 		uint32_t index = 0;
@@ -73,10 +69,7 @@ namespace Equinox
 		}
 
 		m_IndexBuffer->Bind();
-		//EQN_CORE_TRACE("Bound index buffer with ID: {}", m_IndexBuffer->GetID());
-
 		glBindVertexArray(0);
-		EQN_CORE_TRACE("Unbound VAO {}", m_VAO);
 	}
 
 	GLenum GLMesh::ShaderDataTypeToGLType(ShaderDataType type)

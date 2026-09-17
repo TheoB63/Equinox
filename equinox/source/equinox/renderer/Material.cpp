@@ -33,7 +33,7 @@ namespace Equinox
 		{
 			nlohmann::json texJson;
 			texJson["type"] = static_cast<int>(tex.type);
-			texJson["uuid"] = tex.TextureUuid.ToString();
+			texJson["uuid"] = tex.Uuid.ToString();
 			texJson["uv"] = tex.uvIndex;
 			json["textures"].push_back(texJson);
 		}
@@ -94,7 +94,7 @@ namespace Equinox
 		{
 			MapInfo tex;
 			tex.type = static_cast<MapType>(texJson["type"].get<int>());
-			UUID::FromString(texJson["uuid"].get<std::string>(), tex.TextureUuid);
+			UUID::FromString(texJson["uuid"].get<std::string>(), tex.Uuid);
 			tex.uvIndex = texJson["uv"].get<u32>();
 			tex.useTexture = static_cast<bool>(texJson.value("useTexture", 0));
 			m_Maps.push_back(tex);

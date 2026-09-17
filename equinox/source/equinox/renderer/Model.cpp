@@ -35,6 +35,8 @@ namespace Equinox
 		{
 			EQN_CORE_WARN("No meta file found for model: {0}", m_Path.string());
 		}
+
+		CacheModelInfo();
 	}
 
 	void Model::Serialize(nlohmann::json& json) const
@@ -424,5 +426,30 @@ namespace Equinox
 			auto ib = IndexBuffer::Create(meshData.Indices.data(), meshData.Indices.size());
 			m_Meshes.push_back(Mesh::Create(vb, ib));
 		}
+	}
+
+	ModelInfo Model::GetModelInfo() const
+	{
+		ModelInfo info;
+		info.Path = m_Path;
+		info.IsSkinned = m_IsSkinned;
+		info.TotalMeshCount = static_cast<uint32_t>(m_MeshesData.size());
+		info.MaterialCount = static_cast<uint32_t>(m_Materials.size());
+
+		// Calculate totals and per-mesh info
+		for (const auto& meshData : m_MeshesData)
+		{
+			info.TotalVertexCount += static_cast<uint32_t>(meshData.Vertices.size());
+			info.TotalIndexCount += static_cast<uint32_t>(meshData.Indices.size());
+
+			MeshInfo meshInfo;
+			meshInfo.Name = meshData.Name;
+			meshInfo.VertexCount = static_cast<uint32_t>(meshData.Vertices.size());
+			meshInfo.IndexCount = static_cast<uint32_t>(meshData.Indices.size());
+			meshInfo.MaterialIndex = meshData.MaterialIndex;
+			info.Meshes.push_back(meshInfo);
+		}
+
+		return info;
 	}
 }

@@ -44,7 +44,6 @@ namespace Equinox
 			ImGui::InputTextWithHint("##Search", "Search...", m_SearchFilter, IM_ARRAYSIZE(m_SearchFilter));
 
 			// Entity list
-			ImGui::Separator();
 			if (ImGui::BeginChild("EntityList"))
 			{
 				m_Context->EachEntity([&](Entity entity)
@@ -384,6 +383,7 @@ namespace Equinox
 						meshRend.modelNamePreview = model->GetName();
 						meshRend.ModelUUID = assetUuid;
 						meshRend.MeshIndex = meshIndex;
+						meshRend.isSkinned = model->IsSkinned();
 						if (!model->GetMaterials().empty() && meshIndex < materials.size()) 
 						{
 							meshRend.MaterialUUID = materials[meshIndex];

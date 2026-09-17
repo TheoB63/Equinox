@@ -31,11 +31,11 @@
     <Filter Include="equinox\renderer\openGL">
       <UniqueIdentifier>{68EC98F2-D423-E189-DD2D-45AD49E40783}</UniqueIdentifier>
     </Filter>
-    <Filter Include="equinox\renderer\passes">
-      <UniqueIdentifier>{126CE6F3-7EA3-2E8B-87AD-92AEF3635584}</UniqueIdentifier>
+    <Filter Include="equinox\renderer\pipeline">
+      <UniqueIdentifier>{59880AE7-C54A-3E71-0EFB-CCFD7AFC164F}</UniqueIdentifier>
     </Filter>
-    <Filter Include="equinox\renderer\techniques">
-      <UniqueIdentifier>{DCB149FE-48BF-77E4-D1A5-73CF3DB2439B}</UniqueIdentifier>
+    <Filter Include="equinox\renderer\pipeline\passes">
+      <UniqueIdentifier>{37C713A2-2318-FFE3-4C7C-EDA5382C924D}</UniqueIdentifier>
     </Filter>
     <Filter Include="equinox\renderer\vulkan">
       <UniqueIdentifier>{B4504B03-2088-939A-2992-F7BD9548BA93}</UniqueIdentifier>
@@ -75,6 +75,9 @@
       <Filter>equinox\ECS\systems</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\ECS\systems\RenderingSystem.h">
+      <Filter>equinox\ECS\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\ECS\systems\TransformSystem.h">
       <Filter>equinox\ECS\systems</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\App.h">
@@ -167,12 +170,6 @@
     <ClInclude Include="source\equinox\renderer\Model.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\RenderPipeline.h">
-      <Filter>equinox\renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\RenderTechnique.h">
-      <Filter>equinox\renderer</Filter>
-    </ClInclude>
     <ClInclude Include="source\equinox\renderer\Renderer.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
@@ -215,26 +212,29 @@
     <ClInclude Include="source\equinox\renderer\openGL\GLVertexArray.h">
       <Filter>equinox\renderer\openGL</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\pipeline\RenderPass.h">
+      <Filter>equinox\renderer\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\pipeline\RenderPipeline.h">
+      <Filter>equinox\renderer\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\pipeline\RenderUtils.h">
+      <Filter>equinox\renderer\pipeline</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\pipeline\passes\GeometryPass.h">
-      <Filter>equinox\renderer\passes</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\pipeline\passes\LightingPass.h">
-      <Filter>equinox\renderer\passes</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\pipeline\passes\PostProcessPass.h">
-      <Filter>equinox\renderer\passes</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\pipeline\passes\SSAOPass.h">
-      <Filter>equinox\renderer\passes</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\pipeline\passes\TransparentPass.h">
-      <Filter>equinox\renderer\passes</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\techniques\DeferredTechnique.h">
-      <Filter>equinox\renderer\techniques</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\techniques\ForwardTechnique.h">
-      <Filter>equinox\renderer\techniques</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\vulkan\VKBuffer.h">
       <Filter>equinox\renderer\vulkan</Filter>
@@ -323,9 +323,6 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\pipeline\RenderPass.h" />
-    <ClInclude Include="source\equinox\renderer\pipeline\RenderPipeline.h" />
-    <ClInclude Include="source\equinox\renderer\pipeline\RenderUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -392,9 +389,6 @@
     <ClCompile Include="source\equinox\renderer\Model.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\RenderPipeline.cpp">
-      <Filter>equinox\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="source\equinox\renderer\Renderer.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
@@ -437,26 +431,23 @@
     <ClCompile Include="source\equinox\renderer\openGL\GLVertexArray.cpp">
       <Filter>equinox\renderer\openGL</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\pipeline\RenderPipeline.cpp">
+      <Filter>equinox\renderer\pipeline</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\renderer\pipeline\passes\GeometryPass.cpp">
-      <Filter>equinox\renderer\passes</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\pipeline\passes\LightingPass.cpp">
-      <Filter>equinox\renderer\passes</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\pipeline\passes\PostProcessPass.cpp">
-      <Filter>equinox\renderer\passes</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\pipeline\passes\SSAOPass.cpp">
-      <Filter>equinox\renderer\passes</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\pipeline\passes\TransparentPass.cpp">
-      <Filter>equinox\renderer\passes</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\techniques\DeferredTechnique.cpp">
-      <Filter>equinox\renderer\techniques</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\techniques\ForwardTechnique.cpp">
-      <Filter>equinox\renderer\techniques</Filter>
+      <Filter>equinox\renderer\pipeline\passes</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\vulkan\VKBuffer.cpp">
       <Filter>equinox\renderer\vulkan</Filter>
@@ -527,6 +518,5 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\pipeline\RenderPipeline.cpp" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,9 @@
 #include "equinox/core/EquinoxTypes.h"
 
 #include <memory>
+
 #include <imgui.h>
+#include <imgui/imgui_internal.h>
 
 struct ImGuiContext;
 

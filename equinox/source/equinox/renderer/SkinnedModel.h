@@ -19,6 +19,16 @@ namespace Equinox
 		Mat4 FinalTransform = glm::mat4(1.0f);
 	};
 
+	// DEBUG SKELETON 
+	struct BoneNode
+	{
+		std::string Name;
+		Mat4 Transformation;
+		int ParentIndex = -1;
+		std::vector<uint32_t> Children;
+		int BoneIndex = -1; // Index in m_BoneInfo, -1 if not a bone
+	};
+
 	class SkinnedModel : public Model
 	{
 	public:
@@ -26,14 +36,14 @@ namespace Equinox
 		~SkinnedModel() = default;
 
 		void ProcessMeshData() override;
-		void UpdateAnimation(float timeInSeconds);
+		void UpdateAnimation(float timeInSeconds, i32 animationIndex);
 
 		const std::vector<BoneInfo>& GetBoneTransforms() const { return m_BoneInfo; }
-		std::vector<Mat4> GetFinalTransforms() const 
+		std::vector<Mat4> GetFinalTransforms() const
 		{
 			std::vector<Mat4> transforms;
 			transforms.reserve(m_BoneInfo.size());
-			for (const auto& bone : m_BoneInfo) 
+			for (const auto& bone : m_BoneInfo)
 			{
 				transforms.push_back(bone.FinalTransform);
 			}
@@ -42,20 +52,25 @@ namespace Equinox
 
 		const glm::mat4& GetGlobalInverseTransform() const { return m_GlobalInverseTransform; }
 
+		const std::vector<BoneNode>& GetBoneHierarchy() const { return m_BoneHierarchy; }
+		uint32_t GetRootNodeIndex() const { return m_RootNodeIndex; }
+
 	private:
 		void ExtractBoneWeights(aiMesh* mesh, std::vector<SkinnedVertex>& vertices);
+		void BuildBoneHierarchy(const aiNode* node, int parentIndex);
+
 		inline void SetVertexBoneData(SkinnedVertex& vert, int boneID, float weight)
 		{
-			for (int i = 0; i < 4; i++) 
+			for (int i = 0; i < 4; i++)
 			{
-				if (vert.BoneIDs[i] < 0) 
+				if (vert.BoneIDs[i] < 0)
 				{
 					vert.BoneIDs[i] = (float)boneID;
 					vert.BoneWeights[i] = weight;
 					break;
 				}
 			}
-		}		
+		}
 		const aiNodeAnim* FindNodeAnim(const aiAnimation* animation, const std::string& nodeName);
 
 		aiVector3D InterpolatePosition(float animationTime, const aiNodeAnim* nodeAnim);
@@ -67,8 +82,12 @@ namespace Equinox
 		aiVector3D InterpolateScaling(float animationTime, const aiNodeAnim* nodeAnim);
 		uint32_t FindScaling(float animationTime, const aiNodeAnim* nodeAnim);
 
-		void ReadNodeHierarchy(float animationTime, const aiNode* node, const glm::mat4& parentTransform);
+		void ReadNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const glm::mat4& parentTransform);
 
+	protected:
+		virtual ModelInfo GetModelInfo() const override;
+
+	private:
 		Assimp::Importer m_Importer;
 		const aiScene* m_Scene = nullptr;
 
@@ -78,22 +97,6 @@ namespace Equinox
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
 		std::vector<BoneInfo> m_BoneInfo;
 		uint32_t m_BoneCount = 0;
-
-		// DEBUG SKELETON  
-		struct BoneNode {
-			std::string Name;
-			Mat4 Transformation;
-			int ParentIndex = -1;
-			std::vector<uint32_t> Children;
-			uint32_t BoneIndex = -1; // Index in m_BoneInfo, -1 if not a bone
-		};
-
-	public:
-		const std::vector<BoneNode>& GetBoneHierarchy() const { return m_BoneHierarchy; }
-		uint32_t GetRootNodeIndex() const { return m_RootNodeIndex; }
-
-	private:
-		void BuildBoneHierarchy(const aiNode* node, int parentIndex);
 
 		std::vector<BoneNode> m_BoneHierarchy;
 		uint32_t m_RootNodeIndex = 0;

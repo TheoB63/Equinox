@@ -12,6 +12,7 @@
 #include "equinox/editor/panels/ScenePanel.h"
 
 #include "equinox/ECS/Systems.h"
+#include "equinox/ECS/systems/TransformSystem.h"
 #include "equinox/ECS/systems/AnimationSystem.h"
 #include "equinox/ECS/systems/RenderingSystem.h"
 
@@ -68,6 +69,7 @@ namespace Equinox
 
 			if (!m_Window->IsMinimized())
 			{
+				Systems::Update<TransformSystem>();
 				Systems::Update<AnimationSystem>();
 				Systems::Update<RenderingSystem>();
 

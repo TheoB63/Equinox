@@ -1,8 +1,9 @@
 #include "eqnpch.h"
 
 #include "equinox/ECS/Systems.h"
-#include "equinox/ECS/systems/RenderingSystem.h"
+#include "equinox/ECS/systems/TransformSystem.h"
 #include "equinox/ECS/systems/AnimationSystem.h"
+#include "equinox/ECS/systems/RenderingSystem.h"
 
 namespace Equinox
 {
@@ -13,6 +14,7 @@ namespace Equinox
     void Systems::Init()
     {
         EQN_CORE_INFO("Initializing Systems...");
+        AddSystem<TransformSystem>();
         AddSystem<AnimationSystem>();
         AddSystem<RenderingSystem>();
     }

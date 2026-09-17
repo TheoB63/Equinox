@@ -65,12 +65,6 @@ namespace Equinox
 			m_SkinnedVertices.push_back(std::move(skinnedVertices));
 		}
 
-		// Log m_BoneMapping
-		for (const auto& [boneName, index] : m_BoneMapping)
-		{
-			EQN_CORE_TRACE("{0:<4} | {1}", index, boneName);
-		}
-
 		// Build bone hierarchy
 		EQN_CORE_INFO("Building bone hierarchy...");
 		BuildBoneHierarchy(m_Scene->mRootNode, -1);
@@ -80,43 +74,43 @@ namespace Equinox
 		EQN_CORE_INFO("Total nodes in hierarchy: {0}", m_BoneHierarchy.size());
 		EQN_CORE_INFO("Total bones: {0}", m_BoneCount);
 
-		// Log hierarchy structure
-		if (m_BoneHierarchy.empty())
-		{
-			EQN_CORE_WARN("No bone hierarchy to log");
-			return;
-		}
+		//// Log hierarchy structure
+		//if (m_BoneHierarchy.empty())
+		//{
+		//	EQN_CORE_WARN("No bone hierarchy to log");
+		//	return;
+		//}
 
-		// Recursive lambda to print hierarchy
-		std::function<void(uint32_t, int)> printNode = [&](uint32_t nodeIndex, int depth)
-			{
-				const auto& node = m_BoneHierarchy[nodeIndex];
+		//// Recursive lambda to print hierarchy
+		//std::function<void(uint32_t, int)> printNode = [&](uint32_t nodeIndex, int depth)
+		//	{
+		//		const auto& node = m_BoneHierarchy[nodeIndex];
 
-				// Create indentation
-				std::string indent(depth * 2, ' ');
+		//		// Create indentation
+		//		std::string indent(depth * 2, ' ');
 
-				// Format bone info
-				std::string boneInfo = node.Name;
-				if (node.BoneIndex != -1)
-				{
-					boneInfo += " (Bone ID: " + std::to_string(node.BoneIndex) + ")";
-				}
+		//		// Format bone info
+		//		std::string boneInfo = node.Name;
+		//		if (node.BoneIndex != -1)
+		//		{
+		//			boneInfo += " (Bone ID: " + std::to_string(node.BoneIndex) + ")";
+		//		}
 
-				// Log the node
-				EQN_CORE_TRACE("{0}- {1}", indent, boneInfo);
+		//		// Log the node
+		//		EQN_CORE_TRACE("{0}- {1}", indent, boneInfo);
 
-				// Recursively print children
-				for (const auto& childNode : m_BoneHierarchy)
-				{
-					if (childNode.ParentIndex == static_cast<int>(nodeIndex))
-					{
-						printNode(&childNode - &m_BoneHierarchy[0], depth + 1);
-					}
-				}
-			};
+		//		// Recursively print children
+		//		for (const auto& childNode : m_BoneHierarchy)
+		//		{
+		//			if (childNode.ParentIndex == static_cast<int>(nodeIndex))
+		//			{
+		//				printNode(&childNode - &m_BoneHierarchy[0], depth + 1);
+		//			}
+		//		}
+		//	};
 
-		EQN_CORE_TRACE("Bone Hierarchy:");
-		printNode(m_RootNodeIndex, 0);
+		//EQN_CORE_TRACE("Bone Hierarchy:");
+		//printNode(m_RootNodeIndex, 0);
 	}
 
 	void SkinnedModel::BuildBoneHierarchy(const aiNode* node, int parentIndex)
@@ -130,32 +124,34 @@ namespace Equinox
 
 		// Check if this node is a bone
 		auto it = m_BoneMapping.find(nodeName);
-		if (it != m_BoneMapping.end()) {
-			boneNode.BoneIndex = it->second;
+		if (it != m_BoneMapping.end()) 
+		{
+			boneNode.BoneIndex = (int)it->second;
 		}
 
 		uint32_t nodeIndex = static_cast<uint32_t>(m_BoneHierarchy.size());
 		m_BoneHierarchy.push_back(boneNode);
 
 		// Set as root if it's the scene root
-		if (parentIndex == -1) {
+		if (parentIndex == -1)
+		{
 			m_RootNodeIndex = nodeIndex;
 		}
 		// Add this node to parent's children list
-		else if (parentIndex >= 0) {
+		else if (parentIndex >= 0) 
+		{
 			m_BoneHierarchy[parentIndex].Children.push_back(nodeIndex);
 		}
 
 		// Process children recursively
-		for (uint32_t i = 0; i < node->mNumChildren; i++) {
+		for (uint32_t i = 0; i < node->mNumChildren; i++)
+		{
 			BuildBoneHierarchy(node->mChildren[i], nodeIndex);
 		}
 	}
 
 	void SkinnedModel::ExtractBoneWeights(aiMesh* mesh, std::vector<SkinnedVertex>& vertices)
 	{
-		EQN_CORE_TRACE("Extracting bone weights for mesh: {0}", mesh->mName.C_Str());
-
 		for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
 		{
 			aiBone* bone = mesh->mBones[boneIndex];
@@ -221,22 +217,22 @@ namespace Equinox
 		}
 	}
 
-	void SkinnedModel::UpdateAnimation(float timeInSeconds)
+	void SkinnedModel::UpdateAnimation(float timeInSeconds, i32 animationIndex)
 	{
 		if (!m_Scene || !m_Scene->mAnimations) return;
+		if (animationIndex >= m_Scene->mNumAnimations) animationIndex = 0;
 
-		const aiAnimation* animation = m_Scene->mAnimations[0];
+		const aiAnimation* animation = m_Scene->mAnimations[animationIndex];
 		float ticksPerSecond = (float)(animation->mTicksPerSecond != 0.0 ? animation->mTicksPerSecond : 24.0);
 		float timeInTicks = timeInSeconds * ticksPerSecond;
 		float animationTime = fmod(timeInTicks, (float)animation->mDuration);
 
-		ReadNodeHierarchy(animationTime, m_Scene->mRootNode, Mat4(1.0f));
+		ReadNodeHierarchy(animation, animationTime, m_Scene->mRootNode, Mat4(1.0f));
 	}
 
-	void SkinnedModel::ReadNodeHierarchy(float animationTime, const aiNode* node, const Mat4& parentTransform)
+	void SkinnedModel::ReadNodeHierarchy(const aiAnimation* animation, float animationTime, const aiNode* node, const Mat4& parentTransform)
 	{
 		std::string nodeName(node->mName.C_Str());
-		const aiAnimation* animation = m_Scene->mAnimations[0];
 
 		Mat4 nodeTransform = AiMat4ToGLM(node->mTransformation);
 		const aiNodeAnim* nodeAnim = FindNodeAnim(animation, nodeName);
@@ -268,7 +264,7 @@ namespace Equinox
 
 		for (uint32_t i = 0; i < node->mNumChildren; ++i)
 		{
-			ReadNodeHierarchy(animationTime, node->mChildren[i], globalTransform);
+			ReadNodeHierarchy(animation, animationTime, node->mChildren[i], globalTransform);
 		}
 	}
 
@@ -362,5 +358,40 @@ namespace Equinox
 				return i;
 		}
 		return nodeAnim->mNumScalingKeys > 1 ? nodeAnim->mNumScalingKeys - 2 : 0;
+	}
+
+	ModelInfo SkinnedModel::GetModelInfo() const
+	{
+		ModelInfo info = Model::GetModelInfo(); // Get base info
+
+		// Add skinned-specific data
+		info.BoneCount = m_BoneCount;
+		info.AnimationCount = m_Scene ? m_Scene->mNumAnimations : 0;
+
+		// Bone hierarchy
+		for (const BoneNode& boneNode : m_BoneHierarchy) 
+		{
+			BoneNodeInfo nodeInfo;
+			nodeInfo.Name = boneNode.Name;
+			nodeInfo.ParentIndex = boneNode.ParentIndex;
+			nodeInfo.BoneIndex = boneNode.BoneIndex; // Now int
+			info.BoneHierarchy.push_back(nodeInfo);
+		}
+
+		// Animations
+		if (m_Scene)
+		{
+			for (uint32_t i = 0; i < m_Scene->mNumAnimations; ++i)
+			{
+				const aiAnimation* anim = m_Scene->mAnimations[i];
+				AnimationInfo animInfo;
+				animInfo.Name = anim->mName.C_Str();
+				animInfo.Duration = anim->mDuration;
+				animInfo.TicksPerSecond = anim->mTicksPerSecond ? anim->mTicksPerSecond : 25.0;
+				info.Animations.push_back(animInfo);
+			}
+		}
+
+		return info;
 	}
 }

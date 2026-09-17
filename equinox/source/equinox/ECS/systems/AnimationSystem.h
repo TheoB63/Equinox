@@ -36,7 +36,7 @@ namespace Equinox
 			{
 				std::shared_ptr<SkinnedModel> skinned =
 					std::dynamic_pointer_cast<SkinnedModel>(ModelLibrary::Get(anim.ModelUUID));
-				skinned->UpdateAnimation(Time::GetTime());
+				skinned->UpdateAnimation(Time::GetTime(),anim.AnimationIndex);
 
 				std::vector<Mat4> boneTransforms = skinned->GetFinalTransforms();
 
@@ -53,7 +53,7 @@ namespace Equinox
 
 	private:
 		u32 m_BonesUBO;
-		bool m_DrawSkeletons = true;
+		bool m_DrawSkeletons = false;
 		std::unique_ptr<SkeletonRenderer> m_SkeletonRenderer;
 	};
 }

@@ -21,6 +21,7 @@ namespace Equinox
 		entity.AddComponent<ID>();
 		entity.AddComponent<Tag>(name);
 		entity.AddComponent<Transform>();
+		entity.AddComponent<WorldTransform>();
 		EQN_CORE_TRACE("Created entity: {0}", name);
 		return entity;
 	}
