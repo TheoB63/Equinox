@@ -1,6 +1,3 @@
-[submodule "equinox/extern/source/assimp"]
-	path = equinox/extern/source/assimp
-	url = https://github.com/assimp/assimp.git
 [submodule "equinox/extern/source/glfw"]
 	path = equinox/extern/source/glfw
 	url = https://github.com/glfw/glfw.git
