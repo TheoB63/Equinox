@@ -24,11 +24,15 @@ project "EquinoxApp"
    {
       "source",
       "%{wks.location}/equinox/source", 
+      "%{wks.location}/equinox/extern/source",
+      "%{wks.location}/equinox/extern/config-headers",
+      IncludeDir["assimp"],
       IncludeDir["glad"],
       IncludeDir["glfw"],
       IncludeDir["glm"],
       IncludeDir["imgui"],
-      IncludeDir["spdlog"]
+      IncludeDir["spdlog"],
+      IncludeDir["vulkan"]
    }
 
    links

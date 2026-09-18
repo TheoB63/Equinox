@@ -2,9 +2,7 @@ name: Windows Premake Build
 
 on:
   push:
-    branches: [main, Create-Architecture]
   pull_request:
-    branches: [main, Create-Architecture]
 
 jobs:
   build:
