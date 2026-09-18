@@ -59,30 +59,18 @@
     <IntDir>..\..\bin-int\windows-x86_64\Dist\premake\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PostBuildEvent>
-      <Command>"$(ProjectDir)bin/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
-      <Message>Regenerating project files with Premake5!</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <PostBuildEvent>
-      <Command>"$(ProjectDir)bin/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
-      <Message>Regenerating project files with Premake5!</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
-    <PostBuildEvent>
-      <Command>"$(ProjectDir)bin/premake5" vs2022 --file="$(SolutionDir)premake5.lua"</Command>
-      <Message>Regenerating project files with Premake5!</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\..\Sandbox\premake5.lua" />
     <None Include="..\..\equinox\extern\source\glad\premake5.lua" />
     <None Include="..\..\equinox\premake5.lua" />
     <None Include="..\..\equinoxApp\extern\premake5.lua" />
     <None Include="..\..\equinoxApp\premake5.lua" />
     <None Include="..\..\premake5.lua" />
-    <None Include="..\..\sandbox\premake5.lua" />
     <None Include="premake5.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

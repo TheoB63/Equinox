@@ -1,0 +1,32 @@
+name: Windows Premake Build
+
+on:
+  push:
+    branches: [main, Create-Architecture]
+  pull_request:
+    branches: [main, Create-Architecture]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository + submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Run premake batch script
+      shell: cmd
+      run: |
+        cd scripts/setup
+        setup_windows.bat
+
+   - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Build Debug x64
+      run: msbuild /p:Configuration=Debug /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 Equinox.sln
+
+    - name: Build Release x64
+    run: msbuild /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 Equinox.sln
