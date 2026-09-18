@@ -14,10 +14,9 @@ namespace Equinox
 	protected:
 		void OnInit() override {}
 
-		void OnUpdate(f32 dt) override
+		void OnUpdate() override
 		{
-			static float time = 0;
-			time += dt;
+			
 		}
 
 		void OnUIRender() override
