@@ -22,11 +22,11 @@ jobs:
         cd scripts/setup
         setup_windows.bat
 
-   - name: Setup MSBuild
+    - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
 
     - name: Build Debug x64
       run: msbuild /p:Configuration=Debug /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 Equinox.sln
 
     - name: Build Release x64
-    run: msbuild /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 Equinox.sln
+      run: msbuild /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 Equinox.sln
