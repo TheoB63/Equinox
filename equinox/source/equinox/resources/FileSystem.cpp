@@ -62,15 +62,6 @@ namespace Equinox
 #endif
 	}
 
-	fs::path FileSystem::SaveGamePath()
-	{
-#if defined(_WIN32)
-		return ProjectPath("SavedGames");
-#else
-		return ProjectPath(".saves");
-#endif
-	}
-
 	fs::path FileSystem::LogPath()
 	{
 		return ProjectPath("Logs");
@@ -135,7 +126,6 @@ namespace Equinox
 		{
 			CreateDirectories(s_ProjectRoot / "assets" / info.directory);
 		}
-		CreateDirectories(SaveGamePath());
 		CreateDirectories(LogPath());
 	}
 

@@ -31,7 +31,6 @@ namespace Equinox
 
         // Platform paths
         static fs::path PlatformAssetsPath();
-        static fs::path SaveGamePath();
         static fs::path LogPath();
 
         // File utilities

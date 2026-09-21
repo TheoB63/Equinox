@@ -21,17 +21,17 @@ namespace Equinox
 	App::App(int argc, char** argv)
 	{
 		// Create Window and initialize
+		FileSystem::Init();
 		WindowSpec ws = ParseCommandLineArgs(argc, argv);
-		ws.VSync = false;
 
+		SetAppTitle(ws);
 		m_Window = Window::Create(ws);
 		Input::SetWindow(m_Window->GetNativeWindow());
 		Renderer::Init(ws.rendererAPI, m_Window->GetNativeWindow());
-		FileSystem::Init();
 		ResourceDB::Init(FileSystem::AssetsPath());
 		Resources::Init();
 		Systems::Init();
-		Editor::Init(m_Window->GetNativeWindow());
+		Editor::Init(m_Window.get());
 
 		// Subscribe to events
 		EventBus::Subscribe<WindowResizeEvent>(BusType::MainThread, [this](Event& e)
@@ -126,6 +126,24 @@ namespace Equinox
 			}
 		}
 		return spec;
+	}
+
+	void App::SetAppTitle(WindowSpec& ws)
+	{
+		std::string title = "Equinox 0.1";
+
+		switch (ws.rendererAPI) 
+		{
+		case RendererAPI::API::OpenGL: title += " [OpenGL]"; break;
+		case RendererAPI::API::Vulkan: title += " [Vulkan]"; break;
+		default: title += " [Unknown API]"; break;
+		}
+
+#ifdef _WIN32
+		title += " - Windows";
+#endif
+
+		ws.Title = title;
 	}
 
 	void App::OnWindowResize(WindowResizeEvent& e)

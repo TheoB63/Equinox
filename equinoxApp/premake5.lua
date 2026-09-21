@@ -20,6 +20,16 @@ project "EquinoxApp"
       "source/**.cpp"
    }
 
+   filter "system:windows"
+      files
+      {
+         "resource.h",
+         "EquinoxApp.rc",
+         "icons/Equinox.ico"
+      }
+   filter {}
+
+
    includedirs
    {
       "source",

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/window/Window.h"
 
 #include <memory>
 
@@ -22,7 +23,7 @@ namespace Equinox
     class Editor
     {
     public:
-        static void Init(void* window);
+        static void Init(Window* window);
         static void Shutdown();
 
         static void BeginFrame();
@@ -46,6 +47,7 @@ namespace Equinox
 
         static void SetCustomStyle();
         static void SetBubblegumStyle();
+        static void SetMatrixStyle();
         static void SetRandomStyle();
 
         static ImFont* GetIconFont() { return m_IconFont; }

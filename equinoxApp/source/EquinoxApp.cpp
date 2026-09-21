@@ -15,8 +15,7 @@ namespace Equinox
 		void OnInit() override {}
 
 		void OnUpdate() override
-		{
-			
+		{			
 		}
 
 		void OnUIRender() override

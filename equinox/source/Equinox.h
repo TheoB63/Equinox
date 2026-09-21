@@ -5,6 +5,7 @@
 #include "equinox/core/App.h"
 #include "equinox/core/Log.h"
 #include "equinox/core/Time.h"
+#include "equinox/core/UUID.h"
 
 #include "equinox/utils/ImageUtils.h"
 
