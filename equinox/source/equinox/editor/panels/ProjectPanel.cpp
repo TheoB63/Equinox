@@ -1,12 +1,12 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/ProjectPanel.h"
 #include "equinox/editor/panels/InspectorPanel.h"
+#include "equinox/renderer/RendererAPI.h"
 #include "equinox/resources/resourceDB.h"
 #include "equinox/resources/libraries/ModelLibrary.h"
 #include "equinox/resources/libraries/MaterialLibrary.h"
-#include "equinox/utils/EquinoxIcons.h"
 #include "equinox/utils/ImGuiUtils.h"
-#include "equinox/renderer/RendererAPI.h"
+#include "equinox/utils/EquinoxIcons.h"
 
 namespace Equinox
 {
@@ -26,7 +26,10 @@ namespace Equinox
 
     void ProjectPanel::OnRender()
     {
-        if (ImGui::Begin("Project"))
+        ImGui::PushFont(Editor::GetFASolid());
+        std::string project = ICON_FA_FOLDER + std::string("  Project");
+
+        if (ImGui::Begin(project.c_str()))
         {
             // Left panel - directory tree
             ImGui::BeginChild("##ProjectTree", ImVec2(ImGui::GetWindowWidth() * 0.2f, 0), ImGuiChildFlags_ResizeX);
@@ -55,6 +58,7 @@ namespace Equinox
             ImGui::EndChild();
         }
         ImGui::End();
+        ImGui::PopFont();
 
         if (m_NodeToDelete) ShowDeleteConfirmation();
     }
@@ -179,16 +183,26 @@ namespace Equinox
         if (&node == m_CurrentDirectory) flags |= ImGuiTreeNodeFlags_Selected;
         if (node.Name == "Assets") flags |= ImGuiTreeNodeFlags_Framed;
 
-        if (node.IsOpen) ImGui::SetNextItemOpen(true);
+        //if (node.IsOpen) ImGui::SetNextItemOpen(true);
+
+        // Set Icon
+        const char* icon = ICON_FA_FOLDER;
+        if (node.Directories.empty() && node.Contents.empty())
+        {
+            ImGui::PushFont(Editor::GetFARegular());
+        }
+        else if (node.IsOpen && !node.Directories.empty())
+        {
+            icon = ICON_FA_FOLDER_OPEN;
+            ImGui::PushFont(Editor::GetFARegular());
+        }
+        else 
+        {
+            ImGui::PushFont(Editor::GetFASolid());
+        }
 
         // Draw the node
-        const char* icon = (node.Directories.empty() && node.Contents.empty()) ? ICON_FOLDER_E : ICON_FOLDER;
-        ImGui::SetWindowFontScale(0.3f);
-        ImGui::PushFont(Editor::GetIconFont());
-
-        node.IsOpen = ImGui::TreeNodeEx((void*)(uint64_t)node.Uuid, flags, "%s", icon);
-
-        ImGui::SetWindowFontScale(1.0f);
+        node.IsOpen = ImGui::TreeNodeEx((void*)&node, flags, "%s", icon);
         ImGui::PopFont();
 
         if (ImGui::IsItemClicked()) 
@@ -293,44 +307,6 @@ namespace Equinox
         ImGui::EndChild();
     }
 
-    //void ProjectPanel::DrawPathBar()
-    //{
-    //    const fs::path currentPath = ResourceDB::UuidToInfo(m_CurrentDirectory->Uuid).Path;
-    //    const fs::path rootPath = ResourceDB::UuidToInfo(m_RootNode.Uuid).Path;
-    //    const fs::path relativePath = fs::relative(currentPath, rootPath);
-
-    //    ImGui::BeginChild("##PathBar", ImVec2(-25, ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2), false);
-
-    //    // Start building from the root
-    //    fs::path accumulatedPath = rootPath;
-
-    //    if (ImGui::Button("Assets")) 
-    //    {
-    //        m_CurrentDirectory = &m_RootNode;
-    //    }
-
-    //    for (const auto& part : relativePath)
-    //    {
-    //        if (part.empty() || part == ".") continue;
-
-    //        ImGui::SameLine();
-    //        ImGui::Text(">");
-    //        ImGui::SameLine();
-
-    //        // Store the path before appending the part
-    //        const fs::path previousPath = accumulatedPath;
-    //        accumulatedPath /= part;
-
-    //        if (ImGui::Button(part.string().c_str()))
-    //        {
-    //            m_CurrentDirectory = FindNodeByUuid(m_RootNode, ResourceDB::PathToUuid(accumulatedPath));
-    //            break;
-    //        }
-    //    }
-
-    //    ImGui::EndChild();
-    //}
-
     void ProjectPanel::DrawDirectoryContent()
     {
         if (!m_CurrentDirectory) return;
@@ -365,27 +341,30 @@ namespace Equinox
 
     void ProjectPanel::DrawListItem(DirectoryNode& item, bool isDirectory)
     {
-        // Icon
-        ImGui::PushFont(Editor::GetIconFont());
+        // Set Icon
+        const char* icon = ICON_FA_FOLDER;
+        if (isDirectory)
         {
-            ImGui::SetWindowFontScale(0.3f);
-
-            const char* icon = isDirectory ?
-                (item.Directories.empty() && item.Contents.empty() ? ICON_FOLDER_E : ICON_FOLDER) :
-                GetResourceIcon(item.Type);
-
-            if (!isDirectory)
+            if (item.Directories.empty() && item.Contents.empty()) 
             {
-                Vec4 color = FileSystem::GetTypeInfo().at(item.Type).color;
-                ImGui::PushStyleColor(ImGuiCol_Text, { color.r, color.g, color.b, color.a });
+                ImGui::PushFont(Editor::GetFARegular());
             }
-
-            ImGui::Text(icon);
-
-            if (!isDirectory) ImGui::PopStyleColor();
-
-            ImGui::SetWindowFontScale(1.0);
+            else 
+            {
+                ImGui::PushFont(Editor::GetFASolid());
+            }
         }
+        else
+        {
+            icon = GetResourceIcon(item.Type);
+            Vec4 color = FileSystem::GetTypeInfo().at(item.Type).color;
+            ImGui::PushStyleColor(ImGuiCol_Text, { color.r, color.g, color.b, color.a });
+            ImGui::PushFont(Editor::GetFASolid());
+        }
+
+        // Draw Icon
+        ImGui::Text(icon);
+        if (!isDirectory) ImGui::PopStyleColor();
         ImGui::PopFont();
 
         // Name with same-line alignment
@@ -453,18 +432,30 @@ namespace Equinox
         // Icon Button
         ImGui::BeginGroup();
         {
-            ImGui::PushFont(Editor::GetIconFont());
-            const char* icon = isDirectory ?
-                (item.Directories.empty() && item.Contents.empty() ? ICON_FOLDER_E : ICON_FOLDER) :
-                GetResourceIcon(item.Type);
-
-            if (!isDirectory) 
+            // Set Icon
+            const char* icon = ICON_FA_FOLDER;
+            if (isDirectory) 
             {
+                if (item.Directories.empty() && item.Contents.empty())
+                {
+                    ImGui::PushFont(Editor::GetFARegular());
+                }
+                else
+                {
+                    ImGui::PushFont(Editor::GetFASolid());
+                }
+            }
+            else
+            {
+                icon = GetResourceIcon(item.Type);
                 Vec4 color = FileSystem::GetTypeInfo().at(item.Type).color;
                 ImGui::PushStyleColor(ImGuiCol_Text, { color.r, color.g, color.b, color.a });
+                ImGui::PushFont(Editor::GetFASolid());
             }
 
+            ImGui::SetWindowFontScale(3.0f);
             ImGui::Button(icon, { thumbnailSize, thumbnailSize });
+            ImGui::SetWindowFontScale(1.0f);
 
             if (!isDirectory) ImGui::PopStyleColor();
             ImGui::PopFont();
@@ -493,13 +484,13 @@ namespace Equinox
     {
         static const std::unordered_map<ResourceType, const char*> icons =
         {
-            { ResourceType::Model,    ICON_MODEL    },
-            { ResourceType::Texture,  ICON_TEXTURE  },
-            { ResourceType::Material, ICON_MATERIAL },
-            { ResourceType::Shader,   ICON_FILE     },
-            { ResourceType::Font,     ICON_FILE     },
-            { ResourceType::Config,   ICON_FILE     },
-            { ResourceType::Unknown,  ICON_FILE     }
+            { ResourceType::Model,    ICON_FA_CUBE                  },
+            { ResourceType::Texture,  ICON_FA_IMAGE                 },
+            { ResourceType::Material, ICON_FA_CIRCLE_HALF_STROKE    },
+            { ResourceType::Shader,   ICON_FA_FILE_CODE             },
+            { ResourceType::Font,     ICON_FA_FONT                  },
+            { ResourceType::Config,   ICON_FA_FILE_LINES            },
+            { ResourceType::Unknown,  ICON_FA_FILE_CIRCLE_QUESTION  }
         };
         return icons.count(type) ? icons.at(type) : ICON_FILE;
     }

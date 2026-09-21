@@ -1,5 +1,7 @@
 {
-    "dependencies": [],
+    "dependencies": {
+        "0": "5e0c2f3df4ba1647"
+    },
     "type_settings": {
         "import_normals": true,
         "import_tangents": false,

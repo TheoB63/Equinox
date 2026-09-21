@@ -13,6 +13,7 @@
 #include "equinox/renderer/Renderer.h"
 
 #include "equinox/utils/ImGuiUtils.h"
+#include "equinox/utils/EquinoxIcons.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -32,16 +33,19 @@ namespace Equinox
 
 	void HierarchyPanel::OnRender()
 	{
-		if (ImGui::Begin("Hierarchy"))
+		ImGui::PushFont(Editor::GetFASolid());
+		std::string hierarchy = ICON_FA_LIST + std::string("  Hierarchy");
+
+		if (ImGui::Begin(hierarchy.c_str()))
 		{
 			// Header with search and create button
 			ImGui::AlignTextToFramePadding();
 
-			ButtonDropdown("+", "hierarchy_+", [this]() { DrawEntityCreateMenu(); });
+			ButtonDropdown(ICON_FA_PLUS, "hierarchy_+", [this]() { DrawEntityCreateMenu(); });
 
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-			ImGui::InputTextWithHint("##Search", "Search...", m_SearchFilter, IM_ARRAYSIZE(m_SearchFilter));
+			ImGui::InputTextWithHint("##Search", ICON_FA_MAGNIFYING_GLASS, m_SearchFilter, IM_ARRAYSIZE(m_SearchFilter));
 
 			// Entity list
 			if (ImGui::BeginChild("EntityList"))
@@ -82,6 +86,7 @@ namespace Equinox
 		}
 
 		ImGui::End();
+		ImGui::PopFont();
 	}
 
 	void HierarchyPanel::SetSelectedEntity(Entity entity)
@@ -120,7 +125,6 @@ namespace Equinox
 		bool isRenaming = (m_RenamingEntity == entity);
 
 		ImGuiTreeNodeFlags flags =
-			ImGuiTreeNodeFlags_DefaultOpen |
 			ImGuiTreeNodeFlags_OpenOnArrow |
 			(m_Selection == entity ? ImGuiTreeNodeFlags_Selected : 0) |
 			(entity.GetChildren().empty() ? ImGuiTreeNodeFlags_Leaf : 0);
@@ -142,23 +146,15 @@ namespace Equinox
 		if (isRenaming)
 		{
 			// Rename input field
-			bool finish = false;
-			bool cancel = false;
-			ImGuiInputTextFlags flags =
-				ImGuiInputTextFlags_EnterReturnsTrue |
-				ImGuiInputTextFlags_AutoSelectAll;
+			ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll;
 			ImGui::SetKeyboardFocusHere();
 			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-			if (ImGui::InputText("##Rename", m_RenameBuffer, sizeof(m_RenameBuffer), flags))
-			{
-				finish = true;
-			}
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+			const bool finish = ImGui::InputText("##Rename", m_RenameBuffer, sizeof(m_RenameBuffer), inputFlags);
+			ImGui::PopStyleVar();
 
 			// Handle Escape key
-			if (ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Escape))
-			{
-				cancel = true;
-			}
+			const bool cancel = ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Escape);
 
 			// Finalize renaming
 			if (finish || cancel)
@@ -182,7 +178,7 @@ namespace Equinox
 		else
 		{
 			// Clickable text label
-			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 25.0f));
+			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 0.5f)); // Center text vertically
 			if (ImGui::Selectable(name.c_str(), m_Selection == entity,
 				ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SpanAllColumns))
 			{
@@ -213,13 +209,43 @@ namespace Equinox
 			ImGui::EndPopup();
 		}
 
+		// Visual line settings
+		const ImColor treeLineColor = ImColor(128, 128, 128, 128);
+		const float smallOffsetX = -6.0f;
+		ImVec2 verticalLineStart = ImGui::GetCursorScreenPos();
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
 		// Child nodes
 		if (isOpen)
 		{
+			verticalLineStart.x += smallOffsetX; 
+			ImVec2 verticalLineEnd = verticalLineStart;
+
 			for (auto child : entity.GetChildren())
 			{
+				auto currentPos = ImGui::GetCursorScreenPos();
+
+				// Calculate horizontal line size
+				float horizontalTreeLineSize = 20.0f;
+				if (!child.GetChildren().empty()) horizontalTreeLineSize *= 0.5f;
+
+				// Draw horizontal line
+				const ImRect childRect = ImRect(currentPos, currentPos + ImVec2(0.0f, ImGui::GetFontSize()));
+				const float midpoint = (childRect.Min.y + childRect.Max.y) * 0.5f;
+				drawList->AddLine(
+					ImVec2(verticalLineStart.x, midpoint),
+					ImVec2(verticalLineStart.x + horizontalTreeLineSize, midpoint),
+					treeLineColor);
+
+				// Draw child node
 				DrawEntityNode(child);
+
+				verticalLineEnd.y = midpoint; // Update vertical line end as we iterate
 			}
+
+			// Draw vertical line after all children are drawn
+			drawList->AddLine(verticalLineStart, verticalLineEnd, treeLineColor);
+
 			ImGui::TreePop();
 		}
 

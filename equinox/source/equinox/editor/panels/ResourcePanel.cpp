@@ -5,6 +5,7 @@
 #include "equinox/resources/libraries/ShaderLibrary.h"
 #include "equinox/resources/libraries/TextureCache.h"
 #include "equinox/utils/ImGuiUtils.h"
+#include "equinox/utils/EquinoxIcons.h"
 
 namespace Equinox
 {
@@ -17,7 +18,10 @@ namespace Equinox
 
 	void ResourcePanel::OnRender()
 	{
-		if (ImGui::Begin("Resources"))
+		ImGui::PushFont(Editor::GetFASolid());
+		std::string resources = ICON_FA_DATABASE + std::string("  Resources");
+
+		if (ImGui::Begin(resources.c_str()))
 		{
 			// Filter controls
 			DrawFilterControls();
@@ -38,15 +42,16 @@ namespace Equinox
 			}
 		}
 		ImGui::End();
+		ImGui::PopFont();
 	}
 
 	void ResourcePanel::DrawFilterControls()
 	{
 		ImGui::SetNextItemWidth(200);
-		ImGui::InputTextWithHint("##Search", "Search...", m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer));
+		ImGui::InputTextWithHint("##Search", ICON_FA_MAGNIFYING_GLASS, m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer));
 
 		ImGui::SameLine();
-		ButtonDropdown("Type Filter", "type_filter", [this]()
+		ButtonDropdown("Type Filter", ICON_FA_FILTER, [this]()
 			{
 				ImGui::Checkbox("Models", &m_ShowModels);
 				ImGui::Checkbox("Textures", &m_ShowTextures);

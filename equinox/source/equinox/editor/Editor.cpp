@@ -5,8 +5,8 @@
 #include "equinox/ECS/Systems.h"
 #include "equinox/ECS/systems/RenderingSystem.h"
 #include "equinox/renderer/Renderer.h"
-
 #include "equinox/resources/FileSystem.h"
+#include "equinox/utils/EquinoxIcons.h"
 
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/editor/panels/InspectorPanel.h"
@@ -185,37 +185,58 @@ namespace Equinox
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
-		// Load main font with fallback to default
+		// Load main font
 		std::string robotoPath = FileSystem::GetPath(ResourceType::Font, "Roboto-Regular.ttf").string();
 		if (fs::exists(robotoPath))
 		{
-			io.Fonts->AddFontFromFileTTF(robotoPath.c_str(), 14.0f);
+			m_MainFont = io.Fonts->AddFontFromFileTTF(robotoPath.c_str(), 15.0f);
 		}
 		else
 		{
 			EQN_CORE_WARN("Roboto font not found at {}", robotoPath);
 		}
 
-		// Always load default font as fallback
-		ImFont* defaultFont = io.Fonts->AddFontDefault();
+		//std::string iconPath = FileSystem::GetPath(ResourceType::Font, "equinox_icons.ttf").string();
+		//static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
 
-		// Load icon font
-		std::string iconPath = FileSystem::GetPath(ResourceType::Font, "equinox_icons.ttf").string();
-		if (fs::exists(iconPath))
+		// Load FA Solid
+		std::string icon2Path = FileSystem::GetPath(ResourceType::Font, "fa-solid-900.ttf").string();
+		if (fs::exists(icon2Path))
+		{
+			ImFontConfig config;
+			config.MergeMode = true;
+			config.PixelSnapH = true;
+			static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+			m_FASolid = io.Fonts->AddFontFromFileTTF(icon2Path.c_str(), 14.0f, &config, iconRanges);
+			io.Fonts->AddFontDefault();
+
+			if (!m_FASolid)
+			{
+				EQN_CORE_WARN("Failed to load icon font from {}", icon2Path);
+			}
+		}
+		else 
+		{
+			EQN_CORE_WARN("Icon font not found at {}, skipping icon font loading", icon2Path);
+		}
+
+		// Load FA Regular
+		std::string icon1Path = FileSystem::GetPath(ResourceType::Font, "fa-regular-400.ttf").string();
+		if (fs::exists(icon1Path))
 		{
 			ImFontConfig config;
 			config.MergeMode = false;
-			static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
-			m_IconFont = io.Fonts->AddFontFromFileTTF(iconPath.c_str(), 48.0f, &config, iconRanges);
+			static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+			m_FARegular = io.Fonts->AddFontFromFileTTF(icon1Path.c_str(), 14.0f, &config, iconRanges);
 
-			if (!m_IconFont)
+			if (!m_FARegular)
 			{
-				EQN_CORE_WARN("Failed to load icon font from {}", iconPath);
+				EQN_CORE_WARN("Failed to load icon font from {}", icon1Path);
 			}
 		}
 		else
 		{
-			EQN_CORE_WARN("Icon font not found at {}, skipping icon font loading", iconPath);
+			EQN_CORE_WARN("Icon font not found at {}, skipping icon font loading", icon1Path);
 		}
 
 
@@ -336,37 +357,58 @@ namespace Equinox
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
-		// Load main font with fallback to default
+		// Load main font
 		std::string robotoPath = FileSystem::GetPath(ResourceType::Font, "HoneySalt.otf").string();
 		if (fs::exists(robotoPath))
 		{
-			io.Fonts->AddFontFromFileTTF(robotoPath.c_str(), 14.0f);
+			m_MainFont = io.Fonts->AddFontFromFileTTF(robotoPath.c_str(), 14.0f);
+			io.Fonts->AddFontDefault();
 		}
 		else
 		{
 			EQN_CORE_WARN("Roboto font not found at {}", robotoPath);
 		}
 
-		// Always load default font as fallback
-		ImFont* defaultFont = io.Fonts->AddFontDefault();
+		//std::string iconPath = FileSystem::GetPath(ResourceType::Font, "luth_icons.ttf").string();
+		//static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
 
-		// Load icon font
-		std::string iconPath = FileSystem::GetPath(ResourceType::Font, "equinox_icons.ttf").string();
-		if (fs::exists(iconPath))
+		// Load FA Regular
+		std::string icon1Path = FileSystem::GetPath(ResourceType::Font, "fa-regular-400.ttf").string();
+		if (fs::exists(icon1Path))
 		{
 			ImFontConfig config;
 			config.MergeMode = false;
-			static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
-			m_IconFont = io.Fonts->AddFontFromFileTTF(iconPath.c_str(), 48.0f, &config, iconRanges);
+			static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+			m_FARegular = io.Fonts->AddFontFromFileTTF(icon1Path.c_str(), 48.0f, &config, iconRanges);
 
-			if (!m_IconFont)
+			if (!m_FARegular)
 			{
-				EQN_CORE_WARN("Failed to load icon font from {}", iconPath);
+				EQN_CORE_WARN("Failed to load icon font from {}", icon1Path);
 			}
 		}
 		else
 		{
-			EQN_CORE_WARN("Icon font not found at {}, skipping icon font loading", iconPath);
+			EQN_CORE_WARN("Icon font not found at {}, skipping icon font loading", icon1Path);
+		}
+
+
+		// Load FA Solid
+		std::string icon2Path = FileSystem::GetPath(ResourceType::Font, "fa-solid-900.ttf").string();
+		if (fs::exists(icon2Path))
+		{
+			ImFontConfig config;
+			config.MergeMode = false;
+			static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+			m_FASolid = io.Fonts->AddFontFromFileTTF(icon2Path.c_str(), 48.0f, &config, iconRanges);
+
+			if (!m_FASolid)
+			{
+				EQN_CORE_WARN("Failed to load icon font from {}", icon2Path);
+			}
+		}
+		else
+		{
+			EQN_CORE_WARN("Icon font not found at {}, skipping icon font loading", icon2Path);
 		}
 
 		ImGuiStyle& style = ImGui::GetStyle();
@@ -473,37 +515,57 @@ namespace Equinox
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
-		// Load main font with fallback to default
+		// Load main font
 		std::string robotoPath = FileSystem::GetPath(ResourceType::Font, "CourierPrime-Regular.ttf").string();
 		if (fs::exists(robotoPath))
 		{
-			io.Fonts->AddFontFromFileTTF(robotoPath.c_str(), 14.0f);
+			m_MainFont = io.Fonts->AddFontFromFileTTF(robotoPath.c_str(), 14.0f);
+			io.Fonts->AddFontDefault();
 		}
 		else
 		{
-			EQN_CORE_WARN("Roboto font not found at {}", robotoPath);
+			EQN_CORE_WARN("Font not found: {}", robotoPath);
 		}
 
-		// Always load default font as fallback
-		ImFont* defaultFont = io.Fonts->AddFontDefault();
+		//std::string iconPath = FileSystem::GetPath(ResourceType::Font, "luth_icons.ttf").string();
+		//static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
 
-		// Load icon font
-		std::string iconPath = FileSystem::GetPath(ResourceType::Font, "equinox_icons.ttf").string();
-		if (fs::exists(iconPath))
+		// Load FA Regular
+		std::string icon1Path = FileSystem::GetPath(ResourceType::Font, "fa-regular-400.ttf").string();
+		if (fs::exists(icon1Path))
 		{
 			ImFontConfig config;
 			config.MergeMode = false;
-			static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
-			m_IconFont = io.Fonts->AddFontFromFileTTF(iconPath.c_str(), 48.0f, &config, iconRanges);
+			static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+			m_FARegular = io.Fonts->AddFontFromFileTTF(icon1Path.c_str(), 48.0f, &config, iconRanges);
 
-			if (!m_IconFont)
+			if (!m_FARegular) 
 			{
-				EQN_CORE_WARN("Failed to load icon font from {}", iconPath);
+				EQN_CORE_WARN("Font not found: {}", icon1Path);
 			}
 		}
 		else
 		{
-			EQN_CORE_WARN("Icon font not found at {}, skipping icon font loading", iconPath);
+			EQN_CORE_WARN("Icon font not found at {}, skipping icon font loading", icon1Path);
+		}
+
+		// Load FA Solid
+		std::string icon2Path = FileSystem::GetPath(ResourceType::Font, "fa-solid-900.ttf").string();
+		if (fs::exists(icon2Path))
+		{
+			ImFontConfig config;
+			config.MergeMode = false;
+			static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+			m_FASolid = io.Fonts->AddFontFromFileTTF(icon2Path.c_str(), 48.0f, &config, iconRanges);
+
+			if (!m_FASolid)
+			{
+				EQN_CORE_WARN("Failed to load icon font from {}", icon2Path);
+			}
+		}
+		else
+		{
+			EQN_CORE_WARN("Icon font not found at {}, skipping icon font loading", icon2Path);
 		}
 
 

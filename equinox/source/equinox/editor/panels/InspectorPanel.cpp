@@ -10,6 +10,7 @@
 #include "equinox/resources/libraries/ModelLibrary.h"
 
 #include "equinox/utils/ImGuiUtils.h"
+#include "equinox/utils/EquinoxIcons.h"
 
 
 namespace Equinox
@@ -23,7 +24,10 @@ namespace Equinox
 
 	void InspectorPanel::OnRender()
 	{
-		if (ImGui::Begin("Inspector"))
+		ImGui::PushFont(Editor::GetFASolid());
+		std::string inspector = ICON_FA_CIRCLE_INFO + std::string("  Inspector");
+
+		if (ImGui::Begin(inspector.c_str()))
 		{
 			if (m_SelectedEntity)
 			{
@@ -35,6 +39,7 @@ namespace Equinox
 			}
 		}
 		ImGui::End();
+		ImGui::PopFont();
 	}
 
 	void InspectorPanel::DrawEntityComponents()

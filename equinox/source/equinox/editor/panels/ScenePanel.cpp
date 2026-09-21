@@ -8,10 +8,11 @@
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/Framebuffer.h"
 
-#include "equinox/utils/ImGuiUtils.h"
-
 #include "equinox/events/RenderEvent.h"
 #include "equinox/input/Input.h"
+
+#include "equinox/utils/ImGuiUtils.h"
+#include "equinox/utils/EquinoxIcons.h"
 
 namespace Equinox
 {
@@ -35,7 +36,10 @@ namespace Equinox
 
 	void ScenePanel::OnRender()
 	{
-		if (ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_NoScrollbar))
+		ImGui::PushFont(Editor::GetFASolid());
+		std::string scene = ICON_FA_GAMEPAD + std::string("  Scene");
+
+		if (ImGui::Begin(scene.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar))
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
@@ -66,7 +70,7 @@ namespace Equinox
 
 			// Camera Control
 			ImGui::SetNavCursorVisible(true);
-			if (m_IsHovered) 
+			if (m_IsHovered)
 			{
 				if (ImGui::IsKeyDown(ImGuiKey_F))
 				{
@@ -86,6 +90,7 @@ namespace Equinox
 			ImGui::PopStyleVar();
 		}
 		ImGui::End();
+		ImGui::PopFont();
 	}
 
 	/*void ScenePanel::SetViewportCamera(const std::shared_ptr<Camera>& camera)
@@ -125,7 +130,7 @@ namespace Equinox
 		UpdateView();
 	}
 
-	void EditorCamera::OnUpdate(bool rotate, bool pan) 
+	void EditorCamera::OnUpdate(bool rotate, bool pan)
 	{
 		//if (ImGui::GetIO().WantCaptureMouse) return;
 
@@ -148,7 +153,7 @@ namespace Equinox
 		}
 
 		// Panning (Middle Mouse)
-		if (pan) 
+		if (pan)
 		{
 			glm::vec3 right = GetRightDirection();
 			glm::vec3 up = GetUpDirection();
@@ -200,13 +205,13 @@ namespace Equinox
 		);
 	}
 
-	glm::vec3 EditorCamera::GetRightDirection() const 
+	glm::vec3 EditorCamera::GetRightDirection() const
 	{
 		float yawRad = glm::radians(m_Yaw);
 		return glm::vec3(-sin(yawRad), 0.0f, cos(yawRad));
 	}
 
-	glm::vec3 EditorCamera::GetUpDirection() const 
+	glm::vec3 EditorCamera::GetUpDirection() const
 	{
 		glm::vec3 forward = GetForwardDirection();
 		glm::vec3 right = GetRightDirection();
@@ -224,7 +229,7 @@ namespace Equinox
 		m_ViewMatrix = glm::lookAt(m_Position, m_FocalPoint, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 
-	glm::vec3 EditorCamera::CalculatePosition() const 
+	glm::vec3 EditorCamera::CalculatePosition() const
 	{
 		return m_FocalPoint - GetForwardDirection() * m_Distance;
 	}

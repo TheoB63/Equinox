@@ -1,0 +1,40 @@
+{
+    "alpha": 1.0,
+    "alpha_cutoff": 0.5,
+    "alpha_from_diffuse": 0,
+    "blend_dst": 3,
+    "blend_src": 2,
+    "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "emissive": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "is_gloss": 0,
+    "is_single_channel": 0,
+    "metal": 0.0,
+    "render_mode": 0,
+    "rough": 0.5,
+    "shader": "45ad2e8d031ef19a",
+    "subsurface": {
+        "color": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "strength": 0.0,
+        "thickness_scale": 1.0
+    },
+    "textures": [
+        {
+            "type": 0,
+            "uuid": "89e35e960be1fd91",
+            "uv": 0
+        }
+    ]
+}
