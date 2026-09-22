@@ -278,6 +278,9 @@
     <ClInclude Include="source\equinox\resources\FileSystem.h">
       <Filter>equinox\resources</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\resources\FileWatcher.h">
+      <Filter>equinox\resources</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\resources\MetaFile.h">
       <Filter>equinox\resources</Filter>
     </ClInclude>
@@ -486,6 +489,9 @@
       <Filter>equinox\renderer\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\resources\FileSystem.cpp">
+      <Filter>equinox\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\resources\FileWatcher.cpp">
       <Filter>equinox\resources</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\resources\MetaFile.cpp">

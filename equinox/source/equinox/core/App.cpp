@@ -64,6 +64,7 @@ namespace Equinox
 
 			m_Window->OnUpdate();
 			EventBus::ProcessEvents(BusType::MainThread);
+			ResourceDB::Update();
 
 			OnUpdate();
 
@@ -93,6 +94,10 @@ namespace Equinox
 	void App::Close()
 	{
 		ResourceDB::SaveDirty();
+		ResourceDB::Shutdown();
+		Editor::Shutdown();
+		Systems::Shutdown();
+		Renderer::Shutdown();
 	}
 
 	WindowSpec App::ParseCommandLineArgs(int argc, char** argv)

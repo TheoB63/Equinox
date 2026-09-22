@@ -228,6 +228,7 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKTexture.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKVertexArray.h" />
     <ClInclude Include="source\equinox\resources\FileSystem.h" />
+    <ClInclude Include="source\equinox\resources\FileWatcher.h" />
     <ClInclude Include="source\equinox\resources\MetaFile.h" />
     <ClInclude Include="source\equinox\resources\ModelLoader.h" />
     <ClInclude Include="source\equinox\resources\Resource.h" />
@@ -302,6 +303,7 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKTexture.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp" />
     <ClCompile Include="source\equinox\resources\FileSystem.cpp" />
+    <ClCompile Include="source\equinox\resources\FileWatcher.cpp" />
     <ClCompile Include="source\equinox\resources\MetaFile.cpp" />
     <ClCompile Include="source\equinox\resources\ModelLoader.cpp" />
     <ClCompile Include="source\equinox\resources\ResourceDB.cpp" />

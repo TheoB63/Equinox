@@ -30,6 +30,6 @@ namespace Equinox
 
 	private:
 		std::shared_ptr<Framebuffer> m_GeoFBO;
-		std::shared_ptr<Shader> m_GeoShader;
+		std::weak_ptr<Shader> m_GeoShader;
 	};
 }

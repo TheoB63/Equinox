@@ -40,7 +40,7 @@ namespace Equinox
         void InitNoiseTexture();
 
         std::shared_ptr<Framebuffer> m_SSAOFBO, m_SSAOBlurFBO;
-        std::shared_ptr<Shader> m_SSAOShader, m_SSAOBlurShader;
+        std::weak_ptr<Shader> m_SSAOShader, m_SSAOBlurShader;
 
         // SSAO parameters
         float m_Radius = 0.5f;

@@ -43,14 +43,28 @@ namespace Equinox
         // Bind noise texture
         m_NoiseTexture->Bind(2);
 
+        auto SSAOShader = m_SSAOShader.lock();
+        auto SSAOBlurShader = m_SSAOBlurShader.lock();
+
+        if (!SSAOShader)
+        {
+            m_SSAOShader = ShaderLibrary::Get("EquinoxSSAO");
+            SSAOShader = m_SSAOShader.lock();
+        }
+        if (!SSAOBlurShader)
+        {
+            m_SSAOBlurShader = ShaderLibrary::Get("EquinoxSSAOBlur");
+            SSAOBlurShader = m_SSAOBlurShader.lock();
+        }
+
         // Set up SSAO shader
-        m_SSAOShader->Bind();
-        m_SSAOShader->SetInt("gPosition", 0);
-        m_SSAOShader->SetInt("gNormal", 1);
-        m_SSAOShader->SetInt("u_Noise", 2);
-        m_SSAOShader->SetVec2("u_NoiseScale", { ctx.width / 4, ctx.height / 4 });
-        m_SSAOShader->SetFloat("u_Radius", m_Radius);
-        m_SSAOShader->SetFloat("u_Bias", m_Bias);
+        SSAOShader->Bind();
+        SSAOShader->SetInt("gPosition", 0);
+        SSAOShader->SetInt("gNormal", 1);
+        SSAOShader->SetInt("u_Noise", 2);
+        SSAOShader->SetVec2("u_NoiseScale", { ctx.width / 4, ctx.height / 4 });
+        SSAOShader->SetFloat("u_Radius", m_Radius);
+        SSAOShader->SetFloat("u_Bias", m_Bias);
 
         // Render into SSAO FBO
         m_SSAOFBO->Bind();
@@ -61,7 +75,7 @@ namespace Equinox
         // Blur
         m_SSAOBlurFBO->Bind();
         Renderer::Clear(BufferBit::Color);
-        m_SSAOBlurShader->Bind();
+        SSAOBlurShader->Bind();
         m_SSAOFBO->BindColorAsTexture(0, 0);
         Renderer::DrawFullscreenQuad();
         m_SSAOBlurFBO->Unbind();

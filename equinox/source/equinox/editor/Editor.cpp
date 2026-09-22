@@ -369,7 +369,7 @@ namespace Equinox
 			EQN_CORE_WARN("Roboto font not found at {}", robotoPath);
 		}
 
-		//std::string iconPath = FileSystem::GetPath(ResourceType::Font, "luth_icons.ttf").string();
+		//std::string iconPath = FileSystem::GetPath(ResourceType::Font, "Equinox_icons.ttf").string();
 		//static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
 
 		// Load FA Regular
@@ -527,7 +527,7 @@ namespace Equinox
 			EQN_CORE_WARN("Font not found: {}", robotoPath);
 		}
 
-		//std::string iconPath = FileSystem::GetPath(ResourceType::Font, "luth_icons.ttf").string();
+		//std::string iconPath = FileSystem::GetPath(ResourceType::Font, "Equinox_icons.ttf").string();
 		//static const ImWchar iconRanges[] = { 0xe900, 0xe905, 0 };
 
 		// Load FA Regular

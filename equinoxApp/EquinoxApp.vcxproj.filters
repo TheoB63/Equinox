@@ -9,6 +9,9 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="source\EquinoxApp.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -20,8 +23,5 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EquinoxApp.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="resource.h" />
   </ItemGroup>
 </Project>
