@@ -16,12 +16,18 @@
 #include "equinox/ECS/systems/AnimationSystem.h"
 #include "equinox/ECS/systems/RenderingSystem.h"
 
+#include "equinox/core/JobSystem.h"
+#include "equinox/core/Profiler.h"
+
 namespace Equinox
 {
 	App::App(int argc, char** argv)
 	{
-		// Create Window and initialize
+		 // Core Systems Init
+		JobSystem::Init();
 		FileSystem::Init();
+
+		// Create Window and initialize
 		WindowSpec ws = ParseCommandLineArgs(argc, argv);
 
 		SetAppTitle(ws);
@@ -60,6 +66,8 @@ namespace Equinox
 
 		while (m_Running)
 		{
+			EQN_PROFILE_FRAME("MainThread");
+
 			Time::Update();
 
 			m_Window->OnUpdate();
@@ -70,13 +78,18 @@ namespace Equinox
 
 			if (!m_Window->IsMinimized())
 			{
-				Systems::Update<TransformSystem>();
-				Systems::Update<AnimationSystem>();
-				Systems::Update<RenderingSystem>();
+				// TODO: Parallelize these using JobSystem
+				{
+					EQN_PROFILE_SCOPE("Systems::Update");
+					Systems::Update<TransformSystem>();
+					Systems::Update<AnimationSystem>();
+					Systems::Update<RenderingSystem>();
+				}
 
 				// Render UI (not yet implemented in vulkan)
 				if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 				{
+					EQN_PROFILE_SCOPE("Editor::Render");
 					Editor::BeginFrame();
 					Editor::Render();
 					OnUIRender();
@@ -84,8 +97,12 @@ namespace Equinox
 				}
 			}
 
-			m_Window->SwapBuffers();
-			Renderer::Clear(BufferBit::Color | BufferBit::Depth);
+			//Render
+			{
+				EQN_PROFILE_SCOPE("SwapBuffers");
+				m_Window->SwapBuffers();
+				Renderer::Clear(BufferBit::Color | BufferBit::Depth);
+			}
 		}
 		OnShutdown();
 		Close();
@@ -98,6 +115,7 @@ namespace Equinox
 		Editor::Shutdown();
 		Systems::Shutdown();
 		Renderer::Shutdown();
+		JobSystem::Shutdown();
 	}
 
 	WindowSpec App::ParseCommandLineArgs(int argc, char** argv)

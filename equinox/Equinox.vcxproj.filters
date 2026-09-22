@@ -89,10 +89,19 @@
     <ClInclude Include="source\equinox\core\EquinoxTypes.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\core\JobSystem.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\core\Log.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\Math.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\core\Memory.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\core\Profiler.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\ThreadPool.h">
@@ -342,6 +351,9 @@
       <Filter>equinox\ECS\systems</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\core\App.cpp">
+      <Filter>equinox\core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\core\JobSystem.cpp">
       <Filter>equinox\core</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\core\Log.cpp">

@@ -165,8 +165,11 @@
     <ClInclude Include="source\equinox\core\App.h" />
     <ClInclude Include="source\equinox\core\EntryPoint.h" />
     <ClInclude Include="source\equinox\core\EquinoxTypes.h" />
+    <ClInclude Include="source\equinox\core\JobSystem.h" />
     <ClInclude Include="source\equinox\core\Log.h" />
     <ClInclude Include="source\equinox\core\Math.h" />
+    <ClInclude Include="source\equinox\core\Memory.h" />
+    <ClInclude Include="source\equinox\core\Profiler.h" />
     <ClInclude Include="source\equinox\core\ThreadPool.h" />
     <ClInclude Include="source\equinox\core\Time.h" />
     <ClInclude Include="source\equinox\core\UUID.h" />
@@ -254,6 +257,7 @@
     <ClCompile Include="source\equinox\ECS\Systems.cpp" />
     <ClCompile Include="source\equinox\ECS\systems\RenderingSystem.cpp" />
     <ClCompile Include="source\equinox\core\App.cpp" />
+    <ClCompile Include="source\equinox\core\JobSystem.cpp" />
     <ClCompile Include="source\equinox\core\Log.cpp" />
     <ClCompile Include="source\equinox\core\UUID.cpp" />
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
