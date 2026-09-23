@@ -82,6 +82,19 @@ namespace Equinox
 		s_RendererAPI->DrawFrame();
 	}
 
+	void Renderer::ExecuteGraph(RG::RenderGraph& graph)
+	{
+		if (s_RendererAPI->GetAPI() == RendererAPI::API::Vulkan)
+		{
+			static_cast<VKRendererAPI*>(s_RendererAPI.get())->ExecuteGraph(graph);
+		}
+		else
+		{
+			// Fallback for OpenGL (Execute CPU side only)
+			graph.Execute();
+		}
+	}
+
 	void Renderer::InitFullscreenQuad()
 	{
 		s_RendererAPI->InitFullscreenQuad();

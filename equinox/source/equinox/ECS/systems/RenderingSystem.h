@@ -4,6 +4,7 @@
 
 #include "equinox/renderer/pipeline/RenderPipeline.h"
 #include "equinox/renderer/pipeline/RenderPass.h"
+#include "equinox/renderer/renderGraph/RenderGraph.h"
 #include "equinox/core/Memory.h"
 
 #include <entt/entt.hpp>

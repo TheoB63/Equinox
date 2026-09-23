@@ -4,6 +4,7 @@
 #include "equinox/core/Math.h"
 #include "equinox/renderer/RendererAPI.h"
 #include "equinox/renderer/Mesh.h"
+#include "equinox/renderer/renderGraph/RenderGraph.h"
 
 #include <memory>
 
@@ -33,7 +34,9 @@ namespace Equinox
 		static void SubmitMesh(const std::shared_ptr<Mesh>& mesh);
 
 		static void DrawIndexed(uint32_t count);
-		static void DrawFrame();	
+		static void DrawFrame();
+
+		static void ExecuteGraph(RG::RenderGraph& graph);
 
 		static void InitFullscreenQuad();
 		static void DrawFullscreenQuad();

@@ -197,6 +197,8 @@
     <ClInclude Include="source\equinox\renderer\Model.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
     <ClInclude Include="source\equinox\renderer\RendererAPI.h" />
+    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraph.h" />
+    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraphResources.h" />
     <ClInclude Include="source\equinox\renderer\Shader.h" />
     <ClInclude Include="source\equinox\renderer\SkeletonRenderer.h" />
     <ClInclude Include="source\equinox\renderer\SkinnedModel.h" />
@@ -224,8 +226,10 @@
     <ClInclude Include="source\equinox\renderer\vulkan\VKFrameBuffer.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKMesh.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKRenderGraphExecutor.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKRenderPass.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKRendererAPI.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKResourceManager.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKSwapChain.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKSync.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKTexture.h" />
@@ -276,6 +280,7 @@
     <ClCompile Include="source\equinox\renderer\Model.cpp" />
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
     <ClCompile Include="source\equinox\renderer\RendererAPI.cpp" />
+    <ClCompile Include="source\equinox\renderer\renderGraph\RenderGraph.cpp" />
     <ClCompile Include="source\equinox\renderer\Shader.cpp" />
     <ClCompile Include="source\equinox\renderer\SkeletonRenderer.cpp" />
     <ClCompile Include="source\equinox\renderer\SkinnedModel.cpp" />
@@ -300,8 +305,10 @@
     <ClCompile Include="source\equinox\renderer\vulkan\VKDevice.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKFrameBuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKRenderGraphExecutor.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKRenderPass.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKRendererAPI.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKResourceManager.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKSwapChain.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKSync.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKTexture.cpp" />

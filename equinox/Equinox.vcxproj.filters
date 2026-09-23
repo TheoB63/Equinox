@@ -335,6 +335,10 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraph.h" />
+    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraphResources.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKRenderGraphExecutor.h" />
+    <ClInclude Include="source\equinox\renderer\vulkan\VKResourceManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -536,5 +540,8 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\renderGraph\RenderGraph.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKRenderGraphExecutor.cpp" />
+    <ClCompile Include="source\equinox\renderer\vulkan\VKResourceManager.cpp" />
   </ItemGroup>
 </Project>
