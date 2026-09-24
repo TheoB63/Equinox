@@ -197,8 +197,6 @@
     <ClInclude Include="source\equinox\renderer\Model.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
     <ClInclude Include="source\equinox\renderer\RendererAPI.h" />
-    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraph.h" />
-    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraphResources.h" />
     <ClInclude Include="source\equinox\renderer\Shader.h" />
     <ClInclude Include="source\equinox\renderer\SkeletonRenderer.h" />
     <ClInclude Include="source\equinox\renderer\SkinnedModel.h" />
@@ -219,6 +217,8 @@
     <ClInclude Include="source\equinox\renderer\pipeline\passes\PostProcessPass.h" />
     <ClInclude Include="source\equinox\renderer\pipeline\passes\SSAOPass.h" />
     <ClInclude Include="source\equinox\renderer\pipeline\passes\TransparentPass.h" />
+    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraph.h" />
+    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraphResources.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKBuffer.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKCommandPool.h" />
     <ClInclude Include="source\equinox\renderer\vulkan\VKCommon.h" />
@@ -280,7 +280,6 @@
     <ClCompile Include="source\equinox\renderer\Model.cpp" />
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
     <ClCompile Include="source\equinox\renderer\RendererAPI.cpp" />
-    <ClCompile Include="source\equinox\renderer\renderGraph\RenderGraph.cpp" />
     <ClCompile Include="source\equinox\renderer\Shader.cpp" />
     <ClCompile Include="source\equinox\renderer\SkeletonRenderer.cpp" />
     <ClCompile Include="source\equinox\renderer\SkinnedModel.cpp" />
@@ -299,6 +298,7 @@
     <ClCompile Include="source\equinox\renderer\pipeline\passes\PostProcessPass.cpp" />
     <ClCompile Include="source\equinox\renderer\pipeline\passes\SSAOPass.cpp" />
     <ClCompile Include="source\equinox\renderer\pipeline\passes\TransparentPass.cpp" />
+    <ClCompile Include="source\equinox\renderer\renderGraph\RenderGraph.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKBuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKCommandPool.cpp" />
     <ClCompile Include="source\equinox\renderer\vulkan\VKCommon.cpp" />

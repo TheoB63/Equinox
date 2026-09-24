@@ -52,6 +52,8 @@ namespace Equinox
 		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
 			EQN_CORE_WARN("ImGui not yet implemented for Vulkan");
+			// We skip ImGui init for Vulkan for now to prevent crashes
+			return;
 		}
 
 		auto rs = Systems::GetSystem<RenderingSystem>();
@@ -128,6 +130,9 @@ namespace Equinox
 
 	void Editor::Render()
 	{
+		// Skip rendering if context is null (Vulkan case)
+		if (!s_Context) return;
+
 		// Create dockspace
 		static bool dockspaceOpen = true;
 		static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
@@ -167,11 +172,13 @@ namespace Equinox
 
 	bool Editor::WantCaptureMouse()
 	{
+		if (!s_Context) return false;
 		return ImGui::GetIO().WantCaptureMouse;
 	}
 
 	bool Editor::WantCaptureKeyboard()
 	{
+		if (!s_Context) return false;
 		return ImGui::GetIO().WantCaptureKeyboard;
 	}
 

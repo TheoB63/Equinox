@@ -4,6 +4,9 @@
     <Filter Include="..">
       <UniqueIdentifier>{61705900-4DFC-870B-B6AA-880BA255880B}</UniqueIdentifier>
     </Filter>
+    <Filter Include="..\Sandbox">
+      <UniqueIdentifier>{3F7B6B1D-2B33-AD6A-943A-86C68011485B}</UniqueIdentifier>
+    </Filter>
     <Filter Include="..\equinox">
       <UniqueIdentifier>{59E7D7AC-459F-19FA-AEA6-F2559A7DB4EA}</UniqueIdentifier>
     </Filter>
@@ -22,11 +25,11 @@
     <Filter Include="..\equinoxApp\extern">
       <UniqueIdentifier>{FF1A945A-EBA9-1D24-94C8-311F80362ECA}</UniqueIdentifier>
     </Filter>
-    <Filter Include="..\sandbox">
-      <UniqueIdentifier>{5F13B3BC-4BCB-F409-B4D2-CD65A0A98FFA}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Sandbox\premake5.lua">
+      <Filter>..\Sandbox</Filter>
+    </None>
     <None Include="..\..\equinox\extern\source\glad\premake5.lua">
       <Filter>..\equinox\extern\source\glad</Filter>
     </None>
@@ -41,9 +44,6 @@
     </None>
     <None Include="..\..\premake5.lua">
       <Filter>..</Filter>
-    </None>
-    <None Include="..\..\sandbox\premake5.lua">
-      <Filter>..\sandbox</Filter>
     </None>
     <None Include="premake5.lua" />
   </ItemGroup>

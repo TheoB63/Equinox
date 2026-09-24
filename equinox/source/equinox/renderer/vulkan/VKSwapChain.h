@@ -29,7 +29,10 @@ namespace Equinox
         VkFormat GetImageFormat() const { return m_SurfaceFormat.format; }
         VkExtent2D GetExtent() const { return m_Extent; }
         const std::vector<VkImageView>& GetImageViews() const { return m_ImageViews; }
+        const std::vector<VkImage>& GetImages() const { return m_Images; }
 
+        VkImage GetImage(u32 index) const { return m_Images[index]; }
+        VkImageView GetImageView(u32 index) const { return m_ImageViews[index]; }
     private:
         void CreateSwapchain();
         void CreateImageViews();

@@ -15,6 +15,8 @@
 #include "equinox/core/JobSystem.h"
 #include "equinox/core/Profiler.h"
 
+#include "equinox/renderer/vulkan/VKResourceManager.h" // Need definition of VKImageResource
+
 #include <glad/glad.h>
 
 namespace Equinox
@@ -76,6 +78,7 @@ namespace Equinox
 				RG::ResourceHandle outputTex;
 			};
 
+			// 1. Geometry Pass (Draws to SceneColor)
 			rg.AddPass<GeometryPassData>("GeometryPass",
 				[&](GeometryPassData& data, RG::RenderPassBuilder& builder)
 				{
@@ -90,17 +93,58 @@ namespace Equinox
 				},
 				[&](GeometryPassData& data, RG::RenderPassContext& ctx)
 				{
-					// This runs in Execute()
-					// EQN_CORE_INFO("Executing Geometry Pass on GPU");
-					// VkCommandBuffer cmd = (VkCommandBuffer)ctx.commandBuffer;
-					// vkCmdBeginRenderPass...
+					// EQN_CORE_INFO("Executing Geometry Pass");
+					// Here we would bind the framebuffer and draw meshes
+				}
+			);
+
+			// 2. Present Pass (Copies SceneColor to Backbuffer)
+			// For now, we just clear the backbuffer to prove we can write to it.
+			struct PresentPassData 
+			{
+				RG::ResourceHandle backbuffer;
+			};
+
+			rg.AddPass<PresentPassData>("PresentPass",
+				[&](PresentPassData& data, RG::RenderPassBuilder& builder)
+				{
+					// HACK: We will create a "Virtual Backbuffer" here.
+					RG::TextureDesc desc;
+					desc.name = "Backbuffer";
+					desc.width = 1280;
+					desc.height = 720;
+					desc.format = RG::TextureFormat::RGBA8_Unorm;
+
+					// We register it as a normal resource for now, 
+					// and VKRendererAPI will overwrite its physical pointer.
+					data.backbuffer = builder.CreateTexture(desc);
+					data.backbuffer = builder.Write(data.backbuffer);
+				},
+				[&](PresentPassData& data, RG::RenderPassContext& ctx)
+				{
+					VkCommandBuffer cmd = (VkCommandBuffer)ctx.commandBuffer;
+					VKImageResource* res = (VKImageResource*)ctx.GetResource(data.backbuffer);
+
+					if (res)
+					{
+						// Clear to Magenta
+						VkClearColorValue clearColor = { { 1.0f, 0.0f, 1.0f, 1.0f } };
+
+						VkImageSubresourceRange range{};
+						range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+						range.baseMipLevel = 0;
+						range.levelCount = 1;
+						range.baseArrayLayer = 0;
+						range.layerCount = 1;
+
+						vkCmdClearColorImage(cmd, res->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &range);
+					}
 				}
 			);
 
 			rg.Compile();
 			Renderer::ExecuteGraph(rg);
 
-			// Return early to avoid running the OpenGL path
 			return;
 		}
 		// -----------------------------------------------------------------

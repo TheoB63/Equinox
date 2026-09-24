@@ -2,6 +2,8 @@
 #include "equinox/renderer/vulkan/VKGraphicsPipeline.h"
 #include "equinox/renderer/vulkan/VKCommon.h"
 
+#include "equinox/resources/FileSystem.h"
+
 #include <fstream>
 
 namespace Equinox
@@ -32,8 +34,11 @@ namespace Equinox
         : m_Device(device)
     {
         // 1. Load shader code
-        auto vertCode = ReadFile("C:/Users/theob/Documents/BlanchardTheo/Documents/Cours/3emeAnnee/Projets Persos/Equinox/sandbox/assets/shaders/bin/vert.spv");
-        auto fragCode = ReadFile("C:/Users/theob/Documents/BlanchardTheo/Documents/Cours/3emeAnnee/Projets Persos/Equinox/sandbox/assets/shaders/bin/frag.spv");
+        auto vertCode = ReadFile(FileSystem::AssetsPath().string() + "shaders/bin/vert.spv");
+        auto fragCode = ReadFile(FileSystem::AssetsPath().string() + "shaders/bin/frag.spv");
+        
+        //auto vertCode = ReadFile("C:/Users/theob/Documents/BlanchardTheo/Documents/Cours/3emeAnnee/Projets Persos/Equinox/sandbox/assets/shaders/bin/vert.spv");
+        //auto fragCode = ReadFile("C:/Users/theob/Documents/BlanchardTheo/Documents/Cours/3emeAnnee/Projets Persos/Equinox/sandbox/assets/shaders/bin/frag.spv");
 
         // 2. Create shader modules
         VkShaderModule vertModule, fragModule;

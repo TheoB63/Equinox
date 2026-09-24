@@ -15,7 +15,7 @@ namespace Equinox
     {
         EQN_CORE_INFO("Initializing Systems...");
         AddSystem<TransformSystem>();
-        AddSystem<AnimationSystem>();
+        //AddSystem<AnimationSystem>();
         AddSystem<RenderingSystem>();
     }
 
