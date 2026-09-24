@@ -5,133 +5,150 @@
 
 namespace Equinox::RG
 {
-    // ===================================================================================
-    // RenderPassBuilder Implementation
-    // ===================================================================================
+	// ===================================================================================
+	// RenderPassBuilder Implementation
+	// ===================================================================================
 
-    ResourceHandle RenderPassBuilder::Read(ResourceHandle resource)
-    {
-        m_Graph.RegisterRead(m_PassIndex, resource);
-        return resource;
-    }
+	ResourceHandle RenderPassBuilder::Read(ResourceHandle resource)
+	{
+		m_Graph.RegisterRead(m_PassIndex, resource);
+		return resource;
+	}
 
-    ResourceHandle RenderPassBuilder::Write(ResourceHandle resource)
-    {
-        return m_Graph.RegisterWrite(m_PassIndex, resource);
-    }
+	ResourceHandle RenderPassBuilder::Write(ResourceHandle resource)
+	{
+		return m_Graph.RegisterWrite(m_PassIndex, resource, ResourceState::ColorAttachment);
+	}
 
-    ResourceHandle RenderPassBuilder::CreateTexture(const TextureDesc& desc)
-    {
-        return m_Graph.RegisterResource(desc);
-    }
+	ResourceHandle RenderPassBuilder::WriteTransfer(ResourceHandle resource)
+	{
+		return m_Graph.RegisterWrite(m_PassIndex, resource, ResourceState::TransferDst);
+	}
 
-    // ===================================================================================
-    // RenderGraph Implementation
-    // ===================================================================================
+	ResourceHandle RenderPassBuilder::CreateTexture(const TextureDesc& desc)
+	{
+		return m_Graph.RegisterResource(desc);
+	}
 
-    RenderGraph::RenderGraph(LinearAllocator& allocator)
-        : m_Allocator(allocator)
-    {
-        m_Passes.reserve(64);
-        m_Resources.reserve(256);
-    }
+	// ===================================================================================
+	// RenderGraph Implementation
+	// ===================================================================================
 
-    ResourceHandle RenderGraph::RegisterResource(const TextureDesc& desc)
-    {
-        u32 index = (u32)m_Resources.size() + 1; // 1-based index
-        m_Resources.push_back({ desc, 0, true, ResourceState::Undefined, ResourceState::Undefined });
-        return { index, 0 };
-    }
+	RenderGraph::RenderGraph(LinearAllocator& allocator)
+		: m_Allocator(allocator)
+	{
+		m_Passes.reserve(64);
+		m_Resources.reserve(256);
+	}
 
-    ResourceHandle RenderGraph::ImportResource(const TextureDesc& desc, void* physicalResource, ResourceState initialState)
-    {
-        u32 index = (u32)m_Resources.size() + 1;
-        // isTransient = false because we don't own it
-        m_Resources.push_back({ desc, 0, false, initialState, initialState, physicalResource });
-        return { index, 0 };
-    }
+	ResourceHandle RenderGraph::RegisterResource(const TextureDesc& desc)
+	{
+		u32 index = (u32)m_Resources.size() + 1; // 1-based index
+		m_Resources.push_back({ desc, 0, true, ResourceState::Undefined, ResourceState::Undefined });
+		return { index, 0 };
+	}
 
-    void RenderGraph::RegisterRead(u32 passIndex, ResourceHandle handle)
-    {
-        EQN_CORE_ASSERT(handle.IsValid(), "Invalid resource handle read!");
-        EQN_CORE_ASSERT(handle.index <= m_Resources.size(), "Resource index out of bounds!");
-        m_Passes[passIndex].reads.push_back(handle);
-    }
+	ResourceHandle RenderGraph::ImportResource(const TextureDesc& desc, void* physicalResource, ResourceState initialState)
+	{
+		u32 index = (u32)m_Resources.size() + 1;
+		// isTransient = false because we don't own it
+		m_Resources.push_back({ desc, 0, false, initialState, initialState, physicalResource });
+		return { index, 0 };
+	}
 
-    ResourceHandle RenderGraph::RegisterWrite(u32 passIndex, ResourceHandle handle)
-    {
-        EQN_CORE_ASSERT(handle.IsValid(), "Invalid resource handle write!");
-        
-        ResourceNode& node = m_Resources[handle.index - 1];
-        node.version++;
-        
-        ResourceHandle newHandle = { handle.index, node.version };
-        m_Passes[passIndex].writes.push_back(newHandle);
-        
-        return newHandle;
-    }
+	void RenderGraph::RegisterRead(u32 passIndex, ResourceHandle handle)
+	{
+		EQN_CORE_ASSERT(handle.IsValid(), "Invalid resource handle read!");
+		EQN_CORE_ASSERT(handle.index <= m_Resources.size(), "Resource index out of bounds!");
+		m_Passes[passIndex].reads.push_back(handle);
+	}
 
-    void RenderGraph::Compile()
-    {
-        EQN_PROFILE_FUNCTION();
+	ResourceHandle RenderGraph::RegisterWrite(u32 passIndex, ResourceHandle handle, ResourceState state) {
+		EQN_CORE_ASSERT(handle.IsValid(), "Invalid resource handle write!");
 
-        // Reset resource states for simulation
-        for (auto& res : m_Resources)
-        {
-            res.currentState = res.initialState;
-        }
+		ResourceNode& node = m_Resources[handle.index - 1];
+		node.version++;
 
-        // Iterate passes to inject barriers
-        for (auto& pass : m_Passes)
-        {
-            // 1. Process Reads (Transition to ShaderResource)
-            for (const auto& handle : pass.reads)
-            {
-                ResourceNode& res = m_Resources[handle.index - 1];
+		ResourceHandle newHandle = { handle.index, node.version };
+		m_Passes[passIndex].writes.push_back(newHandle);
+		m_Passes[passIndex].writeStates.push_back(state);
 
-                if (res.currentState != ResourceState::ShaderResource)
-                {
-                    Barrier barrier;
-                    barrier.resource = handle;
-                    barrier.before = res.currentState;
-                    barrier.after = ResourceState::ShaderResource;
+		return newHandle;
+	}
 
-                    pass.preBarriers.push_back(barrier);
+	void RenderGraph::Compile()
+	{
+		EQN_PROFILE_FUNCTION();
 
-                    res.currentState = ResourceState::ShaderResource;
-                }
-            }
+		// Reset resource states for simulation
+		for (auto& res : m_Resources)
+		{
+			res.currentState = res.initialState;
+		}
 
-            // 2. Process Writes (Transition to ColorAttachment or DepthAttachment)
-            for (const auto& handle : pass.writes)
-            {
-                ResourceNode& res = m_Resources[handle.index - 1];
+		// Iterate passes to inject barriers
+		for (auto& pass : m_Passes)
+		{
+			// 1. Process Reads (Transition to ShaderResource)
+			for (const auto& handle : pass.reads)
+			{
+				ResourceNode& res = m_Resources[handle.index - 1];
 
-                ResourceState targetState = ResourceState::ColorAttachment;
-                if (res.desc.format == TextureFormat::D32_Float ||
-                    res.desc.format == TextureFormat::D24_Unorm_S8_Uint)
-                {
-                    targetState = ResourceState::DepthStencilAttachment;
-                }
+				if (res.currentState != ResourceState::ShaderResource)
+				{
+					Barrier barrier;
+					barrier.resource = handle;
+					barrier.before = res.currentState;
+					barrier.after = ResourceState::ShaderResource;
 
-                if (res.currentState != targetState)
-                {
-                    Barrier barrier;
-                    barrier.resource = handle;
-                    barrier.before = res.currentState;
-                    barrier.after = targetState;
+					pass.preBarriers.push_back(barrier);
 
-                    pass.preBarriers.push_back(barrier);
+					res.currentState = ResourceState::ShaderResource;
+				}
+			}
 
-                    res.currentState = targetState;
-                }
-            }
-        }
-    }
+			// 2. Process Writes
+			for (size_t i = 0; i < pass.writes.size(); ++i)
+			{
+				ResourceHandle handle = pass.writes[i];
+				ResourceState targetState = pass.writeStates[i];
+				ResourceNode& res = m_Resources[handle.index - 1];
 
-    void RenderGraph::Execute()
-    {
-        // This is the CPU-side execute (if not using VKRenderGraphExecutor)
-        // It's mostly a stub now since VKRenderGraphExecutor handles the real execution
-    }
+				// Override target state for Depth (if not transfer)
+				if (targetState == ResourceState::ColorAttachment)
+				{
+					if (res.desc.format == TextureFormat::D32_Float ||
+						res.desc.format == TextureFormat::D24_Unorm_S8_Uint)
+					{
+						targetState = ResourceState::DepthStencilAttachment;
+					}
+				}
+
+				if (res.currentState != targetState)
+				{
+					Barrier barrier;
+					barrier.resource = handle;
+					barrier.before = res.currentState;
+					barrier.after = targetState;
+
+					pass.preBarriers.push_back(barrier);
+
+					res.currentState = targetState;
+				}
+			}
+		}
+	}
+
+	void RenderGraph::Execute()
+	{
+		EQN_PROFILE_FUNCTION();
+
+		RenderPassContext ctx;
+
+		for (const auto& pass : m_Passes)
+		{
+			EQN_PROFILE_SCOPE(pass.name.c_str());
+			pass.execute(ctx);
+		}
+	}
 }

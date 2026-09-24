@@ -26,7 +26,13 @@ namespace Equinox::RG
 		}
 
 		ResourceHandle Read(ResourceHandle resource);
+
+		// Standard Write (Render Target)
 		ResourceHandle Write(ResourceHandle resource);
+
+		// Transfer Write (Clear/Copy)
+		ResourceHandle WriteTransfer(ResourceHandle resource);
+
 		ResourceHandle CreateTexture(const TextureDesc& desc);
 
 	private:
@@ -43,7 +49,7 @@ namespace Equinox::RG
 	public:
 		// The backend (Vulkan) will subclass or populate this
 		void* commandBuffer = nullptr;
-		
+
 		// Access to physical resources (void* = VkImage/VkBuffer)
 		// The executor must set this callback
 		std::function<void* (ResourceHandle)> GetResource;
@@ -63,6 +69,10 @@ namespace Equinox::RG
 
 			std::vector<ResourceHandle> reads;
 			std::vector<ResourceHandle> writes;
+
+			// Track desired state for writes (ColorAttachment vs TransferDst)
+			std::vector<ResourceState> writeStates;
+
 			std::vector<Barrier> preBarriers;
 		};
 
@@ -86,17 +96,24 @@ namespace Equinox::RG
 		template <typename Data, typename SetupFunc, typename ExecuteFunc>
 		void AddPass(const std::string& name, SetupFunc&& setup, ExecuteFunc&& execute)
 		{
+			// 1. Allocate Pass Data
 			Data* data = m_Allocator.New<Data>();
 
-			RenderPassBuilder builder(*this, (u32)m_Passes.size());
+			// 2. Create Pass Node immediately so Builder can access it
+			u32 passIndex = (u32)m_Passes.size();
+			m_Passes.emplace_back();
+			PassNode& node = m_Passes.back();
+			node.name = name;
+
+			// 3. Run Setup (Populates reads/writes in node)
+			RenderPassBuilder builder(*this, passIndex);
 			setup(*data, builder);
 
-			auto executeWrapper = [execute, data](RenderPassContext& ctx)
+			// 4. Set Execute Function
+			node.execute = [execute, data](RenderPassContext& ctx)
 				{
 					execute(*data, ctx);
 				};
-
-			m_Passes.push_back({ name, executeWrapper });
 		}
 
 		void Compile();
@@ -109,7 +126,7 @@ namespace Equinox::RG
 		ResourceHandle ImportResource(const TextureDesc& desc, void* physicalResource, ResourceState initialState);
 
 		void RegisterRead(u32 passIndex, ResourceHandle handle);
-		ResourceHandle RegisterWrite(u32 passIndex, ResourceHandle handle);
+		ResourceHandle RegisterWrite(u32 passIndex, ResourceHandle handle, ResourceState state);
 
 		// Accessors for the Backend Executor
 		const std::vector<PassNode>& GetPasses() const { return m_Passes; }

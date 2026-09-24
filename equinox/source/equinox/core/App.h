@@ -7,7 +7,10 @@
 #include "equinox/events/AppEvent.h"
 #include "equinox/events/FileDropEvent.h"
 
+#include "equinox/ECS/Scene.h"
+
 #include <vector>
+#include <memory>
 
 namespace Equinox
 {
@@ -40,6 +43,7 @@ namespace Equinox
 		void OnFileDrop(FileDropEvent& e);
 
 		std::shared_ptr<Window> m_Window;
+		std::shared_ptr<Scene> m_Scene;
 
 		bool m_Running = true;
 	};
