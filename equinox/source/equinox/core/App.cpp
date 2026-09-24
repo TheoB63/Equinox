@@ -19,6 +19,8 @@
 #include "equinox/core/JobSystem.h"
 #include "equinox/core/Profiler.h"
 
+#include "equinox/graphics/GfxRenderer.h"
+
 namespace Equinox
 {
 	App::App(int argc, char** argv)
@@ -33,11 +35,30 @@ namespace Equinox
 		SetAppTitle(ws);
 		m_Window = Window::Create(ws);
 		Input::SetWindow(m_Window->GetNativeWindow());
-		Renderer::Init(ws.rendererAPI, m_Window->GetNativeWindow());
-		ResourceDB::Init(FileSystem::AssetsPath());
-		Resources::Init();
+
+		// Initialize New Renderer
+		if (ws.rendererAPI == RendererAPI::API::Vulkan)
+		{
+			Gfx::GfxRenderer::Init(m_Window->GetNativeWindow(), ws.Width, ws.Height);
+		}
+		else
+		{
+			Renderer::Init(ws.rendererAPI, m_Window->GetNativeWindow());
+		}
+
+		// Only init legacy resources for OpenGL for now
+		if (ws.rendererAPI == RendererAPI::API::OpenGL)
+		{
+			Resources::Init();
+			ResourceDB::Init(FileSystem::AssetsPath());
+		}
+
+		// Scene & Systems
+		m_Scene = std::make_shared<Scene>();
 		Systems::Init();
-		Editor::Init(m_Window.get());
+		Systems::SetRegistry(m_Scene->RegistryPtr());
+
+		//Editor::Init(m_Window.get());
 
 		// Subscribe to events
 		EventBus::Subscribe<WindowResizeEvent>(BusType::MainThread, [this](Event& e)
@@ -72,7 +93,9 @@ namespace Equinox
 
 			m_Window->OnUpdate();
 			EventBus::ProcessEvents(BusType::MainThread);
-			ResourceDB::Update();
+
+			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+				ResourceDB::Update();
 
 			OnUpdate();
 
@@ -82,7 +105,7 @@ namespace Equinox
 				{
 					EQN_PROFILE_SCOPE("Systems::Update");
 					Systems::Update<TransformSystem>();
-					Systems::Update<AnimationSystem>();
+					//Systems::Update<AnimationSystem>();
 					Systems::Update<RenderingSystem>();
 				}
 
@@ -100,8 +123,13 @@ namespace Equinox
 			//Render
 			{
 				EQN_PROFILE_SCOPE("SwapBuffers");
-				m_Window->SwapBuffers();
-				Renderer::Clear(BufferBit::Color | BufferBit::Depth);
+
+				if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+				{
+					m_Window->SwapBuffers();
+					Renderer::Clear(BufferBit::Color | BufferBit::Depth);
+				}
+				// Vulkan swap happens in GfxRenderer::EndFrame() called by RenderingSystem
 			}
 		}
 		OnShutdown();
@@ -110,23 +138,31 @@ namespace Equinox
 
 	void App::Close()
 	{
-		ResourceDB::SaveDirty();
-		ResourceDB::Shutdown();
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		{
+			ResourceDB::SaveDirty();
+			ResourceDB::Shutdown();
+		}
 		Editor::Shutdown();
 		Systems::Shutdown();
-		Renderer::Shutdown();
+
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+			Gfx::GfxRenderer::Shutdown();
+		else
+			Renderer::Shutdown();
+
 		JobSystem::Shutdown();
 	}
 
 	WindowSpec App::ParseCommandLineArgs(int argc, char** argv)
 	{
 		WindowSpec spec;
-		spec.rendererAPI = RendererAPI::API::Vulkan;
+		spec.rendererAPI = RendererAPI::API::OpenGL;
 
 		if (argc < 2)
 		{ // No arguments
 			EQN_CORE_WARN("Usage: {} [--vulkan|--rt]", argv[0]);
-			EQN_CORE_WARN("Initializing default [--vulkan]");
+			EQN_CORE_WARN("Initializing default [--opengl]");
 			return spec;
 		}
 
@@ -171,7 +207,10 @@ namespace Equinox
 
 	void App::OnWindowResize(WindowResizeEvent& e)
 	{
-
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		{
+			Gfx::GfxRenderer::Resize(e.GetWidth(), e.GetHeight());
+		}
 	}
 
 	void App::OnWindowClose(WindowCloseEvent& e)

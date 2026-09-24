@@ -188,6 +188,9 @@
     <ClInclude Include="source\equinox\events\KeyEvent.h" />
     <ClInclude Include="source\equinox\events\MouseEvent.h" />
     <ClInclude Include="source\equinox\events\RenderEvent.h" />
+    <ClInclude Include="source\equinox\graphics\GfxContext.h" />
+    <ClInclude Include="source\equinox\graphics\GfxRenderer.h" />
+    <ClInclude Include="source\equinox\graphics\GfxSwapchain.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Camera.h" />
@@ -272,6 +275,9 @@
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxContext.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxRenderer.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxSwapchain.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />

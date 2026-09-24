@@ -22,6 +22,9 @@
     <Filter Include="equinox\events">
       <UniqueIdentifier>{52D2659B-3EA0-59A1-2734-CAC713A13506}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\graphics">
+      <UniqueIdentifier>{2E4287A7-1A3B-A6F9-436D-8B7E2FC58505}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\input">
       <UniqueIdentifier>{ADC037FD-1981-B333-E2BB-FCB04E3BF80F}</UniqueIdentifier>
     </Filter>
@@ -160,6 +163,15 @@
     </ClInclude>
     <ClInclude Include="source\equinox\events\RenderEvent.h">
       <Filter>equinox\events</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxContext.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxRenderer.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxSwapchain.h">
+      <Filter>equinox\graphics</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\input\Input.h">
       <Filter>equinox\input</Filter>
@@ -400,6 +412,15 @@
     </ClCompile>
     <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp">
       <Filter>equinox\editor\panels</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxContext.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxRenderer.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxSwapchain.cpp">
+      <Filter>equinox\graphics</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\input\Input.cpp">
       <Filter>equinox\input</Filter>

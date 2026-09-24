@@ -12,6 +12,7 @@ namespace Equinox
 		s_RendererAPI = RendererAPI::Create(api);
 		s_RendererAPI->SetWindow(window);
 		s_RendererAPI->Init();
+		s_RendererAPI->InitFullscreenQuad();
 	}
 
 	void Renderer::Shutdown()

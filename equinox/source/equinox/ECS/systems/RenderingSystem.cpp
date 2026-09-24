@@ -15,6 +15,8 @@
 #include "equinox/core/JobSystem.h"
 #include "equinox/core/Profiler.h"
 
+#include "equinox/graphics/GfxRenderer.h"
+
 #include "equinox/renderer/vulkan/VKResourceManager.h" // Need definition of VKImageResource
 
 #include <glad/glad.h>
@@ -26,30 +28,33 @@ namespace Equinox
 		// Initialize Frame Allocator (1MB should be enough for command lists for now)
 		m_FrameAllocator = std::make_unique<LinearAllocator>(1 * Memory::MB);
 
-		// UBO setup
-		glGenBuffers(1, &m_TransformUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, m_TransformUBO);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(TransformUBO), nullptr, GL_DYNAMIC_DRAW);
-		glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_TransformUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		{
+			// UBO setup
+			glGenBuffers(1, &m_TransformUBO);
+			glBindBuffer(GL_UNIFORM_BUFFER, m_TransformUBO);
+			glBufferData(GL_UNIFORM_BUFFER, sizeof(TransformUBO), nullptr, GL_DYNAMIC_DRAW);
+			glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_TransformUBO);
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		glGenBuffers(1, &m_LightsUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, m_LightsUBO);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(LightsUBO), nullptr, GL_DYNAMIC_DRAW);
-		glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_LightsUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+			glGenBuffers(1, &m_LightsUBO);
+			glBindBuffer(GL_UNIFORM_BUFFER, m_LightsUBO);
+			glBufferData(GL_UNIFORM_BUFFER, sizeof(LightsUBO), nullptr, GL_DYNAMIC_DRAW);
+			glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_LightsUBO);
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		// Register the deferred pipeline
-		RenderPipeline deferredPipeline;
-		deferredPipeline.AddPass<GeometryPass>();
-		deferredPipeline.AddPass<SSAOPass>();
-		deferredPipeline.AddPass<LightingPass>();
-		deferredPipeline.AddPass<TransparentPass>();
-		deferredPipeline.AddPass<PostProcessPass>();
-		deferredPipeline.InitAll(viewportWidth, viewportHeight);
+			// Register the deferred pipeline
+			RenderPipeline deferredPipeline;
+			deferredPipeline.AddPass<GeometryPass>();
+			deferredPipeline.AddPass<SSAOPass>();
+			deferredPipeline.AddPass<LightingPass>();
+			deferredPipeline.AddPass<TransparentPass>();
+			deferredPipeline.AddPass<PostProcessPass>();
+			deferredPipeline.InitAll(viewportWidth, viewportHeight);
 
-		RegisterTechnique("Forward", std::move(deferredPipeline));
-		SetActiveTechnique("Forward");
+			RegisterTechnique("Forward", std::move(deferredPipeline));
+			SetActiveTechnique("Forward");
+		}
 	}
 
 	RenderingSystem::~RenderingSystem()
@@ -61,8 +66,6 @@ namespace Equinox
 	{
 		EQN_PROFILE_FUNCTION()
 
-			if (!m_ActivePipeline) return;
-
 		// Reset Allocator at start of frame
 		m_FrameAllocator->Reset();
 
@@ -71,6 +74,8 @@ namespace Equinox
 		// -----------------------------------------------------------------
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
+			Gfx::GfxRenderer::BeginFrame();
+
 			RG::RenderGraph rg(*m_FrameAllocator);
 
 			struct GeometryPassData
@@ -118,7 +123,9 @@ namespace Equinox
 					// We register it as a normal resource for now, 
 					// and VKRendererAPI will overwrite its physical pointer.
 					data.backbuffer = builder.CreateTexture(desc);
-					data.backbuffer = builder.Write(data.backbuffer);
+					
+					// Use WriteTransfer because we use vkCmdClearColorImage
+					data.backbuffer = builder.WriteTransfer(data.backbuffer);
 				},
 				[&](PresentPassData& data, RG::RenderPassContext& ctx)
 				{
@@ -143,11 +150,14 @@ namespace Equinox
 			);
 
 			rg.Compile();
-			Renderer::ExecuteGraph(rg);
+			Gfx::GfxRenderer::ExecuteGraph(rg);
+			Gfx::GfxRenderer::EndFrame();
 
 			return;
 		}
 		// -----------------------------------------------------------------
+
+		if (!m_ActivePipeline) return;
 
 		// Collect opaque / transparent
 		auto [opaque, transparent] = CollectCommands(registry);
