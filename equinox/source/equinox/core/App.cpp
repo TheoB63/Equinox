@@ -58,7 +58,11 @@ namespace Equinox
 		Systems::Init();
 		Systems::SetRegistry(m_Scene->RegistryPtr());
 
-		//Editor::Init(m_Window.get());
+		// Temporarily disabled for Vulkan
+		if (ws.rendererAPI == RendererAPI::API::OpenGL)
+		{
+			Editor::Init(m_Window.get());
+		}
 
 		// Subscribe to events
 		EventBus::Subscribe<WindowResizeEvent>(BusType::MainThread, [this](Event& e)
