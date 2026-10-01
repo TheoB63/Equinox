@@ -5,6 +5,7 @@
 #include "equinox/renderer/pipeline/RenderPipeline.h"
 #include "equinox/renderer/pipeline/RenderPass.h"
 #include "equinox/renderer/renderGraph/RenderGraph.h"
+#include "equinox/graphics/GfxPipeline.h"
 #include "equinox/core/Memory.h"
 
 #include <entt/entt.hpp>
@@ -49,6 +50,9 @@ namespace Equinox
 	    
 	    // Memory
 	    std::unique_ptr<LinearAllocator> m_FrameAllocator;
+
+        // Vulkan Test Pipeline
+        std::unique_ptr<Gfx::GfxPipeline> m_TrianglePipeline;
     };
 
 #define MAX_DIR_LIGHTS 4

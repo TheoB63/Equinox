@@ -363,6 +363,8 @@
       <Filter>equinox\window</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\Fiber.h" />
+    <ClInclude Include="source\equinox\graphics\GfxShader.h" />
+    <ClInclude Include="source\equinox\graphics\GfxPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -582,5 +584,7 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxShader.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxPipeline.cpp" />
   </ItemGroup>
 </Project>
