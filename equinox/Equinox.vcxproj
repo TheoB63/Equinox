@@ -154,6 +154,7 @@
   <ItemGroup>
     <ClInclude Include="source\Equinox.h" />
     <ClInclude Include="source\eqnpch.h" />
+    <ClInclude Include="source\equinox\core\Fiber.h" />
     <ClInclude Include="source\equinox\ECS\Components.h" />
     <ClInclude Include="source\equinox\ECS\Entity.h" />
     <ClInclude Include="source\equinox\ECS\Scene.h" />

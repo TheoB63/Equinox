@@ -66,8 +66,8 @@ namespace Equinox
 	{
 		EQN_PROFILE_FUNCTION()
 
-		// Reset Allocator at start of frame
-		m_FrameAllocator->Reset();
+			// Reset Allocator at start of frame
+			m_FrameAllocator->Reset();
 
 		// -----------------------------------------------------------------
 		// Render Graph Test (Proof of Concept)
@@ -105,7 +105,7 @@ namespace Equinox
 
 			// 2. Present Pass (Copies SceneColor to Backbuffer)
 			// For now, we just clear the backbuffer to prove we can write to it.
-			struct PresentPassData 
+			struct PresentPassData
 			{
 				RG::ResourceHandle backbuffer;
 			};
@@ -123,7 +123,7 @@ namespace Equinox
 					// We register it as a normal resource for now, 
 					// and VKRendererAPI will overwrite its physical pointer.
 					data.backbuffer = builder.CreateTexture(desc);
-					
+
 					// Use WriteTransfer because we use vkCmdClearColorImage
 					data.backbuffer = builder.WriteTransfer(data.backbuffer);
 				},
@@ -211,6 +211,55 @@ namespace Equinox
 		return m_ActiveName;
 	}
 
+	struct CollectCommandsData
+	{
+		entt::registry* registry;
+		std::vector<entt::entity>* entities;
+		RenderCommand* opaqueCmds;
+		RenderCommand* transparentCmds;
+		std::atomic<u32>* opaqueCount;
+		std::atomic<u32>* transparentCount;
+	};
+
+	static void CollectCommandsJob(JobSystem::JobArgs args)
+	{
+		CollectCommandsData* data = (CollectCommandsData*)args.data;
+		entt::registry& registry = *data->registry;
+		entt::entity entity = (*data->entities)[args.jobIndex];
+
+		// We need to get components manually since we can't capture the view
+		auto& transform = registry.get<WorldTransform>(entity);
+		auto& meshRend = registry.get<MeshRenderer>(entity);
+
+		// Material lookup (Thread safe? MaterialLibrary::Get needs to be safe!)
+		auto material = MaterialLibrary::Get(meshRend.MaterialUUID);
+		if (!material) material = MaterialLibrary::Get(UUID(7));
+
+		RenderCommand cmd
+		{
+			.entity = entity,
+			.transform = &transform,
+			.meshRend = &meshRend,
+			.distance = 0.0f
+		};
+
+		if (material->GetRenderMode() == RendererAPI::RenderMode::Opaque ||
+			material->GetRenderMode() == RendererAPI::RenderMode::Cutout)
+		{
+			u32 index = data->opaqueCount->fetch_add(1);
+			data->opaqueCmds[index] = cmd;
+		}
+		else
+		{
+			// Placeholder distance logic
+			Vec3 worldPos = Vec3(0.0f);
+			cmd.distance = glm::distance(Vec3(400.0f, 220.0f, 400.0f), worldPos);
+
+			u32 index = data->transparentCount->fetch_add(1);
+			data->transparentCmds[index] = cmd;
+		}
+	}
+
 	std::pair<std::span<RenderCommand>, std::span<RenderCommand>>
 		RenderingSystem::CollectCommands(entt::registry& registry)
 	{
@@ -223,18 +272,11 @@ namespace Equinox
 			return { {}, {} };
 
 		// Allocate worst-case memory from LinearAllocator (fast!)
-		// We assume all entities could be opaque OR transparent to be safe, 
-		// or we allocate one big block and partition it.
-		// For simplicity: Allocate array for ALL entities.
 		RenderCommand* commands = (RenderCommand*)m_FrameAllocator->Allocate(sizeof(RenderCommand) * entityCount);
 
 		// Atomic counters for parallel filling
 		std::atomic<u32> opaqueCount = 0;
 		std::atomic<u32> transparentCount = 0;
-
-		// Temporary storage for transparent indices (to sort later)
-		// We put transparent commands at the END of the array growing backwards? 
-		// Or just allocate two arrays. Let's allocate two for safety/simplicity now.
 		RenderCommand* opaqueCmds = commands;
 		RenderCommand* transparentCmds = (RenderCommand*)m_FrameAllocator->Allocate(sizeof(RenderCommand) * entityCount);
 
@@ -243,48 +285,21 @@ namespace Equinox
 		entities.reserve(entityCount);
 		for (auto entity : view) entities.push_back(entity);
 
+		if (entities.empty())
+		{
+			return { std::span<RenderCommand>(), std::span<RenderCommand>() };
+		}
+
+		CollectCommandsData jobData;
+		jobData.registry = &registry;
+		jobData.entities = &entities;
+		jobData.opaqueCmds = opaqueCmds;
+		jobData.transparentCmds = transparentCmds;
+		jobData.opaqueCount = &opaqueCount;
+		jobData.transparentCount = &transparentCount;
+
 		JobSystem::Counter counter;
-		JobSystem::Dispatch((u32)entities.size(), 64, [&](JobSystem::JobArgs args)
-			{
-				entt::entity entity = entities[args.jobIndex];
-				auto& transform = view.get<WorldTransform>(entity);
-				auto& meshRend = view.get<MeshRenderer>(entity);
-
-				// Material lookup (Thread safe? MaterialLibrary::Get needs to be safe!)
-				// Assuming MaterialLibrary is read-only during frame or locked.
-				// If not, this is a race condition. 
-				// TODO: Verify MaterialLibrary thread safety.
-				auto material = MaterialLibrary::Get(meshRend.MaterialUUID);
-				if (!material) material = MaterialLibrary::Get(UUID(7));
-
-				RenderCommand cmd{
-					.entity = entity,
-					.transform = &transform,
-					.meshRend = &meshRend,
-					.distance = 0.0f
-				};
-
-				if (material->GetRenderMode() == RendererAPI::RenderMode::Opaque ||
-					material->GetRenderMode() == RendererAPI::RenderMode::Cutout)
-				{
-					u32 index = opaqueCount.fetch_add(1);
-					opaqueCmds[index] = cmd;
-				}
-				else
-				{
-					// Calculate distance for sorting
-					// Vec3 worldPos = transform.matrix[3]; // Extract translation
-					// cmd.distance = glm::distance(m_CameraPos, worldPos);
-
-					// Placeholder distance logic from original code
-					Vec3 worldPos = Vec3(0.0f);
-					cmd.distance = glm::distance(Vec3(400.0f, 220.0f, 400.0f), worldPos);
-
-					u32 index = transparentCount.fetch_add(1);
-					transparentCmds[index] = cmd;
-				}
-			}, &counter);
-
+		JobSystem::Dispatch((u32)entities.size(), 64, CollectCommandsJob, &jobData, &counter);
 		JobSystem::WaitForCounter(&counter);
 
 		// Sort transparent objects (Serial for now, can be parallelized with parallel_sort)

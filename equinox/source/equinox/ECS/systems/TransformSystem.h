@@ -7,70 +7,71 @@
 
 namespace Equinox
 {
-    class TransformSystem : public System
-    {
-    public:
-        TransformSystem()
-        {
-        }
+	class TransformSystem : public System
+	{
+	public:
+		TransformSystem() {}
 
-        void Update(entt::registry& registry) override
-        {
-            EQN_PROFILE_FUNCTION();
+		struct UpdateData
+		{
+			entt::registry* registry;
+			std::vector<entt::entity>* entities;
+		};
 
-            auto view = registry.view<Transform, WorldTransform>();
+		static void UpdateTransformJob(JobSystem::JobArgs args)
+		{
+			UpdateData* data = (UpdateData*)args.data;
+			entt::registry& registry = *data->registry;
+			entt::entity entity = (*data->entities)[args.jobIndex];
 
-            // Convert view to a vector of entities for parallel processing
-            // Note: In a true SoA ECS, we wouldn't need this copy step.
-            // For now, we pay the copy cost to gain parallelism.
-            std::vector<entt::entity> entities;
-            entities.reserve(view.size_hint());
-            for (auto entity : view)
-                entities.push_back(entity);
+			// We need to get components manually since we can't capture the view
+			// Optimization: Pass raw pointers to component arrays if possible
+			auto& transform = registry.get<Transform>(entity);
+			auto& worldTransform = registry.get<WorldTransform>(entity);
 
-            if (entities.empty()) return;
+			glm::mat4 world = transform.GetTransform();
 
-            JobSystem::Counter counter;
+			if (registry.any_of<Parent>(entity))
+			{
+				entt::entity current = registry.get<Parent>(entity).m_Parent;
+				while (registry.valid(current) && registry.any_of<Transform>(current))
+				{
+					const auto& t = registry.get<Transform>(current);
+					world = t.GetTransform() * world;
 
-            // Process 64 transforms per job
-            JobSystem::Dispatch((u32)entities.size(), 64, [&](JobSystem::JobArgs args)
-                {
-                    entt::entity entity = entities[args.jobIndex];
+					if (!registry.any_of<Parent>(current))
+						break;
 
-                    // Thread-safe access? 
-                    // entt::registry is NOT thread-safe for writing, but we are writing to 
-                    // specific components (WorldTransform) that are unique per job.
-                    // Reading (Transform, Parent) is safe if no structural changes happen.
+					current = registry.get<Parent>(current).m_Parent;
+				}
+			}
 
-                    auto& transform = view.get<Transform>(entity);
-                    auto& worldTransform = view.get<WorldTransform>(entity);
+			worldTransform.matrix = world;
+		}
 
-                    // Calculate Local Matrix
-                    glm::mat4 world = transform.GetTransform();
+		void Update(entt::registry& registry) override
+		{
+			EQN_PROFILE_FUNCTION();
 
-                    // Parent Hierarchy Walk
-                    // TODO: This is O(Depth) per entity. 
-                    // Optimization: Sort by depth and compute parents first.
-                    if (registry.any_of<Parent>(entity))
-                    {
-                        entt::entity current = registry.get<Parent>(entity).m_Parent;
-                        while (registry.valid(current) && registry.any_of<Transform>(current))
-                        {
-                            const auto& t = registry.get<Transform>(current);
-                            world = t.GetTransform() * world;
+			auto view = registry.view<Transform, WorldTransform>();
 
-                            if (!registry.any_of<Parent>(current))
-                                break;
+			// Allocate entities vector on stack or frame allocator?
+			// std::vector allocates on heap.
+			// For now, heap is fine for the vector itself, but we should use FrameAllocator later.
+			std::vector<entt::entity> entities;
+			entities.reserve(view.size_hint());
+			for (auto entity : view)
+				entities.push_back(entity);
 
-                            current = registry.get<Parent>(current).m_Parent;
-                        }
-                    }
+			if (entities.empty()) return;
 
-                    worldTransform.matrix = world;
+			UpdateData jobData;
+			jobData.registry = &registry;
+			jobData.entities = &entities;
 
-                }, &counter);
-
-            JobSystem::WaitForCounter(&counter);
-        }
-    };
+			JobSystem::Counter counter;
+			JobSystem::Dispatch((u32)entities.size(), 64, UpdateTransformJob, &jobData, &counter);
+			JobSystem::WaitForCounter(&counter);
+		}
+	};
 }
