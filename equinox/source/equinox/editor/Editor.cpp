@@ -14,7 +14,10 @@
 #include "equinox/editor/panels/ResourcePanel.h"
 #include "equinox/editor/panels/ScenePanel.h"
 #include "equinox/editor/panels/RenderPanel.h"
+#include "equinox/graphics/GfxImGui.h"
+#include "equinox/graphics/GfxRenderer.h"
 
+#include <cstdio>
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -32,8 +35,12 @@ namespace Equinox
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		EQN_CORE_TRACE(" - Enabled ImGui docking support");
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		EQN_CORE_TRACE(" - Enabled ImGui multi-viewport support");
+
+		if (Gfx::GfxRenderer::GetGPUInfo().multiViewport)
+		{
+			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+			EQN_CORE_TRACE(" - Enabled ImGui multi-viewport support");
+		}
 
 		SetCustomStyle();
 		//SetBubblegumStyle();
@@ -42,19 +49,14 @@ namespace Equinox
 
 		window->SetWindowColors({ 21, 21, 21 }, { 40, 40, 40 }, { 255, 255, 255 });
 
-		// TODO: Set Render specific Imgui Backends (GL/VK)
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		// The ImGui platform backend (GLFW + OpenGL3 or GLFW + Vulkan) belongs to
+		// the graphics backend: GfxRenderer forwards this call to the current one.
+		if (!Gfx::GfxRenderer::ImGuiInit(window->GetNativeWindow()))
 		{
-			EQN_CORE_TRACE(" - Initialized ImGui GLFW/OpenGL3 backend");
-			ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)window->GetNativeWindow(), true);
-			ImGui_ImplOpenGL3_Init("#version 460");
-		}
-		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-		{
-			EQN_CORE_WARN("ImGui not yet implemented for Vulkan");
-			// We skip ImGui init for Vulkan for now to prevent crashes
+			EQN_CORE_WARN("The {0} backend could not initialize ImGui", Gfx::GfxRenderer::GetBackendName());
 			return;
 		}
+		EQN_CORE_TRACE(" - Initialized the ImGui backend of {0}", Gfx::GfxRenderer::GetBackendName());
 
 		auto rs = Systems::GetSystem<RenderingSystem>();
 
@@ -73,20 +75,14 @@ namespace Equinox
 
 	void Editor::Shutdown()
 	{
+		if (!s_Context) return;
+
 		EQN_CORE_TRACE("Cleaning up {} panels", s_Panels.size());
 		s_Panels.clear();
 
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-		{
-			EQN_CORE_TRACE("Shutting down ImGui OpenGL backend");
-			ImGui_ImplOpenGL3_Shutdown();
-			ImGui_ImplGlfw_Shutdown();
-			ImGui::DestroyContext();
-		}
-		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-		{
-			EQN_CORE_WARN("Skipping Vulkan ImGui shutdown (not implemented)");
-		}
+		EQN_CORE_TRACE("Shutting down the ImGui backend of {0}", Gfx::GfxRenderer::GetBackendName());
+		Gfx::GfxRenderer::ImGuiShutdown();
+		ImGui::DestroyContext();
 
 		s_Context = nullptr;
 		EQN_CORE_INFO("Editor system shutdown completed");
@@ -94,43 +90,17 @@ namespace Equinox
 
 	void Editor::BeginFrame()
 	{
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-		{
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-		}
-		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-		{
-		}
+		Gfx::GfxRenderer::ImGuiNewFrame();
+		ImGui::NewFrame();
 	}
 
 	void Editor::EndFrame()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-		{
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-			// Handle multi-viewport updates
-			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-			{
-				GLFWwindow* backup_current_context = glfwGetCurrentContext();
-				ImGui::UpdatePlatformWindows();
-				ImGui::RenderPlatformWindowsDefault();
-				glfwMakeContextCurrent(backup_current_context);
-			}
-		}
-		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-		{
-		}
+		ImGui::Render();
 	}
 
 	void Editor::Render()
 	{
-		// Skip rendering if context is null (Vulkan case)
 		if (!s_Context) return;
 
 		// Create dockspace

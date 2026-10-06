@@ -287,7 +287,17 @@ namespace Equinox
 
 		if (ImGui::BeginMenu("3D Objects"))
 		{
-			if (ImGui::MenuItem("Cube")) { /* TODO: Create mesh entity */ }
+			if (ImGui::MenuItem("Cube"))
+			{
+				auto cube = m_Context->CreateEntity("Cube");
+				auto& meshRenderer = cube.AddComponent<MeshRenderer>();
+				meshRenderer.ModelUUID = UUID(0);
+				meshRenderer.MeshIndex = 0;
+				meshRenderer.MaterialUUID = UUID(0);
+				meshRenderer.isSkinned = false;
+				meshRenderer.modelNamePreview = "Cube (primitive)";
+				EQN_CORE_INFO("Created primitive entity Cube");
+			}
 			if (ImGui::MenuItem("Sphere")) { /* TODO: Create mesh entity */ }
 			ImGui::EndMenu();
 		}

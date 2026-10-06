@@ -7,6 +7,7 @@
 #include "equinox/events/MouseEvent.h"
 #include "equinox/events/FileDropEvent.h"
 #include "equinox/resources/FileSystem.h"
+#include "equinox/graphics/GfxRenderer.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -128,28 +129,19 @@ namespace Equinox
 
 	void WinWindow::SwapBuffers()
 	{
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-		{
-			glfwSwapBuffers(m_GLFWwindow);
-		}
-		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-		{
-			//EQN_CORE_WARN("SwapBuffers not yet implemented for Vulkan");
-		}
+		// Presenting is done by the graphics backend, at the very end of
+		// GfxRenderer::EndFrame(): vkQueuePresentKHR for Vulkan, glfwSwapBuffers
+		// for OpenGL. This function is kept for compatibility.
 	}
 
 	void WinWindow::SetVSync(bool enabled)
 	{
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-		{
-			glfwSwapInterval(enabled ? 1 : 0);
-			m_Data.VSync = enabled;
-			EQN_CORE_INFO("VSync {0}", enabled ? "enabled" : "disabled");
-		}
-		else if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-		{
-			EQN_CORE_WARN("Vsync not yet implemented for Vulkan");
-		}
+		// The backend applies it (glfwSwapInterval for OpenGL, swapchain
+		// recreation for Vulkan). No API test here anymore.
+		Gfx::GfxRenderer::SetVSync(enabled);
+		glfwSwapInterval(enabled ? 1 : 0);   // applies immediately if a GL context exists
+		m_Data.VSync = enabled;
+		EQN_CORE_INFO("VSync {0}", enabled ? "enabled" : "disabled");
 	}
 
 	void WinWindow::ToggleFullscreen()

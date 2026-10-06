@@ -76,6 +76,7 @@ namespace Equinox
 		virtual void DrawFullscreenQuad() = 0;
 
 		static API GetAPI() { return s_API; }
+		static void SetAPI(API api) { s_API = api; }
 		static const char* APIToString(RendererAPI::API api);
 		static void SetWindow(void* window);
 

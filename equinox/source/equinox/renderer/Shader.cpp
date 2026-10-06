@@ -2,6 +2,7 @@
 #include "equinox/renderer/Shader.h"
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/openGL/GLShader.h"
+#include "equinox/renderer/null/NullResources.h"
 
 namespace Equinox
 {
@@ -11,6 +12,8 @@ namespace Equinox
 		{
 			case RendererAPI::API::OpenGL:
 				return std::make_shared<GLShader>(filePath);
+			case RendererAPI::API::Vulkan:
+				return std::make_shared<NullShader>(filePath); // Vulkan uses pre-compiled SPIR-V pipelines
 			default:
 				EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
 				return nullptr;
@@ -23,6 +26,8 @@ namespace Equinox
 		{
 			case RendererAPI::API::OpenGL:
 				return std::make_shared<GLShader>(vertexSrc, fragmentSrc);
+			case RendererAPI::API::Vulkan:
+				return std::make_shared<NullShader>(vertexSrc, fragmentSrc);
 			default:
 				EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
 				return nullptr;

@@ -34,7 +34,8 @@ project "Equinox"
       IncludeDir["glm"],
       IncludeDir["imgui"],
       IncludeDir["spdlog"],
-      IncludeDir["vulkan"]
+      IncludeDir["vulkan"],
+      IncludeDir["tracy"]
    }
 
    libdirs

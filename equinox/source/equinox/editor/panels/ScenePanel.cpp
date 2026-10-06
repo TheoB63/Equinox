@@ -14,6 +14,8 @@
 #include "equinox/utils/ImGuiUtils.h"
 #include "equinox/utils/EquinoxIcons.h"
 
+#include "equinox/graphics/GfxScene.h"
+
 namespace Equinox
 {
 	ScenePanel::ScenePanel(std::shared_ptr<RenderingSystem> renderingSystem)
@@ -31,7 +33,11 @@ namespace Equinox
 
 	void ScenePanel::OnInit()
 	{
-		m_SelectedEntity = Editor::GetPanel<HierarchyPanel>()->GetSelectedEntity();
+		// Safety: the Hierarchy panel may not exist (e.g. before the editor is fully built)
+		if (auto* hierarchy = Editor::GetPanel<HierarchyPanel>())
+			m_SelectedEntity = hierarchy->GetSelectedEntity();
+		else
+			m_SelectedEntity = nullptr;
 	}
 
 	void ScenePanel::OnRender()
@@ -54,7 +60,14 @@ namespace Equinox
 			}
 
 			// Get final output from active rendering technique
-			if (auto technique = m_RenderingSystem->GetActivePipeline())
+			if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+			{
+				// Vulkan: the scene is drawn into an image (SceneColor) that ImGui displays as a texture.
+				// No UV flip: GfxScene already flips the image with its viewport.
+				if (u64 tex = Gfx::GfxScene::GetSceneTextureID())
+					ImGui::Image((ImTextureID)tex, ToImVec2(m_ViewportSize));
+			}
+			else if (auto technique = m_RenderingSystem->GetActivePipeline())
 			{
 				i32 textureID = Editor::GetPanel<RenderPanel>()->GetSelectedAttachment();
 				if (textureID == -1) textureID = (i32)technique->GetFinalColorAttachment();

@@ -4,9 +4,7 @@
 
 #include "equinox/renderer/openGL/GLBuffer.h"
 #include "equinox/renderer/OpenGL/GLVertexArray.h"
-#include "equinox/renderer/vulkan/VKRendererAPI.h"
-#include "equinox/renderer/vulkan/VKBuffer.h"
-#include "equinox/renderer/vulkan/VKVertexArray.h"
+#include "equinox/renderer/null/NullResources.h"
 
 #include <vulkan/vulkan.h>
 
@@ -139,18 +137,8 @@ namespace Equinox
             return std::make_shared<GLVertexBuffer>(size);
 
         case RendererAPI::API::Vulkan:
-        {
-            auto vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
-            const auto& device = vkRenderer->GetLogicalDevice();
-            return std::make_shared<VKVertexBuffer>(
-                vkRenderer->GetLogicalDevice().GetHandle(),
-                vkRenderer->GetPhysicalDevice().GetHandle(),
-                nullptr,
-                size,
-                device.GetTransferQueue(),
-                device.GetQueueFamilyIndices().transferFamily.value()
-            );
-        }
+            return std::make_shared<NullVertexBuffer>(size);
+
         }
 
         EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
@@ -169,18 +157,8 @@ namespace Equinox
             return std::make_shared<GLVertexBuffer>(data, size);
 
         case RendererAPI::API::Vulkan:
-        {
-            auto vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
-            const auto& device = vkRenderer->GetLogicalDevice();
-            return std::make_shared<VKVertexBuffer>(
-                vkRenderer->GetLogicalDevice().GetHandle(),
-                vkRenderer->GetPhysicalDevice().GetHandle(),
-                data,
-                size,
-                device.GetTransferQueue(),
-                device.GetQueueFamilyIndices().transferFamily.value()
-            );
-        }
+            return std::make_shared<NullVertexBuffer>(data, size);
+
         }
 
         EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
@@ -196,18 +174,8 @@ namespace Equinox
             return std::make_shared<GLIndexBuffer>(indices, count);
 
         case RendererAPI::API::Vulkan:
-        {
-            auto vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
-            const auto& device = vkRenderer->GetLogicalDevice();
-            return std::make_shared<VKIndexBuffer>(
-                vkRenderer->GetLogicalDevice().GetHandle(),
-                vkRenderer->GetPhysicalDevice().GetHandle(),
-                indices,
-                count,
-                device.GetTransferQueue(),
-                device.GetQueueFamilyIndices().transferFamily.value()
-            );
-        }
+            return std::make_shared<NullIndexBuffer>(indices, count);
+
 
         default:
             EQN_CORE_ASSERT(false, "Unknown RendererAPI!");

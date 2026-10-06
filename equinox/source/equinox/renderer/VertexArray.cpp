@@ -4,8 +4,7 @@
 
 #include "equinox/renderer/OpenGL/GLVertexArray.h"
 
-#include "equinox/renderer/Vulkan/VKRendererAPI.h"
-#include "equinox/renderer/Vulkan/VKVertexArray.h"
+#include "equinox/renderer/null/NullResources.h"
 
 namespace Equinox
 {
@@ -17,10 +16,7 @@ namespace Equinox
             return std::make_unique<GLVertexArray>();
 
         case RendererAPI::API::Vulkan:
-        {
-            auto vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
-            return std::make_unique<VKVertexArray>(vkRenderer->GetLogicalDevice().GetHandle());
-        }
+            return std::make_unique<NullVertexArray>();
 
         default:
             EQN_CORE_ASSERT(false, "Unknown RendererAPI!");

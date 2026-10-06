@@ -25,7 +25,7 @@ namespace Equinox
 {
 	App::App(int argc, char** argv)
 	{
-		 // Core Systems Init
+		// Core Systems Init
 		JobSystem::Init();
 		FileSystem::Init();
 
@@ -36,33 +36,21 @@ namespace Equinox
 		m_Window = Window::Create(ws);
 		Input::SetWindow(m_Window->GetNativeWindow());
 
-		// Initialize New Renderer
-		if (ws.rendererAPI == RendererAPI::API::Vulkan)
-		{
-			Gfx::GfxRenderer::Init(m_Window->GetNativeWindow(), ws.Width, ws.Height);
-		}
-		else
-		{
-			Renderer::Init(ws.rendererAPI, m_Window->GetNativeWindow());
-		}
+		// Initialize Renderer	
+		RendererAPI::SetAPI(ws.rendererAPI);
+		Gfx::GfxRenderer::Init(m_Window->GetNativeWindow(), ws.Width, ws.Height, ws.VSync);
 
-		// Only init legacy resources for OpenGL for now
-		if (ws.rendererAPI == RendererAPI::API::OpenGL)
-		{
-			Resources::Init();
-			ResourceDB::Init(FileSystem::AssetsPath());
-		}
+		// Resources 
+		Resources::Init();
+		ResourceDB::Init(FileSystem::AssetsPath());
 
 		// Scene & Systems
 		m_Scene = std::make_shared<Scene>();
 		Systems::Init();
 		Systems::SetRegistry(m_Scene->RegistryPtr());
 
-		// Temporarily disabled for Vulkan
-		if (ws.rendererAPI == RendererAPI::API::OpenGL)
-		{
-			Editor::Init(m_Window.get());
-		}
+		// ImGui editor
+		Editor::Init(m_Window.get());
 
 		// Subscribe to events
 		EventBus::Subscribe<WindowResizeEvent>(BusType::MainThread, [this](Event& e)
@@ -98,42 +86,36 @@ namespace Equinox
 			m_Window->OnUpdate();
 			EventBus::ProcessEvents(BusType::MainThread);
 
-			if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-				ResourceDB::Update();
+			ResourceDB::Update();
 
 			OnUpdate();
 
 			if (!m_Window->IsMinimized())
 			{
-				// TODO: Parallelize these using JobSystem
+				if (Gfx::GfxRenderer::BeginFrame())
 				{
-					EQN_PROFILE_SCOPE("Systems::Update");
-					Systems::Update<TransformSystem>();
-					//Systems::Update<AnimationSystem>();
-					Systems::Update<RenderingSystem>();
-				}
+					{
+						EQN_PROFILE_SCOPE("Systems::Update");
+						Systems::Update<TransformSystem>();
+						if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+						{
+							Systems::Update<AnimationSystem>();
+						}
+						Systems::Update<RenderingSystem>();
+					}
 
-				// Render UI (not yet implemented in vulkan)
-				if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-				{
-					EQN_PROFILE_SCOPE("Editor::Render");
-					Editor::BeginFrame();
-					Editor::Render();
-					OnUIRender();
-					Editor::EndFrame();
-				}
-			}
+					// TODO: Parallelize these using JobSystem
+					if (Gfx::GfxRenderer::IsImGuiReady())
+					{
+						EQN_PROFILE_SCOPE("Editor::Render");
+						Editor::BeginFrame();
+						Editor::Render();
+						OnUIRender();
+						Editor::EndFrame();
+					}
 
-			//Render
-			{
-				EQN_PROFILE_SCOPE("SwapBuffers");
-
-				if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-				{
-					m_Window->SwapBuffers();
-					Renderer::Clear(BufferBit::Color | BufferBit::Depth);
+					Gfx::GfxRenderer::EndFrame();
 				}
-				// Vulkan swap happens in GfxRenderer::EndFrame() called by RenderingSystem
 			}
 		}
 		OnShutdown();
@@ -142,18 +124,12 @@ namespace Equinox
 
 	void App::Close()
 	{
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-		{
-			ResourceDB::SaveDirty();
-			ResourceDB::Shutdown();
-		}
+		ResourceDB::SaveDirty();
+		ResourceDB::Shutdown();
 		Editor::Shutdown();
 		Systems::Shutdown();
 
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-			Gfx::GfxRenderer::Shutdown();
-		else
-			Renderer::Shutdown();
+		Gfx::GfxRenderer::Shutdown();
 
 		JobSystem::Shutdown();
 	}
@@ -195,7 +171,7 @@ namespace Equinox
 	{
 		std::string title = "Equinox 0.1";
 
-		switch (ws.rendererAPI) 
+		switch (ws.rendererAPI)
 		{
 		case RendererAPI::API::OpenGL: title += " [OpenGL]"; break;
 		case RendererAPI::API::Vulkan: title += " [Vulkan]"; break;
@@ -211,10 +187,9 @@ namespace Equinox
 
 	void App::OnWindowResize(WindowResizeEvent& e)
 	{
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-		{
-			Gfx::GfxRenderer::Resize(e.GetWidth(), e.GetHeight());
-		}
+		// The current backend recreates what it must (swapchain for Vulkan,
+		// nothing for OpenGL: the GL viewport follows the window size).
+		Gfx::GfxRenderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 	}
 
 	void App::OnWindowClose(WindowCloseEvent& e)
@@ -237,7 +212,7 @@ namespace Equinox
 
 				// 2. Classify resource type
 				ResourceType resType = FileSystem::ClassifyFileType(srcPath);
-				if (resType == ResourceType::Unknown) 
+				if (resType == ResourceType::Unknown)
 				{
 					EQN_CORE_WARN("Unsupported file type: {0}", srcPath.string());
 					continue;
@@ -258,11 +233,11 @@ namespace Equinox
 
 				EQN_CORE_INFO("Created asset {0} with UUID {1}", destPath.filename().string(), newUuid.ToString());
 			}
-			catch (const fs::filesystem_error& err) 
+			catch (const fs::filesystem_error& err)
 			{
 				EQN_CORE_ERROR("Import failed: {0} - {1}", srcPath.string(), err.what());
 			}
-			catch (const std::exception& ex) 
+			catch (const std::exception& ex)
 			{
 				EQN_CORE_ERROR("Asset processing error: {0} - {1}", srcPath.string(), ex.what());
 			}

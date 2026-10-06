@@ -31,6 +31,9 @@
     <Filter Include="equinox\renderer">
       <UniqueIdentifier>{94BD1E03-80B6-3D55-A9E8-22DA95401D61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\renderer\null">
+      <UniqueIdentifier>{7E2BA9E1-EA97-64DC-B38B-FC391FB78644}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\renderer\openGL">
       <UniqueIdentifier>{68EC98F2-D423-E189-DD2D-45AD49E40783}</UniqueIdentifier>
     </Filter>
@@ -93,6 +96,9 @@
       <Filter>equinox\core</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\EquinoxTypes.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\core\Fiber.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\JobSystem.h">
@@ -164,13 +170,37 @@
     <ClInclude Include="source\equinox\events\RenderEvent.h">
       <Filter>equinox\events</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxBackend.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\graphics\GfxContext.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxImGui.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxOpenGLBackend.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxPipeline.h">
       <Filter>equinox\graphics</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\graphics\GfxRenderer.h">
       <Filter>equinox\graphics</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxResources.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxScene.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxShader.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\graphics\GfxSwapchain.h">
+      <Filter>equinox\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\GfxVulkanBackend.h">
       <Filter>equinox\graphics</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\input\Input.h">
@@ -214,6 +244,9 @@
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\VertexArray.h">
       <Filter>equinox\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\null\NullResources.h">
+      <Filter>equinox\renderer\null</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\openGL\GLBuffer.h">
       <Filter>equinox\renderer\openGL</Filter>
@@ -362,9 +395,6 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\core\Fiber.h" />
-    <ClInclude Include="source\equinox\graphics\GfxShader.h" />
-    <ClInclude Include="source\equinox\graphics\GfxPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -416,13 +446,37 @@
     <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp">
       <Filter>equinox\editor\panels</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxBackend.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\graphics\GfxContext.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxImGui.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxOpenGLBackend.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxPipeline.cpp">
       <Filter>equinox\graphics</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\graphics\GfxRenderer.cpp">
       <Filter>equinox\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxResources.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxScene.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxShader.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\graphics\GfxSwapchain.cpp">
+      <Filter>equinox\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\GfxVulkanBackend.cpp">
       <Filter>equinox\graphics</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\input\Input.cpp">
@@ -584,7 +638,5 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxShader.cpp" />
-    <ClCompile Include="source\equinox\graphics\GfxPipeline.cpp" />
   </ItemGroup>
 </Project>

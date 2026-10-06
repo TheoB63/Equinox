@@ -49,16 +49,32 @@ namespace Equinox
 	class Material : public Resource
 	{
 	public:
-		// Shader management
+		static constexpr const char* DefaultShaderName = "EquinoxForwardLight";
+
 		void SetShaderUUID(const UUID& uuid) { m_ShaderUUID = uuid; }
 		UUID GetShaderUUID() const { return m_ShaderUUID; }
+
 		std::shared_ptr<Shader> GetShader() const
 		{
-			return ShaderLibrary::Get(m_ShaderUUID);
+			if (auto shader = ShaderLibrary::Get(m_ShaderUUID))
+				return shader;
+			return ShaderLibrary::Get(DefaultShaderName);
 		}
 
-		// Texture management
-		// Map management
+		bool HasValidShader() const { return ShaderLibrary::Get(m_ShaderUUID) != nullptr; }
+
+		bool RepairShaderReference()
+		{
+			if (HasValidShader()) return false;
+
+			if (auto shader = ShaderLibrary::Get(DefaultShaderName))
+			{
+				m_ShaderUUID = shader->GetUUID();
+				return true;
+			}
+			return false;
+		}
+
 		void AddTexture(const MapInfo& texture) { m_Maps.push_back(texture); }
 		void SetTexture(const MapInfo& texture)
 		{

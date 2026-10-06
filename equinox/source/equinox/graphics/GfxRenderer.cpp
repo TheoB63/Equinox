@@ -1,197 +1,181 @@
 #include "eqnpch.h"
 #include "equinox/graphics/GfxRenderer.h"
+#include "equinox/graphics/GfxBackend.h"
+#include "equinox/graphics/GfxScene.h"
+#include "equinox/renderer/Renderer.h"
 #include "equinox/core/Log.h"
-#include "equinox/core/Profiler.h"
-#include "equinox/renderer/vulkan/VKCommon.h" // For VK_CHECK_RESULT
 
 namespace Equinox::Gfx
 {
-    std::unique_ptr<GfxSwapchain> GfxRenderer::s_Swapchain;
-    std::unique_ptr<VKRenderGraphExecutor> GfxRenderer::s_GraphExecutor;
-    VkCommandPool GfxRenderer::s_CommandPool;
-    std::vector<VkCommandBuffer> GfxRenderer::s_CommandBuffers;
-    std::vector<GfxRenderer::FrameData> GfxRenderer::s_Frames;
-    u32 GfxRenderer::s_CurrentFrameIndex = 0;
-    u32 GfxRenderer::s_CurrentImageIndex = 0;
+	void GfxRenderer::Init(void* windowHandle, u32 width, u32 height, bool vsync)
+	{
+		if (Backend::Exists())
+		{
+			EQN_CORE_WARN("GfxRenderer::Init called twice: ignored");
+			return;
+		}
 
-    void GfxRenderer::Init(void* windowHandle, u32 width, u32 height)
-    {
-        GfxContext::Init(windowHandle);
-        s_Swapchain = std::make_unique<GfxSwapchain>(width, height);
+		const RendererAPI::API api = RendererAPI::GetAPI();
 
-        auto& ctx = GfxContext::Get();
+		BackendType type = BackendType::OpenGL;
+		if (api == RendererAPI::API::Vulkan)
+			type = BackendType::Vulkan;
 
-        // Command Pool
-        VkCommandPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.queueFamilyIndex = ctx.GetGraphicsQueue().familyIndex;
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        VK_CHECK_RESULT(vkCreateCommandPool(ctx.GetDevice(), &poolInfo, nullptr, &s_CommandPool), "Failed to create command pool");
+		if (type == BackendType::OpenGL)
+			Renderer::Init(RendererAPI::API::OpenGL, windowHandle);
 
-        CreateCommandBuffers();
-        CreateSyncObjects();
+		if (!Backend::Create(type, windowHandle, width, height, vsync))
+		{
+			EQN_CORE_CRITICAL("Could not initialize the {0} backend", ToString(type));
+			return;
+		}
 
-        // Reuse the executor logic we wrote earlier (it depends on VKResourceManager)
-        // We might need to move VKRenderGraphExecutor to Equinox::Gfx namespace later
-        s_GraphExecutor = std::make_unique<VKRenderGraphExecutor>(ctx.GetDevice(), ctx.GetPhysicalDevice());
-    }
+		GfxScene::Init();
+		GfxScene::SetTargetSize(width, height);
+	}
 
-    void GfxRenderer::Shutdown()
-    {
-        vkDeviceWaitIdle(GfxContext::Get().GetDevice());
+	void GfxRenderer::Shutdown()
+	{
+		const bool wasOpenGL = Backend::Exists() && Backend::Get().GetType() == BackendType::OpenGL;
 
-        s_GraphExecutor.reset();
-        s_Swapchain.reset();
+		GfxScene::Shutdown();
+		Backend::Destroy();
 
-        auto device = GfxContext::Get().GetDevice();
-        for (auto& frame : s_Frames)
-        {
-            vkDestroySemaphore(device, frame.imageAvailable, nullptr);
-            vkDestroySemaphore(device, frame.renderFinished, nullptr);
-            vkDestroyFence(device, frame.inFlightFence, nullptr);
-        }
+		if (wasOpenGL)
+			Renderer::Shutdown();
+	}
 
-        vkDestroyCommandPool(device, s_CommandPool, nullptr);
-        GfxContext::Shutdown();
-    }
+	void GfxRenderer::OnWindowResize(u32 width, u32 height)
+	{
+		if (Backend::Exists()) Backend::Get().OnWindowResize(width, height);
+	}
 
-    void GfxRenderer::Resize(u32 width, u32 height)
-    {
-        vkDeviceWaitIdle(GfxContext::Get().GetDevice());
-        s_Swapchain->Resize(width, height);
-    }
+	void GfxRenderer::SetVSync(bool vsync)
+	{
+		if (Backend::Exists()) Backend::Get().SetVSync(vsync);
+	}
 
-    void GfxRenderer::CreateCommandBuffers()
-    {
-        s_CommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = s_CommandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (u32)s_CommandBuffers.size();
+	bool GfxRenderer::BeginFrame()
+	{
+		if (!Backend::Exists()) return false;
+		return Backend::Get().BeginFrame();
+	}
 
-        VK_CHECK_RESULT(vkAllocateCommandBuffers(GfxContext::Get().GetDevice(), &allocInfo, s_CommandBuffers.data()), "Failed to alloc cmd buffers");
-    }
+	void GfxRenderer::EndFrame()
+	{
+		if (Backend::Exists()) Backend::Get().EndFrame();
+	}
 
-    void GfxRenderer::CreateSyncObjects()
-    {
-        s_Frames.resize(MAX_FRAMES_IN_FLIGHT);
-        VkSemaphoreCreateInfo semaphoreInfo{};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	bool GfxRenderer::IsFrameActive()
+	{
+		return Backend::Exists() && Backend::Get().IsFrameActive();
+	}
 
-        auto device = GfxContext::Get().GetDevice();
-        for (auto& frame : s_Frames)
-        {
-            vkCreateSemaphore(device, &semaphoreInfo, nullptr, &frame.imageAvailable);
-            vkCreateSemaphore(device, &semaphoreInfo, nullptr, &frame.renderFinished);
-            vkCreateFence(device, &fenceInfo, nullptr, &frame.inFlightFence);
-        }
-    }
+	void GfxRenderer::SetSceneTargetSize(u32 width, u32 height)
+	{
+		if (Backend::Exists()) Backend::Get().SetSceneTargetSize(width, height);
+	}
 
-    void GfxRenderer::BeginFrame()
-    {
-        auto& frame = s_Frames[s_CurrentFrameIndex];
-        auto device = GfxContext::Get().GetDevice();
+	SceneTargetSize GfxRenderer::GetSceneTargetSize()
+	{
+		if (!Backend::Exists()) return {};
+		return Backend::Get().GetSceneTargetSize();
+	}
 
-        vkWaitForFences(device, 1, &frame.inFlightFence, VK_TRUE, UINT64_MAX);
+	void GfxRenderer::BeginScene(const SceneCamera& camera, const SceneLighting& lighting,
+		const SceneEffects& effects, const Vec4& clearColor)
+	{
+		if (Backend::Exists()) Backend::Get().BeginScene(camera, lighting, effects, clearColor);
+	}
 
-        if (!s_Swapchain->AcquireNextImage(frame.imageAvailable, s_CurrentImageIndex))
-        {
-            // Resize needed
-            // For now, just wait? Or handle resize loop.
-            // Assuming App handles resize event and calls Resize()
-        }
+	void GfxRenderer::DrawItem(const Equinox::Gfx::DrawItem& item)
+	{
+		if (Backend::Exists()) Backend::Get().DrawItem(item);
+	}
 
-        vkResetFences(device, 1, &frame.inFlightFence);
-        vkResetCommandBuffer(s_CommandBuffers[s_CurrentFrameIndex], 0);
-    }
+	void GfxRenderer::EndScene()
+	{
+		if (Backend::Exists()) Backend::Get().EndScene();
+	}
 
-    void GfxRenderer::ExecuteGraph(RG::RenderGraph& graph)
-    {
-        EQN_PROFILE_FUNCTION();
+	u64 GfxRenderer::GetSceneTextureId()
+	{
+		if (!Backend::Exists()) return 0;
+		return Backend::Get().GetSceneTextureId();
+	}
 
-        VkCommandBuffer cmd = s_CommandBuffers[s_CurrentFrameIndex];
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        vkBeginCommandBuffer(cmd, &beginInfo);
+	bool GfxRenderer::ImGuiInit(void* windowHandle)
+	{
+		if (!Backend::Exists()) return false;
+		return Backend::Get().ImGuiInit(windowHandle);
+	}
 
-        // Import Backbuffer
-        RG::TextureDesc backbufferDesc;
-        backbufferDesc.name = "Backbuffer";
-        backbufferDesc.width = s_Swapchain->GetExtent().width;
-        backbufferDesc.height = s_Swapchain->GetExtent().height;
-        backbufferDesc.format = RG::TextureFormat::RGBA8_Unorm; // TODO: Map from s_Swapchain->GetFormat()
+	void GfxRenderer::ImGuiShutdown()
+	{
+		if (Backend::Exists()) Backend::Get().ImGuiShutdown();
+	}
 
-        VKImageResource backbufferRes;
-        backbufferRes.image = s_Swapchain->GetImage(s_CurrentImageIndex);
-        backbufferRes.view = s_Swapchain->GetImageView(s_CurrentImageIndex);
-        backbufferRes.format = s_Swapchain->GetFormat();
-        backbufferRes.extent = { backbufferDesc.width, backbufferDesc.height, 1 };
-        backbufferRes.currentLayout = VK_IMAGE_LAYOUT_UNDEFINED; // Acquired image is undefined/presentable
+	void GfxRenderer::ImGuiNewFrame()
+	{
+		if (Backend::Exists()) Backend::Get().ImGuiNewFrame();
+	}
 
-        graph.ImportResource(backbufferDesc, &backbufferRes, RG::ResourceState::Undefined);
+	void GfxRenderer::ImGuiRenderDrawData()
+	{
+		if (Backend::Exists()) Backend::Get().ImGuiRenderDrawData();
+	}
 
-        // Execute
-        s_GraphExecutor->Execute(graph, cmd);
+	bool GfxRenderer::IsImGuiReady()
+	{
+		return Backend::Exists() && Backend::Get().IsImGuiReady();
+	}
 
-        // Transition to Present
-        {
-            VkImageMemoryBarrier barrier{};
-            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL; // Assuming last pass was Clear/Copy
-            barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.image = backbufferRes.image;
-            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            barrier.subresourceRange.baseMipLevel = 0;
-            barrier.subresourceRange.levelCount = 1;
-            barrier.subresourceRange.baseArrayLayer = 0;
-            barrier.subresourceRange.layerCount = 1;
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = 0;
+	FrameStats& GfxRenderer::GetStats()
+	{
+		static FrameStats s_Empty;
+		if (!Backend::Exists()) return s_Empty;
+		return Backend::Get().GetStats();
+	}
 
-            vkCmdPipelineBarrier(
-                cmd,
-                VK_PIPELINE_STAGE_TRANSFER_BIT,
-                VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                0,
-                0, nullptr,
-                0, nullptr,
-                1, &barrier
-            );
-        }
+	const GPUInfo& GfxRenderer::GetGPUInfo()
+	{
+		static GPUInfo s_Empty;
+		if (!Backend::Exists()) return s_Empty;
+		return Backend::Get().GetGPUInfo();
+	}
 
-        vkEndCommandBuffer(cmd);
-    }
+	const char* GfxRenderer::GetBackendName()
+	{
+		if (!Backend::Exists()) return "None";
+		return Backend::Get().GetName();
+	}
 
-    void GfxRenderer::EndFrame()
-    {
-        auto& frame = s_Frames[s_CurrentFrameIndex];
-        VkCommandBuffer cmd = s_CommandBuffers[s_CurrentFrameIndex];
+	BackendType GfxRenderer::GetBackendType()
+	{
+		if (!Backend::Exists()) return BackendType::OpenGL;
+		return Backend::Get().GetType();
+	}
 
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	bool GfxRenderer::IsBackendReady()
+	{
+		return Backend::Exists();
+	}
 
-        VkSemaphore waitSemaphores[] = { frame.imageAvailable };
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &cmd;
+	u32 GfxRenderer::GetSwapchainImageCount()
+	{
+		if (!Backend::Exists()) return 0;
+		return Backend::Get().GetSwapchainImageCount();
+	}
 
-        VkSemaphore signalSemaphores[] = { frame.renderFinished };
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
+	u64 GfxRenderer::GetSwapchainFormat()
+	{
+		if (!Backend::Exists()) return 0;
+		return Backend::Get().GetSwapchainFormat();
+	}
 
-        VK_CHECK_RESULT(vkQueueSubmit(GfxContext::Get().GetGraphicsQueue().handle, 1, &submitInfo, frame.inFlightFence), "Queue Submit Failed");
-
-        s_Swapchain->Present(frame.renderFinished, s_CurrentImageIndex);
-
-        s_CurrentFrameIndex = (s_CurrentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
-    }
+	SceneTargetSize GfxRenderer::GetSwapchainExtent()
+	{
+		if (!Backend::Exists()) return {};
+		return Backend::Get().GetSwapchainExtent();
+	}
 }

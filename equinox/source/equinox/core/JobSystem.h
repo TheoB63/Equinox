@@ -27,6 +27,10 @@ namespace Equinox::JobSystem
     void Init(u32 numThreads = 0);
     void Shutdown();
 
+    // Number of worker threads created by Init() (0 if the JobSystem is not
+    // initialized). Used by the panels to explain the jobs/mono-thread A/B.
+    u32 GetThreadCount();
+
     // Run a single task
     void Execute(JobFunction function, void* data = nullptr, Counter* counter = nullptr);
 

@@ -154,7 +154,6 @@
   <ItemGroup>
     <ClInclude Include="source\Equinox.h" />
     <ClInclude Include="source\eqnpch.h" />
-    <ClInclude Include="source\equinox\core\Fiber.h" />
     <ClInclude Include="source\equinox\ECS\Components.h" />
     <ClInclude Include="source\equinox\ECS\Entity.h" />
     <ClInclude Include="source\equinox\ECS\Scene.h" />
@@ -166,6 +165,7 @@
     <ClInclude Include="source\equinox\core\App.h" />
     <ClInclude Include="source\equinox\core\EntryPoint.h" />
     <ClInclude Include="source\equinox\core\EquinoxTypes.h" />
+    <ClInclude Include="source\equinox\core\Fiber.h" />
     <ClInclude Include="source\equinox\core\JobSystem.h" />
     <ClInclude Include="source\equinox\core\Log.h" />
     <ClInclude Include="source\equinox\core\Math.h" />
@@ -189,11 +189,17 @@
     <ClInclude Include="source\equinox\events\KeyEvent.h" />
     <ClInclude Include="source\equinox\events\MouseEvent.h" />
     <ClInclude Include="source\equinox\events\RenderEvent.h" />
+    <ClInclude Include="source\equinox\graphics\GfxBackend.h" />
     <ClInclude Include="source\equinox\graphics\GfxContext.h" />
+    <ClInclude Include="source\equinox\graphics\GfxImGui.h" />
+    <ClInclude Include="source\equinox\graphics\GfxOpenGLBackend.h" />
     <ClInclude Include="source\equinox\graphics\GfxPipeline.h" />
     <ClInclude Include="source\equinox\graphics\GfxRenderer.h" />
+    <ClInclude Include="source\equinox\graphics\GfxResources.h" />
+    <ClInclude Include="source\equinox\graphics\GfxScene.h" />
     <ClInclude Include="source\equinox\graphics\GfxShader.h" />
     <ClInclude Include="source\equinox\graphics\GfxSwapchain.h" />
+    <ClInclude Include="source\equinox\graphics\GfxVulkanBackend.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Camera.h" />
@@ -208,6 +214,7 @@
     <ClInclude Include="source\equinox\renderer\SkinnedModel.h" />
     <ClInclude Include="source\equinox\renderer\Texture.h" />
     <ClInclude Include="source\equinox\renderer\VertexArray.h" />
+    <ClInclude Include="source\equinox\renderer\null\NullResources.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLBuffer.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLMesh.h" />
     <ClInclude Include="source\equinox\renderer\openGL\GLRendererAPI.h" />
@@ -278,11 +285,17 @@
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxBackend.cpp" />
     <ClCompile Include="source\equinox\graphics\GfxContext.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxImGui.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxOpenGLBackend.cpp" />
     <ClCompile Include="source\equinox\graphics\GfxPipeline.cpp" />
     <ClCompile Include="source\equinox\graphics\GfxRenderer.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxResources.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxScene.cpp" />
     <ClCompile Include="source\equinox\graphics\GfxShader.cpp" />
     <ClCompile Include="source\equinox\graphics\GfxSwapchain.cpp" />
+    <ClCompile Include="source\equinox\graphics\GfxVulkanBackend.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />

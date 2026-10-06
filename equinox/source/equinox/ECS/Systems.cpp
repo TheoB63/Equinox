@@ -15,7 +15,10 @@ namespace Equinox
     {
         EQN_CORE_INFO("Initializing Systems...");
         AddSystem<TransformSystem>();
-        //AddSystem<AnimationSystem>();
+        if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+        {
+            AddSystem<AnimationSystem>();
+        }
         AddSystem<RenderingSystem>();
     }
 

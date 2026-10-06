@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/graphics/GfxContext.h"
@@ -16,15 +15,23 @@ namespace Equinox::Gfx
         Compute
     };
 
+    // A shader = a .spv (SPIR-V) file compiled by CompileShaders.bat from the .vert / .frag
     class GfxShader
     {
     public:
         GfxShader(const std::string& path, ShaderStage stage);
         ~GfxShader();
 
+        GfxShader(const GfxShader&) = delete;
+        GfxShader& operator=(const GfxShader&) = delete;
+
         VkShaderModule GetModule() const { return m_Module; }
         ShaderStage GetStage() const { return m_Stage; }
-        const std::string& GetEntryPoints() const { return m_EntryPoint; }
+        const std::string& GetEntryPoint() const { return m_EntryPoint; }
+
+        // Looks for "name.spv" in assets/shaders/spv then in equinox/assets/shaders/spv
+        // going up to 4 folders from the working directory. Returns "" if not found.
+        static std::string ResolveShaderPath(const std::string& spvFileName);
 
     private:
         void CreateModule(const std::vector<char>& code);

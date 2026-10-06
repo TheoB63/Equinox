@@ -37,6 +37,12 @@ namespace Equinox
 		void DrawGroup(const char* title, const std::vector<const char*>& modes);
 		void ApplyRenderingSettings();
 
+		bool IsVulkan() const;
+		bool UsesPipeline() const;
+		void DrawPostProcessOpenGL();
+		void DrawPostProcessVulkan();
+		void DrawVulkanSceneSettings();
+
 		std::shared_ptr<RenderingSystem> m_RS;
 		std::string m_SelectedMode;
 		u32 m_SelectedAttachment = 0;

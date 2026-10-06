@@ -32,6 +32,11 @@ namespace Equinox::JobSystem
 		Fiber fiber;
 		Job currentJob;
 		bool isMainThread = false;
+
+		// The scheduler fiber of the thread that started this job fiber.
+		// A job fiber must NOT read the thread_local s_ThreadFiber itself: the compiler may cache the
+		// thread_local address across SwitchTo calls, and a fiber can be resumed by another thread.
+		Fiber returnTo;
 	};
 
 	// We use a fixed pool of counters to avoid allocation during runtime
@@ -108,6 +113,11 @@ namespace Equinox::JobSystem
 		{
 			s_WorkerThreads.emplace_back(std::bind(WorkerThreadEntryPoint, i));
 		}
+	}
+
+	u32 GetThreadCount()
+	{
+		return (u32)s_WorkerThreads.size();
 	}
 
 	void Shutdown()
@@ -229,11 +239,20 @@ namespace Equinox::JobSystem
 				{
 					// 3. Switch to Fiber
 					fiberCtx->currentJob = job;
+					fiberCtx->returnTo = s_ThreadFiber->fiber;
 					s_CurrentFiber = fiberCtx;
 					Fiber::SwitchTo(fiberCtx->fiber);
 
-					// 4. Back from Fiber (Job finished or suspended)
+					// 4. Back from Fiber (job finished)
 					s_CurrentFiber = s_ThreadFiber;
+
+					// 5. Only NOW is the fiber idle (it has switched out), so only now can it be reused.
+					//    Recycling it from inside the fiber (the old code) let another thread resume it
+					//    while it was still running on this thread -> memory corruption / random crashes.
+					{
+						std::lock_guard<std::mutex> lock(s_FiberPoolLock);
+						s_FreeFibers.push_back(fiberCtx);
+					}
 				}
 				else
 				{
@@ -276,14 +295,8 @@ namespace Equinox::JobSystem
 				}
 			}
 
-			// 3. Return to Scheduler (Recycle Fiber)
-			{
-				std::lock_guard<std::mutex> lock(s_FiberPoolLock);
-				s_FreeFibers.push_back(ctx);
-			}
-
-			// Switch back to the thread that scheduled us
-			Fiber::SwitchTo(s_ThreadFiber->fiber);
+			// 3. Return to the scheduler that started us (it recycles this fiber once we are switched out)
+			Fiber::SwitchTo(ctx->returnTo);
 		}
 	}
 

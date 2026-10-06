@@ -16,62 +16,12 @@
 #include "equinox/core/Profiler.h"
 
 #include "equinox/graphics/GfxRenderer.h"
-#include "equinox/renderer/vulkan/VKResourceManager.h"
+#include "equinox/graphics/GfxScene.h"
 
 #include <glad/glad.h>
 
-// Embedded SPIR-V for Triangle (Vertex)
-static const uint32_t g_TriangleVertSpv[] = {
-	0x07230203,0x00010000,0x00080001,0x0000001e,0x00000000,0x00020011,0x00000001,0x0006000b,
-	0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
-	0x0007000f,0x00000000,0x00000004,0x6e69616d,0x00000000,0x00000009,0x0000000b,0x00030003,
-	0x00000002,0x000001c2,0x00040005,0x00000004,0x6e69616d,0x00000000,0x00050005,0x00000009,
-	0x67617266,0x6c6f436f,0x0000726f,0x00030005,0x0000000b,0x00000000,0x00050006,0x0000000b,
-	0x00000000,0x6f6c6f43,0x00000072,0x00040006,0x0000000b,0x00000001,0x00005635,0x00030005,
-	0x0000000d,0x0000675f,0x00040005,0x00000011,0x736f705f,0x6f697469,0x0000736e,0x00030005,
-	0x00000013,0x00000000,0x00040047,0x00000009,0x0000001e,0x00000000,0x00040047,0x0000000d,
-	0x0000001e,0x00000000,0x00040047,0x0000000d,0x0000000b,0x0000002a,0x00020013,0x00000002,
-	0x00030021,0x00000003,0x00000002,0x00030016,0x00000006,0x00000020,0x00040017,0x00000007,
-	0x00000006,0x00000003,0x00040020,0x00000008,0x00000003,0x00000007,0x0004003b,0x00000008,
-	0x00000009,0x00000003,0x00040017,0x0000000a,0x00000006,0x00000004,0x00040020,0x0000000b,
-	0x00000001,0x0000000a,0x0004003b,0x0000000b,0x0000000b,0x00000001,0x0004002b,0x00000006,
-	0x0000000d,0x00000000,0x0004002b,0x00000006,0x00000013,0x3f800000,0x00050036,0x00000002,
-	0x00000004,0x00000000,0x00000003,0x000200f8,0x00000005,0x0004003d,0x00000007,0x00000010,
-	0x0000000d,0x00050041,0x00000011,0x00000012,0x0000000d,0x0000000f,0x0003003e,0x00000012,
-	0x00000010,0x0004003d,0x00000007,0x00000017,0x00000013,0x00050041,0x00000018,0x00000019,
-	0x00000013,0x00000016,0x0003003e,0x00000019,0x00000017,0x00050057,0x00000007,0x0000001d,
-	0x0000001c,0x0000001b,0x000100fd,0x00010038
-};
-
-// Embedded SPIR-V for Triangle (Fragment)
-static const uint32_t g_TriangleFragSpv[] = {
-	0x07230203,0x00010000,0x00080001,0x0000000d,0x00000000,0x00020011,0x00000001,0x0006000b,
-	0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
-	0x0007000f,0x00000000,0x00000004,0x6e69616d,0x00000000,0x00000009,0x0000000b,0x00030003,
-	0x00000002,0x000001c2,0x00040005,0x00000004,0x6e69616d,0x00000000,0x00040005,0x00000009,
-	0x4374756f,0x726f6c6f,0x00000000,0x00040005,0x0000000b,0x67617266,0x6c6f436f,0x0000726f,
-	0x00040047,0x00000009,0x0000001e,0x00000000,0x00040047,0x0000000b,0x0000001e,0x00000000,
-	0x00020013,0x00000002,0x00030021,0x00000003,0x00000002,0x00030016,0x00000006,0x00000020,
-	0x00040017,0x00000007,0x00000006,0x00000004,0x00040020,0x00000008,0x00000003,0x00000007,
-	0x0004003b,0x00000008,0x00000009,0x00000003,0x00040017,0x0000000a,0x00000006,0x00000003,
-	0x00040020,0x0000000b,0x00000001,0x0000000a,0x0004003b,0x0000000b,0x0000000b,0x00000001,
-	0x0004002b,0x00000006,0x0000000c,0x3f800000,0x00050036,0x00000002,0x00000004,0x00000000,
-	0x00000003,0x000200f8,0x00000005,0x000100fd,0x00010038
-};
-
 namespace Equinox
 {
-	// Helper to create shader from bytes
-	static std::shared_ptr<Gfx::GfxShader> CreateShaderFromBytes(const std::vector<char>& code, Gfx::ShaderStage stage)
-	{
-		std::string filename = stage == Gfx::ShaderStage::Vertex ? "temp_tri.vert.spv" : "temp_tri.frag.spv";
-		std::ofstream out(filename, std::ios::binary);
-		out.write(code.data(), code.size());
-		out.close();
-
-		return std::make_shared<Gfx::GfxShader>(filename, stage);
-	}
-
 	RenderingSystem::RenderingSystem(u32 viewportWidth, u32 viewportHeight)
 	{
 		// Initialize Frame Allocator (1MB should be enough for command lists for now)
@@ -79,20 +29,8 @@ namespace Equinox
 
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
-			// Create Triangle Pipeline
-			std::vector<char> vertCode((char*)g_TriangleVertSpv, (char*)g_TriangleVertSpv + sizeof(g_TriangleVertSpv));
-			std::vector<char> fragCode((char*)g_TriangleFragSpv, (char*)g_TriangleFragSpv + sizeof(g_TriangleFragSpv));
-
-			auto vertShader = CreateShaderFromBytes(vertCode, Gfx::ShaderStage::Vertex);
-			auto fragShader = CreateShaderFromBytes(fragCode, Gfx::ShaderStage::Fragment);
-
-			Gfx::PipelineConfig config;
-			config.colorFormats = { VK_FORMAT_R8G8B8A8_UNORM }; // SceneColor format
-			config.depthFormat = VK_FORMAT_UNDEFINED; // No depth for triangle test
-			config.depthTest = false;
-			config.depthWrite = false;
-
-			m_TrianglePipeline = std::make_unique<Gfx::GfxPipeline>(config, vertShader, fragShader);
+			// Nothing to create here: the Vulkan resources (pipelines, meshes, textures...) live in Gfx::GfxScene,
+			// created by GfxRenderer::Init. This system only gives it the camera every frame.
 		}
 		else if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 		{
@@ -136,142 +74,26 @@ namespace Equinox
 			// Reset Allocator at start of frame
 			m_FrameAllocator->Reset();
 
-		// -----------------------------------------------------------------
-		// Render Graph Test (Proof of Concept)
-		// -----------------------------------------------------------------
+		// VULKAN: the scene is recorded into the command buffer of the frame
+		// (GfxRenderer::BeginFrame was already called by App::Run)
 		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
 		{
-			Gfx::GfxRenderer::BeginFrame();
+			if (!Gfx::GfxRenderer::IsFrameActive()) return;
 
-			RG::RenderGraph rg(*m_FrameAllocator);
+			Gfx::SceneFrameInput input;
+			input.time = Time::GetTime();
 
-			struct GeometryPassData
+			if (auto* scenePanel = Editor::GetPanel<ScenePanel>())
 			{
-				RG::ResourceHandle outputTex;
-			};
-
-			// 1. Geometry Pass (Draws Triangle)
-			static RG::ResourceHandle s_SceneColorHandle;
-
-			rg.AddPass<GeometryPassData>("GeometryPass",
-				[&](GeometryPassData& data, RG::RenderPassBuilder& builder)
-				{
-					RG::TextureDesc desc;
-					desc.name = "SceneColor";
-					desc.width = 1280;
-					desc.height = 720;
-					desc.format = RG::TextureFormat::RGBA8_Unorm;
-
-					data.outputTex = builder.CreateTexture(desc);
-					data.outputTex = builder.Write(data.outputTex);
-					s_SceneColorHandle = data.outputTex;
-				},
-				[&](GeometryPassData& data, RG::RenderPassContext& ctx)
-				{
-					VkCommandBuffer cmd = (VkCommandBuffer)ctx.commandBuffer;
-					VKImageResource* res = (VKImageResource*)ctx.GetResource(data.outputTex);
-
-					if (res)
-					{
-						// Begin Rendering (Dynamic Rendering)
-						VkRenderingAttachmentInfo colorAttachment{};
-						colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-						colorAttachment.imageView = res->view;
-						colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-						colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-						colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-						colorAttachment.clearValue = { {{0.1f, 0.1f, 0.1f, 1.0f}} }; // Dark Grey Background
-
-						VkRenderingInfo renderingInfo{};
-						renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-						renderingInfo.renderArea = { {0, 0}, {res->extent.width, res->extent.height} };
-						renderingInfo.layerCount = 1;
-						renderingInfo.colorAttachmentCount = 1;
-						renderingInfo.pColorAttachments = &colorAttachment;
-
-						vkCmdBeginRendering(cmd, &renderingInfo);
-
-						// Bind Pipeline
-						m_TrianglePipeline->Bind(cmd);
-
-						// Set Dynamic States
-						VkViewport viewport{};
-						viewport.x = 0.0f;
-						viewport.y = 0.0f;
-						viewport.width = (float)res->extent.width;
-						viewport.height = (float)res->extent.height;
-						viewport.minDepth = 0.0f;
-						viewport.maxDepth = 1.0f;
-						vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-						VkRect2D scissor{};
-						scissor.offset = { 0, 0 };
-						scissor.extent = { res->extent.width, res->extent.height };
-						vkCmdSetScissor(cmd, 0, 1, &scissor);
-
-						// Draw Triangle (3 vertices)
-						vkCmdDraw(cmd, 3, 1, 0, 0);
-
-						vkCmdEndRendering(cmd);
-					}
-				}
-			);
-
-			// 2. Present Pass (Copies SceneColor to Backbuffer)
-			struct PresentPassData
-			{
-				RG::ResourceHandle inputTex;
-				RG::ResourceHandle backbuffer;
-			};
-
-			rg.AddPass<PresentPassData>("PresentPass",
-				[&](PresentPassData& data, RG::RenderPassBuilder& builder)
-				{
-					data.inputTex = builder.Read(s_SceneColorHandle);
-
-					RG::TextureDesc desc;
-					desc.name = "Backbuffer";
-					desc.width = 1280;
-					desc.height = 720;
-					desc.format = RG::TextureFormat::RGBA8_Unorm;
-
-					data.backbuffer = builder.CreateTexture(desc);
-
-					data.backbuffer = builder.WriteTransfer(data.backbuffer);
-				},
-				[&](PresentPassData& data, RG::RenderPassContext& ctx)
-				{
-					VkCommandBuffer cmd = (VkCommandBuffer)ctx.commandBuffer;
-					VKImageResource* src = (VKImageResource*)ctx.GetResource(data.inputTex);
-					VKImageResource* dst = (VKImageResource*)ctx.GetResource(data.backbuffer);
-
-					if (src && dst)
-					{
-						// Blit SceneColor -> Backbuffer
-						VkImageBlit blit{};
-						blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-						blit.srcSubresource.layerCount = 1;
-						blit.srcOffsets[1] = { (int32_t)src->extent.width, (int32_t)src->extent.height, 1 };
-
-						blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-						blit.dstSubresource.layerCount = 1;
-						blit.dstOffsets[1] = { (int32_t)dst->extent.width, (int32_t)dst->extent.height, 1 };
-
-						vkCmdBlitImage(cmd,
-							src->image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, // Read state
-							dst->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,     // Write state
-							1, &blit, VK_FILTER_LINEAR);
-					}
-				}
-			);
-
-			rg.Compile();
-			Gfx::GfxRenderer::ExecuteGraph(rg);
-			Gfx::GfxRenderer::EndFrame();
-
+				auto cam = scenePanel->GetEditorCamera();
+				input.view = cam.GetViewMatrix();
+				input.projection = cam.GetProjectionMatrix();
+				input.cameraPosition = cam.GetPosition();
+			}
+			// (seule adaptation : GfxScene prend le registre, il en tire les entites)
+			Gfx::GfxScene::Render(input, registry);
 			return;
 		}
-		// -----------------------------------------------------------------
 
 		if (!m_ActivePipeline) return;
 
@@ -297,6 +119,12 @@ namespace Equinox
 
 	void RenderingSystem::Resize(u32 width, u32 height)
 	{
+		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		{
+			Gfx::GfxScene::SetTargetSize(width, height);   // applied at the start of the next frame
+			return;
+		}
+
 		if (m_ActivePipeline)
 			m_ActivePipeline->ResizeAll(width, height);
 	}

@@ -592,26 +592,53 @@ namespace Equinox
 		// Shader selection
 		ImGui::Text("Shader     ");
 		ImGui::SameLine();
-		if (auto shader = material.GetShader())
+
+		const bool validShaderReference = material.HasValidShader();
+		std::shared_ptr<Shader> shader = material.GetShader();
+
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::BeginCombo("##Shader", shader ? shader->GetName().c_str() : "(No shaders in the library.)"))
 		{
-			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-			if (ImGui::BeginCombo("##Shader", shader->GetName().c_str()))
+			for (const auto& [uuid, record] : ShaderLibrary::GetAllShaders())
 			{
-				for (const auto& [uuid, s] : ShaderLibrary::GetAllShaders())
+				const bool selected = (uuid == material.GetShaderUUID());
+				if (ImGui::Selectable(record.Shader->GetName().c_str(), selected))
 				{
-					bool selected;
-					if (ImGui::Selectable(s.Shader->GetName().c_str(), &selected))
+					material.SetShaderUUID(uuid);
+					ResourceDB::SetDirty(material.GetUUID());
+				}
+				if (selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+
+		if (!validShaderReference)
+		{
+			if (shader)
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.72f, 0.25f, 1.0f),
+					"Invalid .mat referene (%s) - render with \"%s\".",
+					material.GetShaderUUID().ToString().c_str(), shader->GetName().c_str());
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Repair ##ShaderRef"))
+				{
+					if (material.RepairShaderReference())
 					{
-						material.SetShaderUUID(uuid);
 						ResourceDB::SetDirty(material.GetUUID());
+						EQN_CORE_INFO("Material {0}: shader reference repair ({1})",
+							material.GetName(), material.GetShaderUUID().ToString());
 					}
 				}
-				ImGui::EndCombo();
+				if (ImGui::IsItemHovered())
+					ImGui::SetTooltip("Repair with the default shader .mat\n"
+						"(Asset will be saved the next time you save).");
 			}
-		}
-		else
-		{
-			ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Missing Shader");
+			else
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f),
+					"No shaders in the library (Assets/shaders not loading?)");
+			}
 		}
 
 		// Render mode
