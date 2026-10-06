@@ -88,6 +88,15 @@ namespace Equinox
 		auto g_SSAOPass = p->GetPass<SSAOPass>();
 		auto g_PostProcessPass = p->GetPass<PostProcessPass>();
 
+		// These values are shared with the Vulkan path and consumed by the
+		// OpenGL deferred-light shader through LightingPass.
+		if (ImGui::CollapsingHeader("Scene (shared)", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			Gfx::SceneSettings& scene = Gfx::GfxScene::GetSettings();
+			ImGui::ColorEdit3("Clear Color", glm::value_ptr(scene.clearColor));
+			ImGui::SliderFloat("Ambient", &scene.ambient, 0.0f, 1.0f);
+		}
+
 		// SSAO
 		if (ImGui::CollapsingHeader("SSAO", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -249,31 +258,19 @@ namespace Equinox
 	{
 		Gfx::SceneEffects& fx = Gfx::GfxScene::GetSettings().effects;
 
-		const char* kOpenGLOnly = "Requires a separate pass (G-buffer / intermediate target) :\n"
-		                          "available in OpenGL, but not in Vulkan direct rendering.";
-
-		// SSAO ---------------------------------------------------------------
+		// SSAO and Bloom are native Vulkan passes in VulkanDeferredRenderer.
 		if (ImGui::CollapsingHeader("SSAO", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::BeginDisabled();
 			ImGui::SliderFloat("Radius", &fx.ssaoRadius, 0.0f, 10.0f);
 			ImGui::SliderFloat("Intensity", &fx.ssaoIntensity, 0.0f, 1.0f);
-			ImGui::SliderFloat("Bias", &fx.ssaoBias, 0.05f, 0.5f);
-			ImGui::EndDisabled();
-			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-				ImGui::SetTooltip("%s", kOpenGLOnly);
+			ImGui::SliderFloat("Bias", &fx.ssaoBias, 0.001f, 0.5f);
 		}
 
-		// Bloom --------------------------------------------------------------
 		if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::BeginDisabled();
 			ImGui::SliderFloat("Threshold", &fx.bloomThreshold, 0.0f, 2.0f);
 			ImGui::SliderFloat("Strength", &fx.bloomStrength, 0.0f, 2.0f);
 			ImGui::SliderInt("Passes", &fx.bloomPasses, 1, 10);
-			ImGui::EndDisabled();
-			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-				ImGui::SetTooltip("%s", kOpenGLOnly);
 		}
 
 		// Tone Mapping -------------------------------------------------------
@@ -315,13 +312,7 @@ namespace Equinox
 		if (ImGui::CollapsingHeader("Others", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::SliderFloat("Grain Amount", &fx.grainAmount, 0.0f, 0.2f, "%.3f");
-
-			ImGui::BeginDisabled();
 			ImGui::SliderFloat("Sharpness", &fx.sharpness, -1.0f, 1.0f);
-			ImGui::EndDisabled();
-			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-				ImGui::SetTooltip("%s", kOpenGLOnly);
-
 			ImGui::SliderFloat("Chromatic Aberration", &fx.aberrationOffset, 0.0f, 0.02f, "%.4f");
 		}
 
@@ -343,8 +334,12 @@ namespace Equinox
 			ImGui::SetTooltip("<DirectionalLight> / <PointLight> in the hierarchie.\n"
 				"Rotation of the entitie = direction (-Z), position = position.");
 
-		ImGui::ColorEdit3("Light Color", glm::value_ptr(s.lightColor));
-		ImGui::DragFloat3("Direction", glm::value_ptr(s.lightDirection), 0.01f, -1.0f, 1.0f);
+		ImGui::BeginDisabled(s.useEcsLights);
+		ImGui::ColorEdit3("Fallback Light Color", glm::value_ptr(s.lightColor));
+		ImGui::DragFloat3("Fallback Direction", glm::value_ptr(s.lightDirection), 0.01f, -10.0f, 10.0f);
+		ImGui::EndDisabled();
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Vector normalised by the renderer. ECS lights use the Euler rotation of their Transform.");
 		ImGui::SliderFloat("Ambient", &s.ambient, 0.0f, 1.0f);
 
 		// ---- fond ----------------------------------------------------------
@@ -374,47 +369,55 @@ namespace Equinox
 		ImGui::Spacing();
 
 		const bool vulkan = IsVulkan();
-
-		// grab pipeline here
 		auto* pipeline = m_RS->GetActivePipeline();
 		if (!vulkan && !pipeline) return;
 
-		if (vulkan)
-			ImGui::TextDisabled("(canaux du G-buffer : OpenGL seulement)");
+		auto vulkanDebugView = [](const std::string& mode) -> int
+		{
+			if (mode == "Final" || mode == "No Post-Processing") return 0;
+			if (mode == "Base Color") return 1;
+			if (mode == "Metalness") return 2;
+			if (mode == "Roughness") return 3;
+			if (mode == "Normal Map" || mode == "Normal") return 4;
+			if (mode == "Emission") return 5;
+			if (mode == "Opacity") return 6;
+			if (mode == "Position") return 7;
+			if (mode == "MRAO") return 8;
+			if (mode == "SSAO") return 9;
+			return -1;
+		};
 
 		for (auto mode : modes)
 		{
-			const bool available = !vulkan
-				|| std::string(mode) == "Final"
-				|| std::string(mode) == "No Post-Processing";
+			const std::string modeName(mode);
+			const int debugView = vulkan ? vulkanDebugView(modeName) : 0;
+			const bool available = !vulkan || debugView >= 0;
+			const bool isSelected = (modeName == m_SelectedMode);
 
-			bool isSelected = (mode == m_SelectedMode);
-
-			if (!available)
-				ImGui::BeginDisabled();
-
-			// highlight selected
+			if (!available) ImGui::BeginDisabled();
 			if (isSelected && available)
 				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
 
 			if (ImGui::Button(mode, ImVec2(120, 0)) && available)
 			{
-				m_SelectedMode = mode;
-
+				m_SelectedMode = modeName;
 				if (vulkan)
-					Gfx::GfxScene::GetSettings().effects.enabled = (std::string(mode) != "No Post-Processing");
+				{
+					Gfx::SceneEffects& fx = Gfx::GfxScene::GetSettings().effects;
+					fx.enabled = modeName != "No Post-Processing";
+					fx.debugView = debugView;
+				}
 				else
+				{
 					m_SelectedAttachment = pipeline->GetAttachmentByName(m_SelectedMode);
+				}
 			}
 
 			if (!available && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-				ImGui::SetTooltip("Canal du G-buffer du pipeline differe : disponible en OpenGL seulement.");
+				ImGui::SetTooltip("This channel is not yet supported by the Vulkan G-buffer.");
 
-			if (isSelected && available)
-				ImGui::PopStyleColor();
-
-			if (!available)
-				ImGui::EndDisabled();
+			if (isSelected && available) ImGui::PopStyleColor();
+			if (!available) ImGui::EndDisabled();
 		}
 	}
 

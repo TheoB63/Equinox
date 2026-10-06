@@ -26,7 +26,8 @@ namespace Equinox::Gfx
 		static void BeginScene(const SceneCamera& camera, const SceneLighting& lighting,
 			const SceneEffects& effects,
 			const Vec4& clearColor = Vec4(0.08f, 0.08f, 0.08f, 1.0f));
-		static void DrawItem(const DrawItem& item);
+		// Fully qualify the type because this function is also named DrawItem.
+		static void DrawItem(const Equinox::Gfx::DrawItem& item);
 		static void EndScene();
 
 		static u64 GetSceneTextureId();

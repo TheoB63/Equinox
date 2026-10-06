@@ -57,6 +57,7 @@ namespace Equinox::Gfx
 		{
 			const Mesh* mesh = nullptr;
 			const Texture* texture = nullptr;
+			const Texture* alphaTexture = nullptr;
 			Mat4  model{ 1.0f };
 			Vec3  center{ 0.0f };
 			float radius = 1.0f;
@@ -64,6 +65,12 @@ namespace Equinox::Gfx
 			float roughness = 0.5f;
 			float metallic = 0.0f;
 			Vec4  emissive{ 0.0f };
+			i32 renderMode = 0;
+			float alphaCutoff = 0.5f;
+			u32 diffuseUvIndex = 0;
+			u32 alphaUvIndex = 0;
+			bool alphaFromDiffuse = false;
+			bool transparent = false;
 		};
 
 		struct State
@@ -343,7 +350,14 @@ namespace Equinox::Gfx
 			out.color = item.color;
 			out.params = Vec4(item.roughness, 1.0f, item.texture ? 1.0f : 0.0f, item.metallic);
 			out.texture = item.texture;
+			out.alphaTexture = item.alphaTexture;
+			out.diffuseUvIndex = item.diffuseUvIndex;
+			out.alphaUvIndex = item.alphaUvIndex;
+			out.renderMode = item.renderMode;
+			out.alphaCutoff = item.alphaCutoff;
+			out.alphaFromDiffuse = item.alphaFromDiffuse;
 			out.emissive = item.emissive;
+			out.transparent = item.transparent;
 			out.lightDir = Vec4(dirLength > 0.0001f ? direction / dirLength : Vec3(0.0f, 1.0f, 0.0f), lit ? 1.0f : 0.0f);
 			out.lightColor = Vec4(radiance, 1.0f);
 		}
@@ -426,16 +440,30 @@ namespace Equinox::Gfx
 					item.roughness = material->GetRough();
 					item.metallic = material->GetMetal();
 					item.emissive = Vec4(material->GetEmissive(), 1.0f);
+					item.renderMode = static_cast<i32>(material->GetRenderMode());
+					item.alphaCutoff = material->GetAlphaCutoff();
+					item.alphaFromDiffuse = material->IsAlphaFromDiffuseEnabled();
+					item.transparent = material->GetRenderMode() == RendererAPI::RenderMode::Transparent ||
+						material->GetRenderMode() == RendererAPI::RenderMode::Fade;
 
-					// Albedo map: the unified shader has one sampler (see the note in
-					// mesh.frag): the Diffuse channel of the material.
+					// Carry both texture channels used by the legacy OpenGL material path.
+					// This is essential for text/decals whose RGB image has an opaque black
+					// background while opacity lives in a separate Alpha map.
 					for (const MapInfo& map : material->GetTextures())
 					{
-						if (map.type != MapType::Diffuse || !map.useTexture) continue;
-						if (auto texture = TextureCache::Get(map.Uuid))
+						if (!map.useTexture) continue;
+						auto texture = TextureCache::Get(map.Uuid);
+						if (!texture) continue;
+
+						if (map.type == MapType::Diffuse)
 						{
 							item.texture = texture.get();
-							break;
+							item.diffuseUvIndex = map.uvIndex;
+						}
+						else if (map.type == MapType::Alpha)
+						{
+							item.alphaTexture = texture.get();
+							item.alphaUvIndex = map.uvIndex;
 						}
 					}
 				}
@@ -518,7 +546,7 @@ namespace Equinox::Gfx
 			data.items = s.prepared.data();
 			data.count = count;
 			data.culling = cull;
-			data.useFallbackLight = (lights.Total() == 0);
+			data.useFallbackLight = !s.settings.useEcsLights;
 			data.fallbackDir = fallbackDir;
 			data.fallbackColor = s.settings.lightColor;
 			data.lights = &lights;
@@ -586,8 +614,40 @@ namespace Equinox::Gfx
 			camera.position = input.cameraPosition;
 
 			SceneLighting lighting;
-			lighting.direction = fallbackDir;
-			lighting.color = s.settings.lightColor;
+			// SceneLighting::direction is the direction in which the light rays travel.
+			// Use the first ECS directional light for the deferred opaque pass instead
+			// of silently falling back to unrelated RenderPanel values.  Transparent
+			// objects continue to receive the per-object aggregate prepared above.
+			if (lights.dirCount > 0)
+			{
+				lighting.direction = lights.dir[0].direction;
+				lighting.color = lights.dir[0].color * lights.dir[0].intensity;
+				lighting.directionalCount = std::min(lights.dirCount, SceneLighting::MaxDirectionalLights);
+				for (u32 i = 0; i < lighting.directionalCount; ++i)
+				{
+					lighting.directional[i].direction = lights.dir[i].direction;
+					lighting.directional[i].color = lights.dir[i].color;
+					lighting.directional[i].intensity = lights.dir[i].intensity;
+				}
+			}
+			else if (!s.settings.useEcsLights)
+			{
+				lighting.direction = s.settings.lightDirection;
+				lighting.color = s.settings.lightColor;
+				lighting.directionalCount = 1;
+				lighting.directional[0].direction = s.settings.lightDirection;
+				lighting.directional[0].color = s.settings.lightColor;
+				lighting.directional[0].intensity = 1.0f;
+			}
+
+			lighting.pointCount = std::min(lights.pointCount, SceneLighting::MaxPointLights);
+			for (u32 i = 0; i < lighting.pointCount; ++i)
+			{
+				lighting.point[i].position = lights.point[i].position;
+				lighting.point[i].color = lights.point[i].color;
+				lighting.point[i].intensity = lights.point[i].intensity;
+				lighting.point[i].range = lights.point[i].range;
+			}
 			lighting.ambient = s.settings.ambient;
 
 			SceneEffects effects = s.settings.effects;

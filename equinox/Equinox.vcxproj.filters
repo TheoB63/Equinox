@@ -25,6 +25,9 @@
     <Filter Include="equinox\graphics">
       <UniqueIdentifier>{2E4287A7-1A3B-A6F9-436D-8B7E2FC58505}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\graphics\vulkan">
+      <UniqueIdentifier>{0E6411B4-7A9B-594B-83A5-BD6EEF5B8044}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\input">
       <UniqueIdentifier>{ADC037FD-1981-B333-E2BB-FCB04E3BF80F}</UniqueIdentifier>
     </Filter>
@@ -134,6 +137,9 @@
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h">
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\editor\panels\MetricsPanel.h">
+      <Filter>equinox\editor\panels</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\editor\panels\ProjectPanel.h">
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
@@ -202,6 +208,9 @@
     </ClInclude>
     <ClInclude Include="source\equinox\graphics\GfxVulkanBackend.h">
       <Filter>equinox\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\graphics\vulkan\VulkanDeferredRenderer.h">
+      <Filter>equinox\graphics\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\input\Input.h">
       <Filter>equinox\input</Filter>
@@ -431,6 +440,9 @@
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp">
       <Filter>equinox\editor\panels</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\editor\panels\MetricsPanel.cpp">
+      <Filter>equinox\editor\panels</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\editor\panels\ProjectPanel.cpp">
       <Filter>equinox\editor\panels</Filter>
     </ClCompile>
@@ -478,6 +490,9 @@
     </ClCompile>
     <ClCompile Include="source\equinox\graphics\GfxVulkanBackend.cpp">
       <Filter>equinox\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\graphics\vulkan\VulkanDeferredRenderer.cpp">
+      <Filter>equinox\graphics\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\input\Input.cpp">
       <Filter>equinox\input</Filter>

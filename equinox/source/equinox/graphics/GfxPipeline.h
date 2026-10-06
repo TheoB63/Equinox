@@ -3,6 +3,7 @@
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/graphics/GfxContext.h"
 #include "equinox/graphics/GfxShader.h"
+
 #include <vulkan/vulkan.h>
 #include <memory>
 #include <vector>
@@ -11,7 +12,7 @@ namespace Equinox::Gfx
 {
 	struct PipelineConfig
 	{
-		// Formats of the images we draw into (dynamic rendering: no RenderPass)
+		// Dynamic rendering: the pipeline declares formats, not a VkRenderPass.
 		std::vector<VkFormat> colorFormats;
 		VkFormat depthFormat = VK_FORMAT_UNDEFINED;
 
@@ -24,11 +25,10 @@ namespace Equinox::Gfx
 		VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
 		VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
-		// Vertex description (empty = no vertex buffer, e.g. the triangle hard-coded in the shader)
+		// Empty for a full-screen triangle generated from gl_VertexIndex.
 		std::vector<VkVertexInputBindingDescription> vertexBindings;
 		std::vector<VkVertexInputAttributeDescription> vertexAttributes;
 
-		// Small data sent directly to the shader (push constants)
 		std::vector<VkPushConstantRange> pushConstants;
 	};
 
@@ -38,13 +38,20 @@ namespace Equinox::Gfx
 		GfxPipeline(const PipelineConfig& config,
 			const std::shared_ptr<GfxShader>& vertShader,
 			const std::shared_ptr<GfxShader>& fragShader,
-			VkDescriptorSetLayout descriptorLayout = VK_NULL_HANDLE);
+			const std::vector<VkDescriptorSetLayout>& descriptorLayouts = {});
+
+		// Convenience overload kept for existing call sites.
+		GfxPipeline(const PipelineConfig& config,
+			const std::shared_ptr<GfxShader>& vertShader,
+			const std::shared_ptr<GfxShader>& fragShader,
+			VkDescriptorSetLayout descriptorLayout);
+
 		~GfxPipeline();
 
 		GfxPipeline(const GfxPipeline&) = delete;
 		GfxPipeline& operator=(const GfxPipeline&) = delete;
 
-		void Bind(VkCommandBuffer cmd);
+		void Bind(VkCommandBuffer cmd) const;
 		VkPipelineLayout GetLayout() const { return m_Layout; }
 		VkPipeline GetPipeline() const { return m_Pipeline; }
 
@@ -52,7 +59,7 @@ namespace Equinox::Gfx
 		void CreatePipeline(const PipelineConfig& config,
 			const std::shared_ptr<GfxShader>& vertShader,
 			const std::shared_ptr<GfxShader>& fragShader,
-			VkDescriptorSetLayout descriptorLayout);
+			const std::vector<VkDescriptorSetLayout>& descriptorLayouts);
 
 		VkPipeline m_Pipeline = VK_NULL_HANDLE;
 		VkPipelineLayout m_Layout = VK_NULL_HANDLE;

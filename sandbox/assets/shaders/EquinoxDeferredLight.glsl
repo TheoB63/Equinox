@@ -30,6 +30,12 @@ layout(binding = 5) uniform sampler2D o_SSAO;
 
 layout(location = 0) out vec4 FragColor;
 
+// Shared with the Vulkan scene settings so both backends use the same
+// background and ambient baseline.
+uniform vec4 u_ClearColor;
+uniform float u_Ambient;
+uniform float u_SSAOIntensity;
+
 // ========== UBO Definitions ==========
 layout(std140, binding = 0) uniform TransformUBO {
     mat4 view;
@@ -125,7 +131,12 @@ void main()
 {
     // Retrieve G-Buffer data
     vec3 WorldPos = texture(o_Position, v_TexCoord).rgb;
-    vec3 N = normalize(texture(o_Normal, v_TexCoord).rgb);
+    vec3 rawNormal = texture(o_Normal, v_TexCoord).rgb;
+    if (dot(rawNormal, rawNormal) < 0.01) {
+        FragColor = u_ClearColor;
+        return;
+    }
+    vec3 N = normalize(rawNormal);
     vec4 albedoAlpha = texture(o_Albedo, v_TexCoord);
     vec3 MRO = texture(o_MRO, v_TexCoord).rgb;
     vec4 ET = texture(o_ET, v_TexCoord);
@@ -135,7 +146,7 @@ void main()
     float alpha = albedoAlpha.a;
     float metallic = MRO.r;
     float roughness = MRO.g;
-    float ao = MRO.b * SSAO;
+    float ao = MRO.b * mix(1.0, SSAO, clamp(u_SSAOIntensity, 0.0, 1.0));
     vec3 emissive = ET.rgb;
     float thickness = ET.a;
 
@@ -184,7 +195,7 @@ void main()
     }
 
     // Combine lighting
-    vec3 ambient = vec3(0.1) * albedo * ao;// * mix(1.0, thickness, u_Subsurface.strength);
+    vec3 ambient = vec3(u_Ambient) * albedo * ao;// * mix(1.0, thickness, u_Subsurface.strength);
     vec3 color = ambient + Lo + emissive;
 
     FragColor = vec4(color, alpha);

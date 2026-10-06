@@ -29,8 +29,9 @@ namespace Equinox::Gfx
         ShaderStage GetStage() const { return m_Stage; }
         const std::string& GetEntryPoint() const { return m_EntryPoint; }
 
-        // Looks for "name.spv" in assets/shaders/spv then in equinox/assets/shaders/spv
-        // going up to 4 folders from the working directory. Returns "" if not found.
+        // Prefers <repository>/equinox/assets/shaders/spv, then checks the
+        // sandbox/application asset trees and parent directories. Returns an
+        // absolute normalized path, or an empty string with a precise diagnostic.
         static std::string ResolveShaderPath(const std::string& spvFileName);
 
     private:

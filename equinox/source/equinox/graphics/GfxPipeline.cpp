@@ -7,9 +7,20 @@ namespace Equinox::Gfx
 	GfxPipeline::GfxPipeline(const PipelineConfig& config,
 		const std::shared_ptr<GfxShader>& vertShader,
 		const std::shared_ptr<GfxShader>& fragShader,
+		const std::vector<VkDescriptorSetLayout>& descriptorLayouts)
+	{
+		CreatePipeline(config, vertShader, fragShader, descriptorLayouts);
+	}
+
+	GfxPipeline::GfxPipeline(const PipelineConfig& config,
+		const std::shared_ptr<GfxShader>& vertShader,
+		const std::shared_ptr<GfxShader>& fragShader,
 		VkDescriptorSetLayout descriptorLayout)
 	{
-		CreatePipeline(config, vertShader, fragShader, descriptorLayout);
+		std::vector<VkDescriptorSetLayout> layouts;
+		if (descriptorLayout != VK_NULL_HANDLE)
+			layouts.push_back(descriptorLayout);
+		CreatePipeline(config, vertShader, fragShader, layouts);
 	}
 
 	GfxPipeline::~GfxPipeline()
@@ -19,7 +30,7 @@ namespace Equinox::Gfx
 		if (m_Layout) vkDestroyPipelineLayout(device, m_Layout, nullptr);
 	}
 
-	void GfxPipeline::Bind(VkCommandBuffer cmd)
+	void GfxPipeline::Bind(VkCommandBuffer cmd) const
 	{
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline);
 	}
@@ -27,17 +38,16 @@ namespace Equinox::Gfx
 	void GfxPipeline::CreatePipeline(const PipelineConfig& config,
 		const std::shared_ptr<GfxShader>& vertShader,
 		const std::shared_ptr<GfxShader>& fragShader,
-		VkDescriptorSetLayout descriptorLayout)
+		const std::vector<VkDescriptorSetLayout>& descriptorLayouts)
 	{
 		auto device = GfxContext::Get().GetDevice();
 
-		if (!vertShader->GetModule() || !fragShader->GetModule())
+		if (!vertShader || !fragShader || !vertShader->GetModule() || !fragShader->GetModule())
 		{
 			EQN_CORE_ERROR("GfxPipeline: shader module missing, pipeline not created");
 			return;
 		}
 
-		// ---- Shaders ----
 		VkPipelineShaderStageCreateInfo stages[2]{};
 		stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
@@ -48,20 +58,18 @@ namespace Equinox::Gfx
 		stages[1].module = fragShader->GetModule();
 		stages[1].pName = fragShader->GetEntryPoint().c_str();
 
-		// ---- Vertex input ----
 		VkPipelineVertexInputStateCreateInfo vertexInput{};
 		vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		vertexInput.vertexBindingDescriptionCount = (u32)config.vertexBindings.size();
-		vertexInput.pVertexBindingDescriptions = config.vertexBindings.data();
+		vertexInput.pVertexBindingDescriptions = config.vertexBindings.empty() ? nullptr : config.vertexBindings.data();
 		vertexInput.vertexAttributeDescriptionCount = (u32)config.vertexAttributes.size();
-		vertexInput.pVertexAttributeDescriptions = config.vertexAttributes.data();
+		vertexInput.pVertexAttributeDescriptions = config.vertexAttributes.empty() ? nullptr : config.vertexAttributes.data();
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		inputAssembly.topology = config.topology;
 		inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-		// Viewport and scissor are "dynamic": given every frame with vkCmdSetViewport/Scissor
 		VkPipelineViewportStateCreateInfo viewportState{};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportState.viewportCount = 1;
@@ -83,23 +91,27 @@ namespace Equinox::Gfx
 		depth.depthTestEnable = (config.depthTest && config.depthFormat != VK_FORMAT_UNDEFINED) ? VK_TRUE : VK_FALSE;
 		depth.depthWriteEnable = (config.depthWrite && config.depthFormat != VK_FORMAT_UNDEFINED) ? VK_TRUE : VK_FALSE;
 		depth.depthCompareOp = VK_COMPARE_OP_LESS;
+		depth.depthBoundsTestEnable = VK_FALSE;
+		depth.stencilTestEnable = VK_FALSE;
 
 		std::vector<VkPipelineColorBlendAttachmentState> blendAttachments(config.colorFormats.size());
-		for (auto& a : blendAttachments)
+		for (auto& attachment : blendAttachments)
 		{
-			a.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-			a.blendEnable = config.blend ? VK_TRUE : VK_FALSE;
-			a.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			a.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			a.colorBlendOp = VK_BLEND_OP_ADD;
-			a.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			a.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			a.alphaBlendOp = VK_BLEND_OP_ADD;
+			attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+				VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			attachment.blendEnable = config.blend ? VK_TRUE : VK_FALSE;
+			attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachment.colorBlendOp = VK_BLEND_OP_ADD;
+			attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachment.alphaBlendOp = VK_BLEND_OP_ADD;
 		}
+
 		VkPipelineColorBlendStateCreateInfo colorBlend{};
 		colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlend.attachmentCount = (u32)blendAttachments.size();
-		colorBlend.pAttachments = blendAttachments.data();
+		colorBlend.pAttachments = blendAttachments.empty() ? nullptr : blendAttachments.data();
 
 		const VkDynamicState dynamicStates[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 		VkPipelineDynamicStateCreateInfo dynamic{};
@@ -107,24 +119,22 @@ namespace Equinox::Gfx
 		dynamic.dynamicStateCount = 2;
 		dynamic.pDynamicStates = dynamicStates;
 
-		// ---- Layout: descriptors + push constants ----
 		VkPipelineLayoutCreateInfo layoutInfo{};
 		layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		layoutInfo.setLayoutCount = descriptorLayout ? 1 : 0;
-		layoutInfo.pSetLayouts = descriptorLayout ? &descriptorLayout : nullptr;
+		layoutInfo.setLayoutCount = (u32)descriptorLayouts.size();
+		layoutInfo.pSetLayouts = descriptorLayouts.empty() ? nullptr : descriptorLayouts.data();
 		layoutInfo.pushConstantRangeCount = (u32)config.pushConstants.size();
-		layoutInfo.pPushConstantRanges = config.pushConstants.data();
+		layoutInfo.pPushConstantRanges = config.pushConstants.empty() ? nullptr : config.pushConstants.data();
 		if (vkCreatePipelineLayout(device, &layoutInfo, nullptr, &m_Layout) != VK_SUCCESS)
 		{
-			EQN_CORE_CRITICAL("Failed to create pipeline layout!");
+			EQN_CORE_CRITICAL("Failed to create pipeline layout");
 			return;
 		}
 
-		// ---- Dynamic rendering: we only declare the attachment formats ----
 		VkPipelineRenderingCreateInfo rendering{};
 		rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 		rendering.colorAttachmentCount = (u32)config.colorFormats.size();
-		rendering.pColorAttachmentFormats = config.colorFormats.data();
+		rendering.pColorAttachmentFormats = config.colorFormats.empty() ? nullptr : config.colorFormats.data();
 		rendering.depthAttachmentFormat = config.depthFormat;
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -141,11 +151,9 @@ namespace Equinox::Gfx
 		pipelineInfo.pColorBlendState = &colorBlend;
 		pipelineInfo.pDynamicState = &dynamic;
 		pipelineInfo.layout = m_Layout;
-		pipelineInfo.renderPass = VK_NULL_HANDLE; // dynamic rendering
+		pipelineInfo.renderPass = VK_NULL_HANDLE;
 
 		if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_Pipeline) != VK_SUCCESS)
-		{
-			EQN_CORE_CRITICAL("Failed to create graphics pipeline!");
-		}
+			EQN_CORE_CRITICAL("Failed to create graphics pipeline");
 	}
 }

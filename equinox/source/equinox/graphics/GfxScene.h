@@ -26,7 +26,7 @@ namespace Equinox::Gfx
 	{
 		Vec3  lightDirection = { -0.4f, -1.0f, -0.3f };
 		Vec3  lightColor = { 1.0f, 0.97f, 0.9f };
-		float ambient = 0.15f;
+		float ambient = 0.10f;
 		bool  useEcsLights = true;
 
 		SceneJobMode jobMode = SceneJobMode::Auto;

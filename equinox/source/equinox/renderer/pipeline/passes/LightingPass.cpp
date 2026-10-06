@@ -3,6 +3,7 @@
 #include "equinox/renderer/pipeline/passes/SSAOPass.h"
 #include "equinox/renderer/pipeline/passes/GeometryPass.h"
 #include "equinox/renderer/pipeline/RenderPipeline.h"
+#include "equinox/graphics/GfxScene.h"
 
 namespace Equinox
 {
@@ -23,6 +24,8 @@ namespace Equinox
     void LightingPass::Execute(const RenderContext& ctx)
     {
         m_LightFBO->Bind();
+        // OpenGL and Vulkan now read one shared clear colour from GfxScene.
+        Renderer::SetClearColor(Gfx::GfxScene::GetSettings().clearColor);
         Renderer::Clear(BufferBit::Color);
 
         auto lightShader = m_LightShader.lock();
@@ -34,6 +37,10 @@ namespace Equinox
         }
 
         lightShader->Bind();
+        const Gfx::SceneSettings& sceneSettings = Gfx::GfxScene::GetSettings();
+        lightShader->SetVec4("u_ClearColor", sceneSettings.clearColor);
+        lightShader->SetFloat("u_Ambient", sceneSettings.ambient);
+        lightShader->SetFloat("u_SSAOIntensity", ctx.pipeline->GetPass<SSAOPass>()->GetIntensity());
 
         auto geoFBO = ctx.pipeline->GetPass<GeometryPass>()->GetGBuffer();
         auto ssaoFBO = ctx.pipeline->GetPass<SSAOPass>()->GetGBuffer();

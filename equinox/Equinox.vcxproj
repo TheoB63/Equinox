@@ -177,6 +177,7 @@
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
+    <ClInclude Include="source\equinox\editor\panels\MetricsPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ProjectPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\RenderPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ResourcePanel.h" />
@@ -200,6 +201,7 @@
     <ClInclude Include="source\equinox\graphics\GfxShader.h" />
     <ClInclude Include="source\equinox\graphics\GfxSwapchain.h" />
     <ClInclude Include="source\equinox\graphics\GfxVulkanBackend.h" />
+    <ClInclude Include="source\equinox\graphics\vulkan\VulkanDeferredRenderer.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Camera.h" />
@@ -280,6 +282,7 @@
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\MetricsPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ProjectPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\RenderPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
@@ -296,6 +299,7 @@
     <ClCompile Include="source\equinox\graphics\GfxShader.cpp" />
     <ClCompile Include="source\equinox\graphics\GfxSwapchain.cpp" />
     <ClCompile Include="source\equinox\graphics\GfxVulkanBackend.cpp" />
+    <ClCompile Include="source\equinox\graphics\vulkan\VulkanDeferredRenderer.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />

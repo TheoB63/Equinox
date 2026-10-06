@@ -1,34 +1,26 @@
 #!/usr/bin/env bash
-# ============================================================================
-#  Compiles all the GLSL shaders (.vert / .frag) of this folder to SPIR-V,
-#  TWICE, from the very same source file:
-#
-#    glslc -V  -> assets/shaders/spv/<name>.spv      Vulkan  (GfxVulkanBackend)
-#    glslc -G  -> assets/shaders/spv/gl/<name>.spv   OpenGL  (GfxOpenGLBackend,
-#                                                     ARB_gl_spirv)
-#
-#  That is how Vulkan and OpenGL run exactly the same shader.
-#  Rules: no push constant, "set = 0", per-object data in a std140 block
-#  (binding 2).
-# ============================================================================
-set -e
+# Compile shared shaders for Vulkan + OpenGL, and vk_* shaders for Vulkan only.
+set -euo pipefail
 cd "$(dirname "$0")"
 
-if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-    GLSLC="$VULKAN_SDK/Bin/glslc.exe"
+if [[ "${OSTYPE:-}" == "msys" || "${OSTYPE:-}" == "win32" ]]; then
+    GLSLC="${VULKAN_SDK:?VULKAN_SDK is not set}/Bin/glslc.exe"
 else
     GLSLC="${GLSLC:-glslc}"
 fi
 
 mkdir -p spv/gl
-
+shopt -s nullglob
 for file in *.vert *.frag; do
     echo "[Vulkan] $file"
-    "$GLSLC" -V "$file" -o "spv/$file.spv"
+    "$GLSLC" --target-env=vulkan1.3 -O "$file" -o "spv/$file.spv"
 
-    echo "[OpenGL] $file"
-    "$GLSLC" -G "$file" -o "spv/gl/$file.spv"
+    # Vulkan passes use several descriptor sets and are intentionally not part
+    # of the shared OpenGL shader path.
+    if [[ "$file" != vk_* ]]; then
+        echo "[OpenGL] $file"
+        "$GLSLC" -G -O "$file" -o "spv/gl/$file.spv"
+    fi
 done
 
-echo ""
-echo "Done: spv/ (Vulkan) and spv/gl/ (OpenGL)"
+echo "SPIR-V generated in assets/shaders/spv"

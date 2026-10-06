@@ -29,11 +29,34 @@ namespace Equinox::Gfx
 		Vec3 position{ 0.0f };
 	};
 
+	struct SceneDirectionalLight
+	{
+		Vec3 direction{ 0.0f, -1.0f, 0.0f }; // direction in which rays travel
+		Vec3 color{ 1.0f };
+		float intensity = 1.0f;
+	};
+
+	struct ScenePointLight
+	{
+		Vec3 position{ 0.0f };
+		Vec3 color{ 1.0f };
+		float intensity = 1.0f;
+		float range = 350.0f;
+	};
+
 	struct SceneLighting
 	{
+		static constexpr u32 MaxDirectionalLights = 4;
+		static constexpr u32 MaxPointLights = 16;
+
 		Vec3  direction{ -0.4f, -1.0f, -0.3f };
 		Vec3  color{ 1.0f, 0.97f, 0.9f };
-		float ambient = 0.15f;
+		float ambient = 0.1f;
+
+		u32 directionalCount = 0;
+		u32 pointCount = 0;
+		SceneDirectionalLight directional[MaxDirectionalLights];
+		ScenePointLight point[MaxPointLights];
 	};
 
 	enum class ToneMapOperator : int
@@ -76,6 +99,9 @@ namespace Equinox::Gfx
 		float ssaoRadius = 0.5f;
 		float ssaoIntensity = 0.5f;
 		float ssaoBias = 0.025f;
+
+		// 0 = final. Other values are Vulkan debug views selected by RenderPanel.
+		int debugView = 0;
 	};
 
 	struct SceneTargetSize
@@ -110,8 +136,10 @@ namespace Equinox::Gfx
 		Vec4 lightDir;    // xyz = direction TOWARDS the light, w = 1 if the object is lit
 		Vec4 lightColor;  // rgb = radiance accumulated from the ECS lights
 		Vec4 emissive;    // rgb = emissive colour of the material
+		Vec4 alpha;       // cutoff, has separate alpha map, render mode, alpha-from-diffuse
+		Vec4 uvSets;      // diffuse UV index, alpha UV index, reserved, reserved
 	};
-	static_assert(sizeof(ObjectUniform) == 144, "ObjectUniform must match the ObjectUBO block of mesh.vert/mesh.frag (144 bytes)");
+	static_assert(sizeof(ObjectUniform) == 176, "ObjectUniform must match the ObjectUBO block of vk mesh shaders (176 bytes)");
 
 	// Dynamic offsets (Vulkan and OpenGL) must be aligned; 256 is a valid
 	// alignment on every device (maxUniformBufferOffsetAlignment <= 256).
@@ -121,13 +149,22 @@ namespace Equinox::Gfx
 	{
 		const Mesh* mesh = nullptr;
 		Mat4  model{ 1.0f };
-		Vec4  color{ 1.0f };                        // rgb = albedo (material colour)
+		Vec4  color{ 1.0f };                        // rgb = albedo (material colour), a = alpha
 		Vec4  params{ 0.5f, 1.0f, 1.0f, 0.0f };     // x = roughness, y = uvScale, z = useTexture, w = metallic
-		const Texture* texture = nullptr;           // optional diffuse texture
+		const Texture* texture = nullptr;           // diffuse/albedo texture
+		const Texture* alphaTexture = nullptr;      // optional separate opacity map
+		u32 diffuseUvIndex = 0;
+		u32 alphaUvIndex = 0;
 
 		Vec4  lightDir{ 0.0f, 1.0f, 0.0f, 0.0f };
 		Vec4  lightColor{ 1.0f };                   // rgb = incoming radiance
 		Vec4  emissive{ 0.0f };                     // rgb = material emission
+
+		// Material alpha/render state required by the Vulkan forward-transparent pass.
+		i32 renderMode = 0;                         // RendererAPI::RenderMode numeric value
+		float alphaCutoff = 0.5f;
+		bool alphaFromDiffuse = false;
+		bool transparent = false;
 	};
 
 	struct FrameStats
@@ -138,6 +175,16 @@ namespace Equinox::Gfx
 		u32 drawCalls = 0;
 		u32 objectsTotal = 0;
 		u32 objectsVisible = 0;
+
+		// Detailed counters used by the shared Equinox Metrics panel.
+		u32 geometryDrawCalls = 0;
+		u32 transparentDrawCalls = 0;
+		u32 fullscreenPasses = 0;
+		u32 opaqueObjects = 0;
+		u32 transparentObjects = 0;
+		u32 bloomPasses = 0;
+		u32 cachedMeshes = 0;
+		u32 cachedTextures = 0;
 	};
 
 	struct GPUInfo
@@ -182,7 +229,8 @@ namespace Equinox::Gfx
 		// Called once per frame, after BeginFrame() and before EndFrame()
 		virtual void BeginScene(const SceneCamera& camera, const SceneLighting& lighting,
 			const SceneEffects& effects, const Vec4& clearColor) = 0;
-		virtual void DrawItem(const DrawItem& item) = 0;
+		// Fully qualify the type because the virtual method has the same identifier.
+		virtual void DrawItem(const Equinox::Gfx::DrawItem& item) = 0;
 		virtual void EndScene() = 0;
 
 		// Texture id to give to ImGui::Image() to display the scene (0 = not ready)

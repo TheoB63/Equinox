@@ -112,6 +112,19 @@ namespace Equinox
 		std::vector<RenderCommand> opaqueVec(opaque.begin(), opaque.end());
 		std::vector<RenderCommand> transparentVec(transparent.begin(), transparent.end());
 
+		// Feed the same engine-level metrics panel for the legacy OpenGL path.
+		Gfx::FrameStats& stats = Gfx::GfxRenderer::GetStats();
+		stats.objectsTotal = (u32)(opaqueVec.size() + transparentVec.size());
+		stats.objectsVisible = stats.objectsTotal;
+		stats.opaqueObjects = (u32)opaqueVec.size();
+		stats.transparentObjects = (u32)transparentVec.size();
+		stats.geometryDrawCalls = (u32)opaqueVec.size();
+		stats.transparentDrawCalls = (u32)transparentVec.size();
+		const int bloomBlurPasses = m_ActivePipeline->GetPass<PostProcessPass>()->GetBloomPasses() * 2;
+		stats.bloomPasses = 1u + (u32)bloomBlurPasses;
+		stats.fullscreenPasses = 5u + (u32)bloomBlurPasses;
+		stats.drawCalls = stats.geometryDrawCalls + stats.transparentDrawCalls + stats.fullscreenPasses;
+
 		RenderContext ctx{ m_ActivePipeline, registry, m_CameraPos, opaqueVec, transparentVec,
 							(u32)m_ViewProj[0][0], (u32)m_ViewProj[1][1] };
 		m_ActivePipeline->RenderAll(ctx);
@@ -281,10 +294,18 @@ namespace Equinox
 		{
 			if (ubo.dirLightCount >= MAX_DIR_LIGHTS) break;
 
+			// Transform::m_Rotation stores Euler angles in degrees; it is not a
+			// direction vector.  Uploading it directly made the shader normalize an
+			// arbitrary angle triplet and caused camera-dependent red/pink lighting.
+			const Quat rotation = glm::quat(glm::radians(transform.m_Rotation));
+			Vec3 direction = rotation * Vec3(0.0f, 0.0f, -1.0f);
+			const float length = glm::length(direction);
+			direction = length > 0.0001f ? direction / length : Vec3(0.0f, -1.0f, 0.0f);
+
 			ubo.dirLights[ubo.dirLightCount] = {
 				.color = dirLight.Color,
 				.intensity = dirLight.Intensity,
-				.direction = transform.m_Rotation,
+				.direction = direction,
 				.padding = 0.0f
 			};
 			ubo.dirLightCount++;

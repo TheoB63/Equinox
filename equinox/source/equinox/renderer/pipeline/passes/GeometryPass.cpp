@@ -33,6 +33,9 @@ namespace Equinox
 	void GeometryPass::Execute(const RenderContext& ctx)
 	{
 		m_GeoFBO->Bind();
+		// G-buffer empty pixels must remain zero; the lighting pass uses the
+		// normal attachment to distinguish geometry from the background.
+		Renderer::SetClearColor(Vec4(0.0f));
 		Renderer::Clear(BufferBit::Color | BufferBit::Depth);
 		Renderer::EnableBlending(false);
 

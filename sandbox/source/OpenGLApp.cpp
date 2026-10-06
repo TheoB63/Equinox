@@ -55,11 +55,7 @@ namespace Equinox
         // ImGui Demo
         static bool showDemo = true;
         if (showDemo) ImGui::ShowDemoWindow(&showDemo);
-
-        ImGuiIO& io = ImGui::GetIO();
-        ImGui::Begin("Equinox Metrics");
-        ImGui::Text("Frame time %.3f ms (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-        ImGui::End();
+		// Metrics are rendered by the engine MetricsPanel for every application.
     }
 
     void OpenGLApp::OnShutdown()

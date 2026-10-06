@@ -14,6 +14,7 @@
 #include "equinox/editor/panels/ResourcePanel.h"
 #include "equinox/editor/panels/ScenePanel.h"
 #include "equinox/editor/panels/RenderPanel.h"
+#include "equinox/editor/panels/MetricsPanel.h"
 #include "equinox/graphics/GfxImGui.h"
 #include "equinox/graphics/GfxRenderer.h"
 
@@ -67,6 +68,7 @@ namespace Equinox
 		AddPanel(new ResourcePanel());
 		AddPanel(new ScenePanel(rs));
 		AddPanel(new RenderPanel());
+		AddPanel(new MetricsPanel());
 
 		// Init all panels
 		for (auto& panel : s_Panels)
