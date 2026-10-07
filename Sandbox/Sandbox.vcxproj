@@ -77,8 +77,8 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\config-headers;..\equinox\extern\source\assimp\include;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DEBUG;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\config-headers;..\equinox\extern\source\assimp\include;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\tracy\public;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -91,14 +91,19 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\equinox\extern\source\vulkan\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST $(SolutionDir)\equinox\extern\source\vulkan\lib\shaderc_shared.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\equinox\extern\source\vulkan\lib\shaderc_shared.dll ..\bin\windows-x86_64\Debug\Sandbox &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\equinox\extern\source\vulkan\lib\shaderc_shared.dll ..\bin\windows-x86_64\Debug\Sandbox &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\config-headers;..\equinox\extern\source\assimp\include;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;RELEASE;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\config-headers;..\equinox\extern\source\assimp\include;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\tracy\public;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -114,14 +119,19 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\equinox\extern\source\vulkan\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST $(SolutionDir)\equinox\extern\source\vulkan\lib\shaderc_shared.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\equinox\extern\source\vulkan\lib\shaderc_shared.dll ..\bin\windows-x86_64\Release\Sandbox &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\equinox\extern\source\vulkan\lib\shaderc_shared.dll ..\bin\windows-x86_64\Release\Sandbox &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\config-headers;..\equinox\extern\source\assimp\include;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\config-headers;..\equinox\extern\source\assimp\include;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\tracy\public;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -137,16 +147,17 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\equinox\extern\source\vulkan\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>IF EXIST $(SolutionDir)\equinox\extern\source\vulkan\lib\shaderc_shared.dll\ (xcopy /Q /E /Y /I $(SolutionDir)\equinox\extern\source\vulkan\lib\shaderc_shared.dll ..\bin\windows-x86_64\Dist\Sandbox &gt; nul) ELSE (xcopy /Q /Y /I $(SolutionDir)\equinox\extern\source\vulkan\lib\shaderc_shared.dll ..\bin\windows-x86_64\Dist\Sandbox &gt; nul)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="source\OpenGLApp.h" />
-    <ClInclude Include="source\RTShaderApp.h" />
     <ClInclude Include="source\VulkanApp.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\OpenGLApp.cpp" />
-    <ClCompile Include="source\RTShaderApp.cpp" />
     <ClCompile Include="source\Sandbox.cpp" />
     <ClCompile Include="source\VulkanApp.cpp" />
   </ItemGroup>

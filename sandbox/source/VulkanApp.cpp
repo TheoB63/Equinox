@@ -4,12 +4,10 @@
 #include <imgui.h>
 
 // TEST
-#include <equinox/resources/libraries/ShaderLibrary.h>
 #include <equinox/resources/FileSystem.h>
 
 #include <equinox/renderer/Renderer.h>
 #include <equinox/renderer/Buffer.h>
-#include <equinox/renderer/vulkan/VKRendererAPI.h>
 #include <equinox/renderer/Shader.h>
 #include <memory>
 
@@ -19,10 +17,10 @@
 
 namespace Equinox
 {
-	VulkanApp::VulkanApp(int argc, char** argv) : App(argc, argv) {}
+    VulkanApp::VulkanApp(int argc, char** argv) : App(argc, argv) {}
 
-	void VulkanApp::OnInit()
-	{
+    void VulkanApp::OnInit()
+    {
         // const std::vector<VKVertex> vertices = {
         //     { {-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f} },
         //     { { 0.5f, -0.5f}, {0.0f, 1.0f, 0.0f} },
@@ -63,21 +61,21 @@ namespace Equinox
         // auto mesh = std::make_shared<VKMesh>(vb, ib);
         //
         // Renderer::SubmitMesh(mesh);
-	}
+    }
 
-	void VulkanApp::OnUpdate()
-	{
-	}
+    void VulkanApp::OnUpdate()
+    {
+    }
 
-	void VulkanApp::OnUIRender()
-	{
-		// ImGui Demo
-		static bool showDemo = true;
-		if (showDemo) ImGui::ShowDemoWindow(&showDemo);
-	}
+    void VulkanApp::OnUIRender()
+    {
+        // ImGui Demo
+        // static bool showDemo = true;
+        // if (showDemo) ImGui::ShowDemoWindow(&showDemo);
+    }
 
-	void VulkanApp::OnShutdown()
-	{
-		//vkDestroyInstance(instance, nullptr);
-	}
+    void VulkanApp::OnShutdown()
+    {
+        //vkDestroyInstance(instance, nullptr);
+    }
 }

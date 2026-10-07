@@ -1,10 +1,9 @@
 #pragma once
 
 #include "equinox/editor/Editor.h"
-#include "equinox/editor/panels/InspectorPanel.h"
-
 #include "equinox/ECS/Entity.h"
 #include "equinox/ECS/Scene.h"
+#include "equinox/editor/panels/InspectorPanel.h"
 
 namespace Equinox
 {

@@ -8,8 +8,7 @@ namespace Equinox
     {
     public:
         WindowResizeEvent(u32 width, u32 height)
-            : m_Width(width), m_Height(height) {
-        }
+            : m_Width(width), m_Height(height) {}
 
         u32 GetWidth() const { return m_Width; }
         u32 GetHeight() const { return m_Height; }

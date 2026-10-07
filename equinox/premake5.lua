@@ -50,16 +50,20 @@ project "Equinox"
       "glfw",
       "glm",
       "imgui",
-      "vulkan-1"
+      "Tracy",
+      "vulkan-1",
+      "shaderc_shared",
+      "ws2_32",
+      "dbghelp"
    }
    
    filter "configurations:Debug"
-      defines { "DEBUG" }
+      defines { "DEBUG", "TRACY_ENABLE", "TRACY_FIBERS" }
       runtime "Debug"
       symbols "on"
 
    filter "configurations:Release"
-      defines { "RELEASE" }
+      defines { "RELEASE", "TRACY_ENABLE", "TRACY_FIBERS" }
       runtime "Release"
       optimize "on"
 

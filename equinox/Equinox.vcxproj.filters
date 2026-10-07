@@ -22,41 +22,32 @@
     <Filter Include="equinox\events">
       <UniqueIdentifier>{52D2659B-3EA0-59A1-2734-CAC713A13506}</UniqueIdentifier>
     </Filter>
-    <Filter Include="equinox\graphics">
-      <UniqueIdentifier>{2E4287A7-1A3B-A6F9-436D-8B7E2FC58505}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="equinox\graphics\vulkan">
-      <UniqueIdentifier>{0E6411B4-7A9B-594B-83A5-BD6EEF5B8044}</UniqueIdentifier>
-    </Filter>
     <Filter Include="equinox\input">
       <UniqueIdentifier>{ADC037FD-1981-B333-E2BB-FCB04E3BF80F}</UniqueIdentifier>
     </Filter>
     <Filter Include="equinox\renderer">
       <UniqueIdentifier>{94BD1E03-80B6-3D55-A9E8-22DA95401D61}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\renderer\backend">
+      <UniqueIdentifier>{6BB0DE39-57D5-2DBA-8020-134A6CA42CD8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="equinox\renderer\backend\opengl">
+      <UniqueIdentifier>{9F6BFEE2-0B4F-0D23-1452-3B5F80B4D373}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="equinox\renderer\backend\vulkan">
+      <UniqueIdentifier>{ABCBB0F3-17AF-BF33-20B2-ED6F8C148684}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\renderer\null">
       <UniqueIdentifier>{7E2BA9E1-EA97-64DC-B38B-FC391FB78644}</UniqueIdentifier>
     </Filter>
-    <Filter Include="equinox\renderer\openGL">
-      <UniqueIdentifier>{68EC98F2-D423-E189-DD2D-45AD49E40783}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="equinox\renderer\pipeline">
-      <UniqueIdentifier>{59880AE7-C54A-3E71-0EFB-CCFD7AFC164F}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="equinox\renderer\pipeline\passes">
-      <UniqueIdentifier>{37C713A2-2318-FFE3-4C7C-EDA5382C924D}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="equinox\renderer\renderGraph">
-      <UniqueIdentifier>{F599506A-E154-4016-8A0C-B96076A68AA6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="equinox\renderer\vulkan">
-      <UniqueIdentifier>{B4504B03-2088-939A-2992-F7BD9548BA93}</UniqueIdentifier>
+    <Filter Include="equinox\renderer\rendergraph">
+      <UniqueIdentifier>{15AA936C-0165-8318-AA1C-FC6296B6CDA8}</UniqueIdentifier>
     </Filter>
     <Filter Include="equinox\resources">
       <UniqueIdentifier>{18DDA302-84F3-A198-CD6A-2DBA39C07220}</UniqueIdentifier>
     </Filter>
-    <Filter Include="equinox\resources\libraries">
-      <UniqueIdentifier>{A4AED0C5-10BC-FEAB-99A2-FA9605AFCA62}</UniqueIdentifier>
+    <Filter Include="equinox\resources\importers">
+      <UniqueIdentifier>{CC314749-383F-752F-C125-711A2D3241E6}</UniqueIdentifier>
     </Filter>
     <Filter Include="equinox\utils">
       <UniqueIdentifier>{0E1214FE-7AD2-8F34-430D-D9B1AF8CD410}</UniqueIdentifier>
@@ -119,9 +110,6 @@
     <ClInclude Include="source\equinox\core\Profiler.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\core\ThreadPool.h">
-      <Filter>equinox\core</Filter>
-    </ClInclude>
     <ClInclude Include="source\equinox\core\Time.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
@@ -137,7 +125,7 @@
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h">
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\editor\panels\MetricsPanel.h">
+    <ClInclude Include="source\equinox\editor\panels\ProfilerPanel.h">
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\editor\panels\ProjectPanel.h">
@@ -150,9 +138,6 @@
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\editor\panels\ScenePanel.h">
-      <Filter>equinox\editor\panels</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\editor\panels\TestPanel.h">
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\events\AppEvent.h">
@@ -175,42 +160,6 @@
     </ClInclude>
     <ClInclude Include="source\equinox\events\RenderEvent.h">
       <Filter>equinox\events</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxBackend.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxContext.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxImGui.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxOpenGLBackend.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxPipeline.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxRenderer.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxResources.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxScene.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxShader.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxSwapchain.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\GfxVulkanBackend.h">
-      <Filter>equinox\graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\graphics\vulkan\VulkanDeferredRenderer.h">
-      <Filter>equinox\graphics\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\input\Input.h">
       <Filter>equinox\input</Filter>
@@ -242,7 +191,7 @@
     <ClInclude Include="source\equinox\renderer\Shader.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\SkeletonRenderer.h">
+    <ClInclude Include="source\equinox\renderer\ShaderCompiler.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\SkinnedModel.h">
@@ -254,104 +203,71 @@
     <ClInclude Include="source\equinox\renderer\VertexArray.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\opengl\GLBuffer.h">
+      <Filter>equinox\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\opengl\GLMesh.h">
+      <Filter>equinox\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\opengl\GLRendererAPI.h">
+      <Filter>equinox\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\opengl\GLShader.h">
+      <Filter>equinox\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\opengl\GLTexture.h">
+      <Filter>equinox\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\opengl\GLTriangleShader.h">
+      <Filter>equinox\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\opengl\GLVertexArray.h">
+      <Filter>equinox\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanAllocator.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanBuffer.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanContext.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanDescriptors.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanPipeline.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanSwapchain.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanTexture.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\null\NullResources.h">
       <Filter>equinox\renderer\null</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\openGL\GLBuffer.h">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraph.h">
+      <Filter>equinox\renderer\rendergraph</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\openGL\GLMesh.h">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraphResources.h">
+      <Filter>equinox\renderer\rendergraph</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\openGL\GLRendererAPI.h">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClInclude Include="source\equinox\resources\Asset.h">
+      <Filter>equinox\resources</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\openGL\GLShader.h">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClInclude Include="source\equinox\resources\AssetDatabase.h">
+      <Filter>equinox\resources</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\openGL\GLSkeletonRenderer.h">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClInclude Include="source\equinox\resources\AssetImporter.h">
+      <Filter>equinox\resources</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\openGL\GLTexture.h">
-      <Filter>equinox\renderer\openGL</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\openGL\GLVertexArray.h">
-      <Filter>equinox\renderer\openGL</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\pipeline\RenderPass.h">
-      <Filter>equinox\renderer\pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\pipeline\RenderPipeline.h">
-      <Filter>equinox\renderer\pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\pipeline\RenderUtils.h">
-      <Filter>equinox\renderer\pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\pipeline\passes\GeometryPass.h">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\pipeline\passes\LightingPass.h">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\pipeline\passes\PostProcessPass.h">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\pipeline\passes\SSAOPass.h">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\pipeline\passes\TransparentPass.h">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraph.h">
-      <Filter>equinox\renderer\renderGraph</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\renderGraph\RenderGraphResources.h">
-      <Filter>equinox\renderer\renderGraph</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKBuffer.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKCommandPool.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKCommon.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKDevice.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKFrameBuffer.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKMesh.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKRenderGraphExecutor.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKRenderPass.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKRendererAPI.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKResourceManager.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKSwapChain.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKSync.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKTexture.h">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\vulkan\VKVertexArray.h">
-      <Filter>equinox\renderer\vulkan</Filter>
+    <ClInclude Include="source\equinox\resources\AssetManager.h">
+      <Filter>equinox\resources</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\resources\FileSystem.h">
       <Filter>equinox\resources</Filter>
@@ -362,29 +278,14 @@
     <ClInclude Include="source\equinox\resources\MetaFile.h">
       <Filter>equinox\resources</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\resources\ModelLoader.h">
-      <Filter>equinox\resources</Filter>
+    <ClInclude Include="source\equinox\resources\importers\MaterialImporter.h">
+      <Filter>equinox\resources\importers</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\resources\Resource.h">
-      <Filter>equinox\resources</Filter>
+    <ClInclude Include="source\equinox\resources\importers\ModelImporter.h">
+      <Filter>equinox\resources\importers</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\resources\ResourceDB.h">
-      <Filter>equinox\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\resources\Resources.h">
-      <Filter>equinox\resources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\resources\libraries\MaterialLibrary.h">
-      <Filter>equinox\resources\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\resources\libraries\ModelLibrary.h">
-      <Filter>equinox\resources\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\resources\libraries\ShaderLibrary.h">
-      <Filter>equinox\resources\libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\resources\libraries\TextureCache.h">
-      <Filter>equinox\resources\libraries</Filter>
+    <ClInclude Include="source\equinox\resources\importers\TextureImporter.h">
+      <Filter>equinox\resources\importers</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\utils\CustomFormatters.h">
       <Filter>equinox\utils</Filter>
@@ -440,7 +341,7 @@
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp">
       <Filter>equinox\editor\panels</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\editor\panels\MetricsPanel.cpp">
+    <ClCompile Include="source\equinox\editor\panels\ProfilerPanel.cpp">
       <Filter>equinox\editor\panels</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\editor\panels\ProjectPanel.cpp">
@@ -454,45 +355,6 @@
     </ClCompile>
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp">
       <Filter>equinox\editor\panels</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\editor\panels\TestPanel.cpp">
-      <Filter>equinox\editor\panels</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxBackend.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxContext.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxImGui.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxOpenGLBackend.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxPipeline.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxRenderer.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxResources.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxScene.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxShader.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxSwapchain.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\GfxVulkanBackend.cpp">
-      <Filter>equinox\graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\graphics\vulkan\VulkanDeferredRenderer.cpp">
-      <Filter>equinox\graphics\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\input\Input.cpp">
       <Filter>equinox\input</Filter>
@@ -521,7 +383,7 @@
     <ClCompile Include="source\equinox\renderer\Shader.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\SkeletonRenderer.cpp">
+    <ClCompile Include="source\equinox\renderer\ShaderCompiler.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\SkinnedModel.cpp">
@@ -533,89 +395,59 @@
     <ClCompile Include="source\equinox\renderer\VertexArray.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\openGL\GLBuffer.cpp">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\opengl\GLBuffer.cpp">
+      <Filter>equinox\renderer\backend\opengl</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\openGL\GLMesh.cpp">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\opengl\GLMesh.cpp">
+      <Filter>equinox\renderer\backend\opengl</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\openGL\GLRendererAPI.cpp">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\opengl\GLRendererAPI.cpp">
+      <Filter>equinox\renderer\backend\opengl</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\openGL\GLShader.cpp">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\opengl\GLShader.cpp">
+      <Filter>equinox\renderer\backend\opengl</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\openGL\GLSkeletonRenderer.cpp">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\opengl\GLTexture.cpp">
+      <Filter>equinox\renderer\backend\opengl</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\openGL\GLTexture.cpp">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\opengl\GLVertexArray.cpp">
+      <Filter>equinox\renderer\backend\opengl</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\openGL\GLVertexArray.cpp">
-      <Filter>equinox\renderer\openGL</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\pipeline\RenderPipeline.cpp">
-      <Filter>equinox\renderer\pipeline</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanAllocator.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\pipeline\passes\GeometryPass.cpp">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanBuffer.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\pipeline\passes\LightingPass.cpp">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanContext.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\pipeline\passes\PostProcessPass.cpp">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanDescriptors.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\pipeline\passes\SSAOPass.cpp">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanPipeline.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\pipeline\passes\TransparentPass.cpp">
-      <Filter>equinox\renderer\pipeline\passes</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanSwapchain.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\renderGraph\RenderGraph.cpp">
-      <Filter>equinox\renderer\renderGraph</Filter>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanTexture.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKBuffer.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
+    <ClCompile Include="source\equinox\renderer\rendergraph\RenderGraph.cpp">
+      <Filter>equinox\renderer\rendergraph</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKCommandPool.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
+    <ClCompile Include="source\equinox\resources\Asset.cpp">
+      <Filter>equinox\resources</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKCommon.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
+    <ClCompile Include="source\equinox\resources\AssetDatabase.cpp">
+      <Filter>equinox\resources</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKDevice.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKFrameBuffer.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKGraphicsPipeline.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKRenderGraphExecutor.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKRenderPass.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKRendererAPI.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKResourceManager.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKSwapChain.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKSync.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKTexture.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\vulkan\VKVertexArray.cpp">
-      <Filter>equinox\renderer\vulkan</Filter>
+    <ClCompile Include="source\equinox\resources\AssetManager.cpp">
+      <Filter>equinox\resources</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\resources\FileSystem.cpp">
       <Filter>equinox\resources</Filter>
@@ -626,23 +458,14 @@
     <ClCompile Include="source\equinox\resources\MetaFile.cpp">
       <Filter>equinox\resources</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\resources\ModelLoader.cpp">
-      <Filter>equinox\resources</Filter>
+    <ClCompile Include="source\equinox\resources\importers\MaterialImporter.cpp">
+      <Filter>equinox\resources\importers</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\resources\ResourceDB.cpp">
-      <Filter>equinox\resources</Filter>
+    <ClCompile Include="source\equinox\resources\importers\ModelImporter.cpp">
+      <Filter>equinox\resources\importers</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\resources\libraries\MaterialLibrary.cpp">
-      <Filter>equinox\resources\libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\resources\libraries\ModelLibrary.cpp">
-      <Filter>equinox\resources\libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\resources\libraries\ShaderLibrary.cpp">
-      <Filter>equinox\resources\libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\resources\libraries\TextureCache.cpp">
-      <Filter>equinox\resources\libraries</Filter>
+    <ClCompile Include="source\equinox\resources\importers\TextureImporter.cpp">
+      <Filter>equinox\resources\importers</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp">
       <Filter>equinox\utils</Filter>

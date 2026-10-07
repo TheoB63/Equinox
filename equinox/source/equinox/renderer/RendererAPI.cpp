@@ -1,48 +1,33 @@
 #include "eqnpch.h"
 #include "equinox/renderer/RendererAPI.h"
 #include "equinox/renderer/Renderer.h"
-#include "equinox/renderer/openGL/GLRendererAPI.h"
-#include "equinox/renderer/vulkan/VKRendererAPI.h"
+#include "equinox/renderer/backend/vulkan/VKRendererAPI.h"
+#include "equinox/renderer/backend/opengl/GLRendererAPI.h"
 
 namespace Equinox
 {
-	RendererAPI::API RendererAPI::s_API = RendererAPI::API::None;
+    RendererAPI::API RendererAPI::s_API = API::Vulkan;
 
+    // [OP] Dual-backend: create the requested backend implementation.
     std::unique_ptr<RendererAPI> RendererAPI::Create(API api)
     {
-        EQN_CORE_INFO("Initializing {0} renderer...", APIToString(api));
         s_API = api;
 
-        switch (api)
+        switch (s_API)
         {
-        case RendererAPI::API::None:
-            EQN_CORE_ASSERT(false, "{0} is not supported!", APIToString(api));
-            return nullptr;
+            case RendererAPI::API::None:
+                EQN_CORE_ASSERT(false, "RendererAPI::None is not supported!");
+                return nullptr;
 
-        case RendererAPI::API::OpenGL:
-            return std::make_unique<GLRendererAPI>();
+            case RendererAPI::API::OpenGL:
+                return std::make_unique<GLRendererAPI>();
 
-        case RendererAPI::API::Vulkan:
-            return std::make_unique<VKRendererAPI>();
+            case RendererAPI::API::Vulkan:
+                return std::make_unique<VKRendererAPI>();
 
-        default:
-            EQN_CORE_ASSERT(false, "{1} Unknown RendererAPI!", APIToString(api));
-            return nullptr;
+            default:
+                EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
+                return nullptr;
         }
-    }
-
-    const char* RendererAPI::APIToString(API api)
-    {
-        switch (api)
-        {
-        case API::None:    return "None";
-        case API::OpenGL:  return "OpenGL";
-        case API::Vulkan:  return "Vulkan";
-        default: return "Unknown";
-        }
-    }
-
-    void RendererAPI::SetWindow(void* window) {
-        s_Window = window;
     }
 }

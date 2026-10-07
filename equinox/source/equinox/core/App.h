@@ -2,11 +2,9 @@
 
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/window/Window.h"
-
 #include "equinox/events/EventBus.h"
 #include "equinox/events/AppEvent.h"
 #include "equinox/events/FileDropEvent.h"
-
 #include "equinox/ECS/Scene.h"
 
 #include <vector>
@@ -14,39 +12,36 @@
 
 namespace Equinox
 {
-	typedef unsigned int GLuint;
+    class App
+    {
+    public:
+        App(int argc, char** argv);
+        virtual ~App();
 
-	class App
-	{
-	public:
-		App(int argc, char** argv);
-		virtual ~App();
+        void Run();
+        void Close();
 
-		void Run();
-		void Close();
+        WindowSpec ParseCommandLineArgs(int argc, char** argv);
+        Window& GetWindow() { return *m_Window; }
 
-		WindowSpec ParseCommandLineArgs(int argc, char** argv);
+    protected:
+        virtual void OnInit() {}
+        virtual void OnUpdate() {}
+        virtual void OnUIRender() {}
+        virtual void OnShutdown() {}
 
-		Window& GetWindow() { return *m_Window; }
+    private:
+        void SetAppTitle(WindowSpec& ws);
 
-	protected:
-		virtual void OnInit() {}
-		virtual void OnUpdate() {}
-		virtual void OnUIRender() {}
-		virtual void OnShutdown() {}
+        void OnWindowResize(WindowResizeEvent& e);
+        void OnWindowClose(WindowCloseEvent& e);
+        void OnFileDrop(FileDropEvent& e);
 
-	private:
-		void SetAppTitle(WindowSpec& ws);
+        std::shared_ptr<Window> m_Window;
+        std::shared_ptr<Scene> m_Scene;
 
-		void OnWindowResize(WindowResizeEvent& e);
-		void OnWindowClose(WindowCloseEvent& e);
-		void OnFileDrop(FileDropEvent& e);
+        bool m_Running = true;
+    };
 
-		std::shared_ptr<Window> m_Window;
-		std::shared_ptr<Scene> m_Scene;
-
-		bool m_Running = true;
-	};
-
-	App* CreateApp(int argc, char** argv);
+    App* CreateApp(int argc, char** argv);
 }

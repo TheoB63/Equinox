@@ -8,9 +8,7 @@ namespace Equinox
     {
     public:
         RenderResizeEvent(u32 width, u32 height)
-            : m_Width(width), m_Height(height)
-        {
-        }
+            : m_Width(width), m_Height(height) {}
 
         virtual const char* GetName() const override { return "RenderResizeEvent"; }
         virtual u32 GetCategoryFlags() const override { return EventCategoryRender; }

@@ -7,71 +7,73 @@
 
 namespace Equinox
 {
-	class TransformSystem : public System
-	{
-	public:
-		TransformSystem() {}
+    class TransformSystem : public System
+    {
+    public:
+        TransformSystem() {}
 
-		struct UpdateData
-		{
-			entt::registry* registry;
-			std::vector<entt::entity>* entities;
-		};
+        struct UpdateData
+        {
+            entt::registry* registry;
+            std::vector<entt::entity>* entities;
+        };
 
-		static void UpdateTransformJob(JobSystem::JobArgs args)
-		{
-			UpdateData* data = (UpdateData*)args.data;
-			entt::registry& registry = *data->registry;
-			entt::entity entity = (*data->entities)[args.jobIndex];
+        static void UpdateTransformJob(JobSystem::JobArgs args)
+        {
+            EQN_PROFILE_FUNCTION();
 
-			// We need to get components manually since we can't capture the view
-			// Optimization: Pass raw pointers to component arrays if possible
-			auto& transform = registry.get<Transform>(entity);
-			auto& worldTransform = registry.get<WorldTransform>(entity);
+            UpdateData* data = (UpdateData*)args.data;
+            entt::registry& registry = *data->registry;
+            entt::entity entity = (*data->entities)[args.jobIndex];
 
-			glm::mat4 world = transform.GetTransform();
+            // We need to get components manually since we can't capture the view
+            // Optimization: Pass raw pointers to component arrays if possible
+            auto& transform = registry.get<Transform>(entity);
+            auto& worldTransform = registry.get<WorldTransform>(entity);
 
-			if (registry.any_of<Parent>(entity))
-			{
-				entt::entity current = registry.get<Parent>(entity).m_Parent;
-				while (registry.valid(current) && registry.any_of<Transform>(current))
-				{
-					const auto& t = registry.get<Transform>(current);
-					world = t.GetTransform() * world;
+            glm::mat4 world = transform.GetTransform();
 
-					if (!registry.any_of<Parent>(current))
-						break;
+            if (registry.any_of<Parent>(entity))
+            {
+                entt::entity current = registry.get<Parent>(entity).m_Parent;
+                while (registry.valid(current) && registry.any_of<Transform>(current)) 
+                {
+                    const auto& t = registry.get<Transform>(current);
+                    world = t.GetTransform() * world;
 
-					current = registry.get<Parent>(current).m_Parent;
-				}
-			}
+                    if (!registry.any_of<Parent>(current))
+                        break;
 
-			worldTransform.matrix = world;
-		}
+                    current = registry.get<Parent>(current).m_Parent;
+                }
+            }
 
-		void Update(entt::registry& registry) override
-		{
-			EQN_PROFILE_FUNCTION();
+            worldTransform.matrix = world;
+        }
 
-			auto view = registry.view<Transform, WorldTransform>();
+        void Update(entt::registry& registry) override
+        {
+            EQN_PROFILE_FUNCTION();
 
-			// Allocate entities vector on stack or frame allocator?
-			// std::vector allocates on heap.
-			// For now, heap is fine for the vector itself, but we should use FrameAllocator later.
-			std::vector<entt::entity> entities;
-			entities.reserve(view.size_hint());
-			for (auto entity : view)
-				entities.push_back(entity);
+            auto view = registry.view<Transform, WorldTransform>();
+            
+            // Allocate entities vector on stack or frame allocator?
+            // std::vector allocates on heap.
+            // For now, heap is fine for the vector itself, but we should use FrameAllocator later.
+            std::vector<entt::entity> entities;
+            entities.reserve(view.size_hint());
+            for (auto entity : view)
+                entities.push_back(entity);
 
-			if (entities.empty()) return;
+            if (entities.empty()) return;
 
-			UpdateData jobData;
-			jobData.registry = &registry;
-			jobData.entities = &entities;
+            UpdateData jobData;
+            jobData.registry = &registry;
+            jobData.entities = &entities;
 
-			JobSystem::Counter counter;
-			JobSystem::Dispatch((u32)entities.size(), 64, UpdateTransformJob, &jobData, &counter);
-			JobSystem::WaitForCounter(&counter);
-		}
-	};
+            JobSystem::Counter counter;
+            JobSystem::Dispatch((u32)entities.size(), 64, UpdateTransformJob, &jobData, &counter);
+            JobSystem::WaitForCounter(&counter);
+        }
+    };
 }

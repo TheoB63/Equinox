@@ -9,19 +9,16 @@
 namespace Equinox
 {
     // Conversion from ImVec2 to glm::vec2
-    inline glm::vec2 ToGlmVec2(const ImVec2& vec)
-    {
+    inline glm::vec2 ToGlmVec2(const ImVec2& vec) {
         return { vec.x, vec.y };
     }
 
     // Conversion from glm::vec2 to ImVec2  
-    inline ImVec2 ToImVec2(const glm::vec2& vec)
-    {
+    inline ImVec2 ToImVec2(const glm::vec2& vec) {
         return { vec.x, vec.y };
     }
 
-    inline glm::vec2 operator*(const glm::vec2& lhs, const ImVec2& rhs)
-    {
+    inline glm::vec2 operator*(const glm::vec2& lhs, const ImVec2& rhs) {
         return { lhs.x * rhs.x, lhs.y * rhs.y };
     }
 
@@ -84,50 +81,40 @@ namespace Equinox
         return menuActive;
     }
 
-    static inline ImVec2 operator*(const ImVec2& lhs, const float rhs) 
-    {
+    static inline ImVec2 operator*(const ImVec2& lhs, const float rhs) {
         return ImVec2(lhs.x * rhs, lhs.y * rhs);
     }
-    static inline ImVec2 operator/(const ImVec2& lhs, const float rhs) 
-    {
+    static inline ImVec2 operator/(const ImVec2& lhs, const float rhs) {
         return ImVec2(lhs.x / rhs, lhs.y / rhs);
     }
-    static inline ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs) 
-    {
+    static inline ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs) {
         return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
     }
-    static inline ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs) 
-    {
+    static inline ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs) {
         return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y);
     }
-    static inline ImVec2 operator*(const ImVec2& lhs, const ImVec2& rhs) 
-    {
+    static inline ImVec2 operator*(const ImVec2& lhs, const ImVec2& rhs) {
         return ImVec2(lhs.x * rhs.x, lhs.y * rhs.y);
     }
-    static inline ImVec2 operator/(const ImVec2& lhs, const ImVec2& rhs) 
-    {
+    static inline ImVec2 operator/(const ImVec2& lhs, const ImVec2& rhs) {
         return ImVec2(lhs.x / rhs.x, lhs.y / rhs.y);
     }
-    static inline ImVec2& operator+=(ImVec2& lhs, const ImVec2& rhs) 
-    {
+    static inline ImVec2& operator+=(ImVec2& lhs, const ImVec2& rhs) {
         lhs.x += rhs.x;
         lhs.y += rhs.y;
         return lhs;
     }
-    static inline ImVec2& operator-=(ImVec2& lhs, const ImVec2& rhs) 
-    {
+    static inline ImVec2& operator-=(ImVec2& lhs, const ImVec2& rhs) {
         lhs.x -= rhs.x;
         lhs.y -= rhs.y;
         return lhs;
     }
-    static inline ImVec2& operator*=(ImVec2& lhs, const float rhs) 
-    {
+    static inline ImVec2& operator*=(ImVec2& lhs, const float rhs) {
         lhs.x *= rhs;
         lhs.y *= rhs;
         return lhs;
     }
-    static inline ImVec2& operator/=(ImVec2& lhs, const float rhs) 
-    {
+    static inline ImVec2& operator/=(ImVec2& lhs, const float rhs) {
         lhs.x /= rhs;
         lhs.y /= rhs;
         return lhs;

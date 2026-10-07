@@ -1,33 +1,32 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
-#include "equinox/resources/Resource.h"
+#include "equinox/resources/Asset.h"
 #include "equinox/utils/ImageUtils.h"
 
 #include <memory>
 
 namespace Equinox
 {
-    enum class TextureFormat 
-    {
+    enum class TextureFormat {
         None = 0,
         R8, RGB8, RGBA8, RGBA32F,
     };
 
-    enum class TextureWrapMode
-    {
+    enum class TextureWrapMode {
         Repeat, ClampToEdge, MirroredRepeat
     };
 
-    enum class TextureFilterMode
-    {
+    enum class TextureFilterMode {
         Linear, Nearest,
         LinearMipmapLinear, NearestMipmapNearest
     };
 
-	class Texture : public Resource
+    class Texture : public Asset
     {
     public:
+        virtual AssetType GetType() const override { return AssetType::Texture; }
+        
         virtual ~Texture() = default;
 
         virtual void Bind(u32 slot = 0) const = 0;

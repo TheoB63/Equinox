@@ -16,10 +16,10 @@ namespace Equinox
         EventCategoryRender         = 1 << 6
     };
 
-	class Event
-	{
-	public:
-		virtual ~Event() = default;
+    class Event
+    {
+    public:
+        virtual ~Event() = default;
         virtual const char* GetName() const = 0;
         virtual u32 GetCategoryFlags() const = 0;
 
@@ -27,6 +27,6 @@ namespace Equinox
             return GetCategoryFlags() & category;
         }
 
-		bool m_Handled = false;
-	};
+        bool m_Handled = false;
+    };
 }

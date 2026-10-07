@@ -34,6 +34,7 @@ namespace Equinox
         void AddTextureEntries();
         void AddMaterialEntries();
         void AddShaderEntries();
+
         bool ResourceMatchesSearch(ResourceEntry entry);
 
         ImVec4 GetTypeColor(const std::string& type) const;

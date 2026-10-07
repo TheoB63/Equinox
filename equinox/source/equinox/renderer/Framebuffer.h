@@ -12,8 +12,7 @@ namespace Equinox
     class Framebuffer
     {
     public:
-        struct AttachmentSpec
-        {
+        struct AttachmentSpec {
             GLenum InternalFormat = GL_RGBA16F;
             GLenum Format = GL_RGBA;
             GLenum Type = GL_FLOAT;
@@ -25,8 +24,7 @@ namespace Equinox
             std::string Name;
         };
 
-        struct Spec
-        {
+        struct Spec {
             u32 Width = 1280;
             u32 Height = 720;
             std::vector<AttachmentSpec> ColorAttachments;

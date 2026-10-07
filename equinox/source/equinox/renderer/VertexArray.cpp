@@ -2,7 +2,7 @@
 #include "equinox/renderer/VertexArray.h"
 #include "equinox/renderer/Renderer.h"
 
-#include "equinox/renderer/OpenGL/GLVertexArray.h"
+#include "equinox/renderer/backend/opengl/GLVertexArray.h"
 
 #include "equinox/renderer/null/NullResources.h"
 

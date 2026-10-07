@@ -1,17 +1,13 @@
 #include "eqnpch.h"
-
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/editor/panels/ProjectPanel.h"
-
 #include "equinox/ECS/Components.h"
-#include "equinox/ECS/Systems.h"
-
-#include "equinox/resources/Resources.h"
 #include "equinox/resources/FileSystem.h"
-#include "equinox/resources/ResourceDB.h"
-
+#include "equinox/resources/AssetDatabase.h"
+#include "equinox/resources/AssetManager.h"
 #include "equinox/renderer/Renderer.h"
-
+#include "equinox/renderer/Model.h"
+#include "equinox/ECS/Systems.h"
 #include "equinox/utils/ImGuiUtils.h"
 #include "equinox/utils/EquinoxIcons.h"
 
@@ -20,419 +16,394 @@
 
 namespace Equinox
 {
-	HierarchyPanel::HierarchyPanel()
-	{
-		EQN_CORE_INFO("Created Hierarchy panel");
-		m_Context = std::make_shared<Scene>();
-	}
+    HierarchyPanel::HierarchyPanel()
+    {
+        EQN_CORE_INFO("Created Hierarchy panel");
+        m_Context = std::make_shared<Scene>();
+    }
 
-	void HierarchyPanel::OnInit()
-	{
-		Systems::SetRegistry(m_Context->RegistryPtr());
-	}
+    void HierarchyPanel::OnInit()
+    {
+        Systems::SetRegistry(m_Context->RegistryPtr());
+    }
 
-	void HierarchyPanel::OnRender()
-	{
-		ImGui::PushFont(Editor::GetFASolid());
-		std::string hierarchy = ICON_FA_LIST + std::string("  Hierarchy");
+    void HierarchyPanel::OnRender()
+    {
+        ImGui::PushFont(Editor::GetFASolid());
+        std::string hierarchy = ICON_FA_LIST + std::string("  Hierarchy");
 
-		if (ImGui::Begin(hierarchy.c_str()))
-		{
-			// Header with search and create button
-			ImGui::AlignTextToFramePadding();
+        if (ImGui::Begin(hierarchy.c_str()))
+        {
+            // Header with search and create button
+            ImGui::AlignTextToFramePadding();
 
-			ButtonDropdown(ICON_FA_PLUS, "hierarchy_+", [this]() { DrawEntityCreateMenu(); });
+            ButtonDropdown(ICON_FA_PLUS, "hierarchy_+", [this]() { DrawEntityCreateMenu(); });
 
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-			ImGui::InputTextWithHint("##Search", ICON_FA_MAGNIFYING_GLASS, m_SearchFilter, IM_ARRAYSIZE(m_SearchFilter));
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ImGui::InputTextWithHint("##Search", ICON_FA_MAGNIFYING_GLASS, m_SearchFilter, IM_ARRAYSIZE(m_SearchFilter));
 
-			// Entity list
-			if (ImGui::BeginChild("EntityList"))
-			{
-				m_Context->EachEntity([&](Entity entity)
-					{
-						if (!entity.HasParent() && EntityMatchesFilter(entity))
-						{
-							DrawEntityNode(entity);
-						}
-					});
+            // Entity list
+            if (ImGui::BeginChild("EntityList"))
+            {
+                m_Context->EachEntity([&](Entity entity) {
+                    if (!entity.HasParent() && EntityMatchesFilter(entity)) {
+                        DrawEntityNode(entity);
+                    }
+                });
 
-				// Handle drag drop target
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY"))
-					{
-						Entity droppedEntity = *(Entity*)payload->Data;
-						EQN_CORE_INFO("Dropped entity {0} onto hierarchy root", droppedEntity.GetName());
-						droppedEntity.RemoveParent();
-					}
-					ImGui::EndDragDropTarget();
-				}
-			}
-			ImGui::EndChild();
+                // Handle drag drop target
+                if (ImGui::BeginDragDropTarget()) {
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) {
+                        Entity droppedEntity = *(Entity*)payload->Data;
+                        EQN_CORE_INFO("Dropped entity {0} onto hierarchy root", droppedEntity.GetName());
+                        droppedEntity.RemoveParent();
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+            }
+            ImGui::EndChild();
 
-			// Context menus
-			if (ImGui::BeginPopupContextWindow())
-			{
-				DrawEntityCreateMenu();
-				ImGui::EndPopup();
-			}
+            // Context menus
+            if (ImGui::BeginPopupContextWindow()) {
+                DrawEntityCreateMenu();
+                ImGui::EndPopup();
+            }
 
-			ProcessKeyboardShortcuts();
+            ProcessKeyboardShortcuts();
 
-			// Create Entities from dropped stuff
-			ProcessDropResource();
-		}
+            // Create Entities from dropped stuff
+            ProcessDropResource();
+        }
+        
+        ImGui::End();
+        ImGui::PopFont();
+    }
 
-		ImGui::End();
-		ImGui::PopFont();
-	}
+    void HierarchyPanel::SetSelectedEntity(Entity entity)
+    {
+        if (m_Selection != entity) {
+            // Clear selection if entity is invalid
+            if (!entity) {
+                //EQN_CORE_TRACE("Cleared selection");
+                m_Selection = {};
+                return;
+            }
 
-	void HierarchyPanel::SetSelectedEntity(Entity entity)
-	{
-		if (m_Selection != entity)
-		{
-			// Clear selection if entity is invalid
-			if (!entity)
-			{
-				EQN_CORE_TRACE("Cleared selection");
-				m_Selection = {};
-				return;
-			}
+            // Ensure entity still exists in registry
+            if (!m_Context->Registry().valid(entity)) {
+                EQN_CORE_WARN("Tried to select invalid entity");
+                m_Selection = {};
+                return;
+            }
 
-			// Ensure entity still exists in registry
-			if (!m_Context->Registry().valid(entity))
-			{
-				EQN_CORE_WARN("Tried to select invalid entity");
-				m_Selection = {};
-				return;
-			}
+            //EQN_CORE_TRACE("Changed selection to {0}", entity.GetName());
+            m_Selection = entity;
+            if (auto* inspector = Editor::GetPanel<InspectorPanel>()) {
+                inspector->SetSelectedEntity(entity);
+            }
+        }
+    }
 
-			//EQN_CORE_TRACE("Changed selection to {0}", entity.GetName());
-			m_Selection = entity;
-			if (auto* inspector = Editor::GetPanel<InspectorPanel>())
-			{
-				inspector->SetSelectedEntity(entity);
-			}
-		}
-	}
+    void HierarchyPanel::DrawEntityNode(Entity entity)
+    {
+        if (!entity.IsValid()) return;
+        const std::string name = entity.GetName();
+        bool isRenaming = (m_RenamingEntity == entity);
 
-	void HierarchyPanel::DrawEntityNode(Entity entity)
-	{
-		if (!entity.IsValid()) return;
-		const std::string name = entity.GetName();
-		bool isRenaming = (m_RenamingEntity == entity);
+        ImGuiTreeNodeFlags flags =
+            ImGuiTreeNodeFlags_OpenOnArrow |
+            (m_Selection == entity ? ImGuiTreeNodeFlags_Selected : 0) |
+            (entity.GetChildren().empty() ? ImGuiTreeNodeFlags_Leaf : 0);
 
-		ImGuiTreeNodeFlags flags =
-			ImGuiTreeNodeFlags_OpenOnArrow |
-			(m_Selection == entity ? ImGuiTreeNodeFlags_Selected : 0) |
-			(entity.GetChildren().empty() ? ImGuiTreeNodeFlags_Leaf : 0);
+        ImGui::PushID(static_cast<int>(entity.GetComponent<ID>().m_ID.GetHalf0()));
 
-		ImGui::PushID(static_cast<int>(entity.GetComponent<ID>().m_ID));
+        // Split arrow and text into separate interactable areas
+        bool isOpen = ImGui::TreeNodeEx("##TreeNodeArrow", flags);
 
-		// Split arrow and text into separate interactable areas
-		bool isOpen = ImGui::TreeNodeEx("##TreeNodeArrow", flags);
+        // Handle arrow interactions
+        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+            SetSelectedEntity(entity);
+        }
 
-		// Handle arrow interactions
-		if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-		{
-			SetSelectedEntity(entity);
-		}
+        // Text label (separate interactable area)
+        ImGui::SameLine();
 
-		// Text label (separate interactable area)
-		ImGui::SameLine();
+        if (isRenaming) {
+            // Rename input field
+            ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll;
+            ImGui::SetKeyboardFocusHere();
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-		if (isRenaming)
-		{
-			// Rename input field
-			ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll;
-			ImGui::SetKeyboardFocusHere();
-			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-			const bool finish = ImGui::InputText("##Rename", m_RenameBuffer, sizeof(m_RenameBuffer), inputFlags);
-			ImGui::PopStyleVar();
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+            const bool finish = ImGui::InputText("##Rename", m_RenameBuffer, sizeof(m_RenameBuffer), inputFlags);
+            ImGui::PopStyleVar();
 
-			// Handle Escape key
-			const bool cancel = ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Escape);
+            // Handle Escape key
+            const bool cancel = ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Escape);
 
-			// Finalize renaming
-			if (finish || cancel)
-			{
-				if (finish && !cancel)
-				{
-					// Validate and apply new name
-					std::string newName(m_RenameBuffer);
-					if (newName.empty()) newName = m_OriginalName;
-					entity.GetComponent<Tag>().m_Tag = newName;
-				}
-				else if (cancel)
-				{
-					// Restore original name
-					entity.GetComponent<Tag>().m_Tag = m_OriginalName;
-				}
-				m_RenamingEntity = {};
-				m_OriginalName.clear();
-			}
-		}
-		else
-		{
-			// Clickable text label
-			ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 0.5f)); // Center text vertically
-			if (ImGui::Selectable(name.c_str(), m_Selection == entity,
-				ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SpanAllColumns))
-			{
-				SetSelectedEntity(entity);
+            // Finalize renaming
+            if (finish || cancel) {
+                if (finish && !cancel) {
+                    // Validate and apply new name
+                    std::string newName(m_RenameBuffer);
+                    if (newName.empty()) newName = m_OriginalName;
+                    entity.GetComponent<Tag>().m_Tag = newName;
+                }
+                else if (cancel) {
+                    // Restore original name
+                    entity.GetComponent<Tag>().m_Tag = m_OriginalName;
+                }
+                m_RenamingEntity = {};
+                m_OriginalName.clear();
+            }
+        }
+        else {
+            // Clickable text label
+            ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 0.5f)); // Center text vertically
+            if (ImGui::Selectable(name.c_str(), m_Selection == entity,
+                                  ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_SpanAllColumns))
+            {
+                SetSelectedEntity(entity);
 
-				// Handle double-click on text only
-				if (ImGui::IsMouseDoubleClicked(0))
-				{
-					m_RenamingEntity = entity;
-					strncpy_s(m_RenameBuffer, name.c_str(), sizeof(m_RenameBuffer));
-				}
-			}
-			ImGui::PopStyleVar();
+                // Handle double-click on text only
+                if (ImGui::IsMouseDoubleClicked(0)) {
+                    m_RenamingEntity = entity;
+                    strncpy_s(m_RenameBuffer, name.c_str(), sizeof(m_RenameBuffer));
+                }
+            }
+            ImGui::PopStyleVar();
 
-			// Drag and drop on text area
-			HandleDragDrop(entity, name);
-		}
+            // Drag and drop on text area
+            HandleDragDrop(entity, name);
+        }
 
-		// Context menu (works on both areas)
-		if (ImGui::BeginPopupContextItem()) 
-		{
-			if (ImGui::MenuItem("Rename")) 
-			{
-				m_RenamingEntity = entity;
-				strncpy_s(m_RenameBuffer, name.c_str(), sizeof(m_RenameBuffer));
-			}
-			DrawEntityContextMenu(entity);
-			ImGui::EndPopup();
-		}
+        // Context menu (works on both areas)
+        if (ImGui::BeginPopupContextItem()) {
+            if (ImGui::MenuItem("Rename")) {
+                m_RenamingEntity = entity;
+                strncpy_s(m_RenameBuffer, name.c_str(), sizeof(m_RenameBuffer));
+            }
+            DrawEntityContextMenu(entity);
+            ImGui::EndPopup();
+        }
 
-		// Visual line settings
-		const ImColor treeLineColor = ImColor(128, 128, 128, 128);
-		const float smallOffsetX = -6.0f;
-		ImVec2 verticalLineStart = ImGui::GetCursorScreenPos();
-		ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-		// Child nodes
-		if (isOpen)
-		{
-			verticalLineStart.x += smallOffsetX; 
-			ImVec2 verticalLineEnd = verticalLineStart;
+        // Visual line settings
+        const ImColor treeLineColor = ImColor(128, 128, 128, 128);
+        const float smallOffsetX = -6.0f;
+        ImVec2 verticalLineStart = ImGui::GetCursorScreenPos();
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-			for (auto child : entity.GetChildren())
-			{
-				auto currentPos = ImGui::GetCursorScreenPos();
+        // Child nodes
+        if (isOpen) {
+            verticalLineStart.x += smallOffsetX; // My ocd will kill me
+            ImVec2 verticalLineEnd = verticalLineStart;
+            for (auto child : entity.GetChildren()) {
+                auto currentPos = ImGui::GetCursorScreenPos();
 
-				// Calculate horizontal line size
-				float horizontalTreeLineSize = 20.0f;
-				if (!child.GetChildren().empty()) horizontalTreeLineSize *= 0.5f;
+                // Calculate horizontal line size
+                float horizontalTreeLineSize = 20.0f;
+                if (!child.GetChildren().empty()) horizontalTreeLineSize *= 0.5f;
 
-				// Draw horizontal line
-				const ImRect childRect = ImRect(currentPos, currentPos + ImVec2(0.0f, ImGui::GetFontSize()));
-				const float midpoint = (childRect.Min.y + childRect.Max.y) * 0.5f;
-				drawList->AddLine(
-					ImVec2(verticalLineStart.x, midpoint),
-					ImVec2(verticalLineStart.x + horizontalTreeLineSize, midpoint),
-					treeLineColor);
+                // Draw horizontal line
+                const ImRect childRect = ImRect(currentPos, currentPos + ImVec2(0.0f, ImGui::GetFontSize()));
+                const float midpoint = (childRect.Min.y + childRect.Max.y) * 0.5f;
+                drawList->AddLine(
+                    ImVec2(verticalLineStart.x, midpoint),
+                    ImVec2(verticalLineStart.x + horizontalTreeLineSize, midpoint),
+                    treeLineColor);
 
-				// Draw child node
-				DrawEntityNode(child);
+                // Draw child node
+                DrawEntityNode(child);
 
-				verticalLineEnd.y = midpoint; // Update vertical line end as we iterate
-			}
+                verticalLineEnd.y = midpoint; // Update vertical line end as we iterate
+            }
 
-			// Draw vertical line after all children are drawn
-			drawList->AddLine(verticalLineStart, verticalLineEnd, treeLineColor);
+            // Draw vertical line after all children are drawn
+            drawList->AddLine(verticalLineStart, verticalLineEnd, treeLineColor);
 
-			ImGui::TreePop();
-		}
+            ImGui::TreePop();
+        }
 
-		ImGui::PopID();
-	}
+        ImGui::PopID();
+    }
 
-	void HierarchyPanel::DrawEntityContextMenu(Entity entity)
-	{
-		if (ImGui::MenuItem("Delete"))
-		{
-			if (m_Selection == entity)
-				SetSelectedEntity({});
-			m_Context->DestroyEntity(entity);
-			EQN_CORE_INFO("Deleted entity {0}", entity.GetName());
-		}
+    void HierarchyPanel::DrawEntityContextMenu(Entity entity)
+    {
+        if (ImGui::MenuItem("Delete")) {
+            if (m_Selection == entity)
+                SetSelectedEntity({});
+            m_Context->DestroyEntity(entity);
+            EQN_CORE_INFO("Deleted entity {0}", entity.GetName());
+        }
 
-		ImGui::Separator();
+        ImGui::Separator();
 
-		if (ImGui::MenuItem("Create Child"))
-		{
-			auto child = m_Context->CreateEntity("Child Entity");
-			child.SetParent(entity);
-			EQN_CORE_INFO("Created child entity {0}", child.GetName());
-		}
+        if (ImGui::MenuItem("Create Child")) {
+            auto child = m_Context->CreateEntity("Child Entity");
+            child.SetParent(entity);
+        }
 
-		if (ImGui::MenuItem("Duplicate"))
-		{
-			auto duplicate = m_Context->DuplicateEntity(entity);
-			EQN_CORE_INFO("Duplicated entity {0}", duplicate.GetName());
-		}
-	}
+        if (ImGui::MenuItem("Duplicate")) {
+            auto duplicate = m_Context->DuplicateEntity(entity);
+        }
+    }
 
-	void HierarchyPanel::DrawEntityCreateMenu()
-	{
-		if (ImGui::MenuItem("Empty Entity"))
-		{
-			auto entity = m_Context->CreateEntity("New Entity");
-		}
+    void HierarchyPanel::DrawEntityCreateMenu()
+    {
+        if (ImGui::MenuItem("Empty Entity")) {
+            auto entity = m_Context->CreateEntity("New Entity");
+        }
 
-		if (ImGui::BeginMenu("3D Objects"))
-		{
-			if (ImGui::MenuItem("Cube"))
-			{
-				auto cube = m_Context->CreateEntity("Cube");
-				auto& meshRenderer = cube.AddComponent<MeshRenderer>();
-				meshRenderer.ModelUUID = UUID(0);
-				meshRenderer.MeshIndex = 0;
-				meshRenderer.MaterialUUID = UUID(0);
-				meshRenderer.isSkinned = false;
-				meshRenderer.modelNamePreview = "Cube (primitive)";
-				EQN_CORE_INFO("Created primitive entity Cube");
-			}
-			if (ImGui::MenuItem("Sphere")) { /* TODO: Create mesh entity */ }
-			ImGui::EndMenu();
-		}
+        if (ImGui::BeginMenu("3D Objects")) {
+            if (ImGui::MenuItem("Cube")) { /* TODO: Create mesh entity */ }
+            if (ImGui::MenuItem("Sphere")) { /* TODO: Create mesh entity */ }
+            ImGui::EndMenu();
+        }
 
-		if (ImGui::MenuItem("Camera"))
-		{
-			auto camera = m_Context->CreateEntity("Camera");
-			camera.AddComponent<Camera>();
-		}
+        if (ImGui::MenuItem("Camera")) {
+            auto camera = m_Context->CreateEntity("Camera");
+            camera.AddComponent<Camera>();
+        }
 
-		if (ImGui::BeginMenu("Light")) 
-		{
-			if (ImGui::MenuItem("Directional Light")) 
-			{
-				auto camera = m_Context->CreateEntity("Directional Light");
-				camera.AddComponent<DirectionalLight>();
-				camera.GetComponent<Transform>().m_Rotation = Vec3(-1);
-			}
-			if (ImGui::MenuItem("Point Light")) 
-			{
-				auto camera = m_Context->CreateEntity("Point Light");
-				camera.AddComponent<PointLight>();
-			}
-			ImGui::EndMenu();
-		}
-	}
+        if (ImGui::BeginMenu("Light")) {
+            if (ImGui::MenuItem("Directional Light")) {
+                auto camera = m_Context->CreateEntity("Directional Light");
+                camera.AddComponent<DirectionalLight>();
+                camera.GetComponent<Transform>().m_Rotation = Vec3(-1);
+            }
+            if (ImGui::MenuItem("Point Light")) {
+                auto camera = m_Context->CreateEntity("Point Light");
+                camera.AddComponent<PointLight>();
+            }
+            ImGui::EndMenu();
+        }
+    }
 
-	void HierarchyPanel::HandleDragDrop(Entity entity, const std::string& name)
-	{
-		if (ImGui::BeginDragDropSource()) 
-		{
-			ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(Entity));
-			ImGui::Text("Move %s", name.c_str());
-			ImGui::EndDragDropSource();
-		}
+    void HierarchyPanel::HandleDragDrop(Entity entity, const std::string& name)
+    {
+        if (ImGui::BeginDragDropSource()) {
+            ImGui::SetDragDropPayload("ENTITY", &entity, sizeof(Entity));
+            ImGui::Text("Move %s", name.c_str());
+            ImGui::EndDragDropSource();
+        }
 
-		if (ImGui::BeginDragDropTarget()) 
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) 
-			{
-				Entity child = *(Entity*)payload->Data;
-				if (!child.IsAncestorOf(entity)) 
-				{
-					child.SetParent(entity);
-				}
-			}
-			ImGui::EndDragDropTarget();
-		}
-	}
+        if (ImGui::BeginDragDropTarget()) {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY")) {
+                Entity child = *(Entity*)payload->Data;
+                if (!child.IsAncestorOf(entity)) {
+                    child.SetParent(entity);
+                }
+            }
+            ImGui::EndDragDropTarget();
+        }
+    }
 
-	void HierarchyPanel::ProcessKeyboardShortcuts()
-	{
-		if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
-		{
-			// [SUPR] Delete
-			if (ImGui::IsKeyPressed(ImGuiKey_Delete) && m_Selection)
-			{
-				m_Context->DestroyEntity(m_Selection);
-				SetSelectedEntity({});
-				EQN_CORE_INFO("Deleted selected entity");
-			}
+    void HierarchyPanel::ProcessKeyboardShortcuts()
+    {
+        if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) {
+            // [SUPR] Delete
+            if (ImGui::IsKeyPressed(ImGuiKey_Delete) && m_Selection) {
+                m_Context->DestroyEntity(m_Selection);
+                SetSelectedEntity({});
+                EQN_CORE_INFO("Deleted selected entity");
+            }
 
-			// [Ctrl+D] Duplicate
-			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_D))
-			{
-				if (m_Selection)
-				{
-					auto duplicate = m_Context->DuplicateEntity(m_Selection);
-				}
-			}
-		}
-	}
+            // [Ctrl+D] Duplicate
+            if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && ImGui::IsKeyPressed(ImGuiKey_D)) {
+                if (m_Selection) {
+                    auto duplicate = m_Context->DuplicateEntity(m_Selection);
+                }
+            }
+        }
+    }
 
-	bool HierarchyPanel::EntityMatchesFilter(Entity entity)
-	{
-		if (strlen(m_SearchFilter) == 0) return true;
+    bool HierarchyPanel::EntityMatchesFilter(Entity entity)
+    {
+        if (strlen(m_SearchFilter) == 0) return true;
 
-		// Case-insensitive search
-		std::string entityName = entity.GetName();
-		std::string filter = m_SearchFilter;
+        // Case-insensitive search
+        std::string entityName = entity.GetName();
+        std::string filter = m_SearchFilter;
 
-		std::transform(entityName.begin(), entityName.end(), entityName.begin(), ::tolower);
-		std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
+        std::transform(entityName.begin(), entityName.end(), entityName.begin(), ::tolower);
+        std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
 
-		return entityName.find(filter) != std::string::npos;
-	}
+        return entityName.find(filter) != std::string::npos;
+    }
 
-	void HierarchyPanel::ProcessDropResource()
-	{
-		if (ImGui::BeginDragDropTarget()) 
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ASSET_UUID))
-			{
-				const UUID assetUuid = *static_cast<const UUID*>(payload->Data);
-				auto assetType = ResourceDB::UuidToInfo(assetUuid).Type;
+    void HierarchyPanel::ProcessDropResource()
+    {
+        if (ImGui::BeginDragDropTarget()) {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ASSET_UUID)) {
+                const UUID assetUuid = *static_cast<const UUID*>(payload->Data);
+                auto assetType = AssetDatabase::GetMetadata(assetUuid).Type;
 
-				switch (assetType)
-				{
-				case ResourceType::Model:
-				{
-					std::shared_ptr<Model> model = ModelLibrary::Get(assetUuid);
-					auto parent = m_Context->CreateEntity(model->GetName());
-					parent.AddComponent<Children>();
+                switch (assetType) {
+                case AssetType::Model: {
+                    // Ensure loaded
+                    AssetManager::LoadAsync(assetUuid); 
+                    // NOTE: This might return nullptr if not loaded yet. For drag-drop we might need to block or handle async spawning.
+                    // For now, assuming immediate load or we need to wait.
+                    // Since LoadAsync is async, we can't get it immediately unless we block.
+                    // Ideally, we spawn an entity with a "Pending" state or block main thread (bad).
+                    // For this refactor step, let's try to get it, if null, we can't spawn yet.
+                    // A better approach: AssetManager::GetAsset<Model>(uuid) returns null if not ready.
+                    // We could force load here for simplicity in editor:
+                    // AssetManager::LoadSync(assetUuid); // If we had a sync load.
+                         
+                    // Temporary hack: Spin wait or check if loaded. 
+                    // Real solution: Entity spawns with a "Loading" component.
+                         
+                    // Let's assume for now we just trigger load and if it's not ready we skip spawning (UX issue)
+                    // OR we assume the user double clicked it or it was preloaded.
+                         
+                    // Let's try to get it.
+                    std::shared_ptr<Model> model = AssetManager::GetAsset<Model>(assetUuid);
+                         
+                    if (!model) {
+                        // Force load for editor convenience (blocking)
+                        // Since we don't have LoadSync exposed publicly in the snippet, we rely on LoadAsync + Update loop.
+                        // But we are in the middle of a frame.
+                        // Let's just trigger load and log warning.
+                        AssetManager::LoadAsync(assetUuid);
+                        EQN_CORE_WARN("Model not loaded yet. Please try dropping again in a moment.");
+                        break;
+                    }
+                        
+                    auto parent = m_Context->CreateEntity(/*model->GetName()*/);
+                    parent.AddComponent<Children>();
 
-					if (model->IsSkinned()) parent.AddComponent<Animation>(assetUuid);
+                    if (model->IsSkinned()) parent.AddComponent<Animation>(assetUuid);
 
-					auto materials = model->GetMaterials();
+                    auto materials = model->GetMaterials();
 
-					int meshIndex = 0;
-					for (const auto& mesh : model->GetMeshesData())
-					{
-						auto child = m_Context->CreateEntity(mesh.Name);
+                    int meshIndex = 0;
+                    for (const auto& mesh : model->GetMeshesData()) {
+                        auto child = m_Context->CreateEntity(mesh.Name);
 
-						child.AddComponent<Parent>();
-						child.SetParent(parent);
-						parent.GetChildren().push_back(child);
+                        child.AddComponent<Parent>();
+                        child.SetParent(parent);
+                        parent.GetChildren().push_back(child);
 
-						auto& meshRend = child.AddComponent<MeshRenderer>();
-						meshRend.modelNamePreview = model->GetName();
-						meshRend.ModelUUID = assetUuid;
-						meshRend.MeshIndex = meshIndex;
-						meshRend.isSkinned = model->IsSkinned();
-						if (!model->GetMaterials().empty() && meshIndex < materials.size()) 
-						{
-							meshRend.MaterialUUID = materials[meshIndex];
-							//meshRend.materialNamePreview = MaterialLibrary::Get(meshRend.MaterialUUID)->GetName();
-						}
-						meshIndex++;
-					}
-					break;
-				}
-				default: break;
-				}
-			}
-			ImGui::EndDragDropTarget();
-		}
-	}
+                        auto& meshRend = child.AddComponent<MeshRenderer>();
+                        //meshRend.modelNamePreview = model->GetName();
+                        meshRend.ModelUUID = assetUuid;
+                        meshRend.MeshIndex = meshIndex;
+                        meshRend.isSkinned = model->IsSkinned();
+                        if (!model->GetMaterials().empty() && meshIndex < materials.size()) {
+                            meshRend.MaterialUUID = materials[meshIndex];
+                            //meshRend.materialNamePreview = MaterialLibrary::Get(meshRend.MaterialUUID)->GetName();
+                        }
+                        meshIndex++;
+                    }
+                    break;
+                }
+                default: break;
+                }
+            }
+            ImGui::EndDragDropTarget();
+        }
+    }
 }

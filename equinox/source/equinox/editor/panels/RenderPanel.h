@@ -10,43 +10,21 @@
 
 namespace Equinox
 {
-	class RenderPanel : public Panel
-	{
-	public:
-		RenderPanel();
+    class RenderPanel : public Panel
+    {
+    public:
+        RenderPanel();
+        void OnInit() override;
+        void OnRender() override;
 
-		void OnInit() override;
-		void OnRender() override;
+        u32 GetSelectedAttachment() const { return m_SelectedAttachment; }
 
-		u32 GetSelectedAttachment() const { return m_SelectedAttachment; }
+    private:
+        
+        std::shared_ptr<RenderingSystem> m_RS;
+        std::string m_SelectedMode;
+        u32 m_SelectedAttachment = 0;
 
-	private:
-		// group definitions
-		const std::vector<std::pair<const char*, std::vector<const char*>>> m_Groups =
-		{
-		  { "RENDER",
-			{ "Final", "No Post-Processing" }},
-		  { "ANIMATION",
-			{ "Bones", "Bones Influence" } },
-		  { "MATERIAL CHANNELS",
-			{ "Base Color", "Metalness", "Roughness", "Normal Map", "Emission", "Specular F0", "Translucency", "Ambient Oclusion", "Opacity" }},
-		  { "GEOMETRY",
-			{ "Position", "Normal", "MRAO", "ET", "SSAO", "Wireframe" } }
-		};
-
-		void DrawGroup(const char* title, const std::vector<const char*>& modes);
-		void ApplyRenderingSettings();
-
-		bool IsVulkan() const;
-		bool UsesPipeline() const;
-		void DrawPostProcessOpenGL();
-		void DrawPostProcessVulkan();
-		void DrawVulkanSceneSettings();
-
-		std::shared_ptr<RenderingSystem> m_RS;
-		std::string m_SelectedMode;
-		u32 m_SelectedAttachment = 0;
-
-		u32 m_SelectedTab = 0; // 0 for Model Viewer, 1 for Post Processing
-	};
+        u32 m_SelectedTab = 0; // 0 for Model Viewer, 1 for Post Processing
+    };
 }

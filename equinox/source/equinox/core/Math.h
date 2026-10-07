@@ -3,6 +3,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
+
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -17,20 +18,16 @@
 namespace Equinox
 {
     // Assimp to GLM conversions
-    inline glm::mat3 AiMat3ToGLM(const aiMatrix3x3& from) 
-    {
-        return 
-        {
+    inline glm::mat3 AiMat3ToGLM(const aiMatrix3x3& from) {
+        return {
             {from.a1, from.b1, from.c1},
             {from.a2, from.b2, from.c2},
             {from.a3, from.b3, from.c3}
         };
     }
 
-    inline glm::mat4 AiMat4ToGLM(const aiMatrix4x4& from)
-    {
-        return 
-        {
+    inline glm::mat4 AiMat4ToGLM(const aiMatrix4x4& from) {
+        return {
             {from.a1, from.b1, from.c1, from.d1},
             {from.a2, from.b2, from.c2, from.d2},
             {from.a3, from.b3, from.c3, from.d3},
@@ -38,31 +35,25 @@ namespace Equinox
         };
     }
 
-    inline glm::vec3 AiVec3ToGLM(const aiVector3D& v)
-    {
+    inline glm::vec3 AiVec3ToGLM(const aiVector3D& v) {
         return { v.x, v.y, v.z };
     }
 
-    inline glm::quat AiQuatToGLM(const aiQuaternion& q) 
-    {
+    inline glm::quat AiQuatToGLM(const aiQuaternion& q) {
         return { q.w, q.x, q.y, q.z };
     }
 
     // GLM to Assimp conversions
-    inline aiMatrix3x3 GLMMat3ToAi(const glm::mat3& m) 
-    {
-        return
-        {
+    inline aiMatrix3x3 GLMMat3ToAi(const glm::mat3& m) {
+        return {
             m[0][0], m[1][0], m[2][0],
             m[0][1], m[1][1], m[2][1],
             m[0][2], m[1][2], m[2][2]
         };
     }
 
-    inline aiMatrix4x4 GLMMat4ToAi(const glm::mat4& m)
-    {
-        return
-        {
+    inline aiMatrix4x4 GLMMat4ToAi(const glm::mat4& m) {
+        return {
             m[0][0], m[1][0], m[2][0], m[3][0],
             m[0][1], m[1][1], m[2][1], m[3][1],
             m[0][2], m[1][2], m[2][2], m[3][2],
@@ -70,24 +61,20 @@ namespace Equinox
         };
     }
 
-    inline aiVector3D GLMVec3ToAi(const glm::vec3& v)
-    {
+    inline aiVector3D GLMVec3ToAi(const glm::vec3& v) {
         return { v.x, v.y, v.z };
     }
 
-    inline aiQuaternion GLMQuatToAi(const glm::quat& q) 
-    {
+    inline aiQuaternion GLMQuatToAi(const glm::quat& q) {
         return { q.w, q.x, q.y, q.z };
     }
 
     // Matrix operations
-    inline glm::mat3 ConvertToNormalMatrix(const glm::mat4& modelMatrix)
-    {
+    inline glm::mat3 ConvertToNormalMatrix(const glm::mat4& modelMatrix) {
         return glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
     }
 
-    inline glm::mat3 Mat4ToMat3(const glm::mat4& m) 
-    {
+    inline glm::mat3 Mat4ToMat3(const glm::mat4& m) {
         return glm::mat3(m);
     }
 
@@ -131,10 +118,8 @@ namespace Equinox
         frustum.planes[4] = matrix[3] + matrix[2]; // Near
         frustum.planes[5] = matrix[3] - matrix[2]; // Far
 
-        if (normalize) 
-        {
-            for (auto& plane : frustum.planes) 
-            {
+        if (normalize) {
+            for (auto& plane : frustum.planes) {
                 const float length = glm::length(glm::vec3(plane));
                 plane /= length;
             }
@@ -144,8 +129,7 @@ namespace Equinox
     }
 
     inline bool IsInFrustum(const Frustum& frustum, const glm::vec3& point, float radius = 0.0f) {
-        for (const auto& plane : frustum.planes)
-        {
+        for (const auto& plane : frustum.planes) {
             const float distance =
                 plane.x * point.x +
                 plane.y * point.y +

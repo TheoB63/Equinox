@@ -4,193 +4,175 @@
 
 namespace Equinox
 {
-	Scene::Scene()
-	{
-		EQN_CORE_INFO("Created new scene");
-	}
+    Scene::Scene()
+    {
+        EQN_CORE_INFO("Created new scene");
+    }
 
-	Scene::~Scene()
-	{
-		m_Registry.clear();
-		EQN_CORE_INFO("Destroyed scene");
-	}
+    Scene::~Scene()
+    {
+        m_Registry.clear();
+        EQN_CORE_INFO("Destroyed scene");
+    }
 
-	Entity Scene::CreateEntity(const std::string& name)
-	{
-		Entity entity = { m_Registry.create(), this };
-		entity.AddComponent<ID>();
-		entity.AddComponent<Tag>(name);
-		entity.AddComponent<Transform>();
-		entity.AddComponent<WorldTransform>();
-		EQN_CORE_TRACE("Created entity: {0}", name);
-		return entity;
-	}
+    Entity Scene::CreateEntity(const std::string& name)
+    {
+        Entity entity = { m_Registry.create(), this };
+        entity.AddComponent<ID>();
+        entity.AddComponent<Tag>(name);
+        entity.AddComponent<Transform>();
+        entity.AddComponent<WorldTransform>();
+        EQN_CORE_TRACE("Created entity: {0}", name);
+        return entity;
+    }
 
-	void Scene::DestroyEntity(Entity entity)
-	{
-		if (!entity.IsValid()) return;
+    void Scene::DestroyEntity(Entity entity)
+    {
+        if (!entity.IsValid()) return;
 
-		// Destroy all children first (recursively)
-		if (entity.HasComponent<Children>())
-		{
-			auto children = entity.GetComponent<Children>().m_Children;
-			for (auto child : children)
-			{
-				DestroyEntity(child);
-			}
-		}
+        // Destroy all children first (recursively)
+        if (entity.HasComponent<Children>()) {
+            auto children = entity.GetComponent<Children>().m_Children;
+            for (auto child : children) {
+                DestroyEntity(child);
+            }
+        }
 
-		// Remove from parent's children list
-		if (entity.HasComponent<Parent>()) {
-			Entity parent = entity.GetComponent<Parent>().m_Parent;
-			if (parent.IsValid() && parent.HasComponent<Children>())
-			{
-				auto& siblings = parent.GetComponent<Children>().m_Children;
-				siblings.erase(std::remove(siblings.begin(), siblings.end(), entity), siblings.end());
-			}
-		}
+        // Remove from parent's children list
+        if (entity.HasComponent<Parent>()) {
+            Entity parent = entity.GetComponent<Parent>().m_Parent;
+            if (parent.IsValid() && parent.HasComponent<Children>()) {
+                auto& siblings = parent.GetComponent<Children>().m_Children;
+                siblings.erase(std::remove(siblings.begin(), siblings.end(), entity), siblings.end());
+            }
+        }
 
-		// Finally destroy the entity itself
-		m_Registry.destroy(entity);
-		EQN_CORE_TRACE("Destroyed entity: {0}", entity.GetName());
-	}
+        // Finally destroy the entity itself
+        m_Registry.destroy(entity);
+        EQN_CORE_TRACE("Destroyed entity: {0}", entity.GetName());
+    }
 
-	Entity Scene::DuplicateEntity(Entity original, bool skipParentAddition)
-	{
-		if (!original.IsValid()) return {};
+    Entity Scene::DuplicateEntity(Entity original, bool skipParentAddition)
+    {
+        if (!original.IsValid()) return {};
 
-		std::string newName = GenerateUniqueName(original);
-		Entity duplicate = CreateEntity(newName);
+        std::string newName = GenerateUniqueName(original);
+        Entity duplicate = CreateEntity(newName);
 
-		// Copy all components except hierarchy-related ones
-		//original.CopyComponentIfExists<Tag>(duplicate);
-		original.CopyComponentIfExists<Transform>(duplicate);
-		original.CopyComponentIfExists<Camera>(duplicate);
-		original.CopyComponentIfExists<MeshRenderer>(duplicate);
-		original.CopyComponentIfExists<Animation>(duplicate);
-		original.CopyComponentIfExists<DirectionalLight>(duplicate);
-		original.CopyComponentIfExists<PointLight>(duplicate);
-		// Add other component copies here...
+        // Copy all components except hierarchy-related ones
+        //original.CopyComponentIfExists<Tag>(duplicate);
+        original.CopyComponentIfExists<Transform>(duplicate);
+        original.CopyComponentIfExists<Camera>(duplicate);
+        original.CopyComponentIfExists<MeshRenderer>(duplicate);
+        original.CopyComponentIfExists<Animation>(duplicate);
+        original.CopyComponentIfExists<DirectionalLight>(duplicate);
+        original.CopyComponentIfExists<PointLight>(duplicate);
 
-		// Handle parent relationship if not skipped
-		if (!skipParentAddition && original.HasComponent<Parent>())
-		{
-			Entity parent = original.GetComponent<Parent>().m_Parent;
-			if (parent.IsValid())
-			{
-				// Add duplicate to parent's children list
-				if (parent.HasComponent<Children>())
-				{
-					auto& parentChildren = parent.GetComponent<Children>().m_Children;
-					parentChildren.push_back(duplicate);
-				}
-				else
-				{
-					auto& parentChildren = parent.AddComponent<Children>().m_Children;
-					parentChildren.push_back(duplicate);
-				}
+        // Handle parent relationship if not skipped
+        if (!skipParentAddition && original.HasComponent<Parent>()) {
+            Entity parent = original.GetComponent<Parent>().m_Parent;
 
-				// Set duplicate's parent
-				duplicate.AddComponent<Parent>().m_Parent = parent;
-			}
-		}
+            if (parent.IsValid()) {
+                // Add duplicate to parent's children list
+                if (parent.HasComponent<Children>()) {
+                    auto& parentChildren = parent.GetComponent<Children>().m_Children;
+                    parentChildren.push_back(duplicate);
+                }
+                else {
+                    auto& parentChildren = parent.AddComponent<Children>().m_Children;
+                    parentChildren.push_back(duplicate);
+                }
 
-		// Recursively duplicate children
-		if (original.HasComponent<Children>())
-		{
-			auto& originalChildren = original.GetComponent<Children>().m_Children;
-			auto& duplicateChildren = duplicate.AddComponent<Children>().m_Children;
+                // Set duplicate's parent
+                duplicate.AddComponent<Parent>().m_Parent = parent;
+            }
+        }
 
-			for (Entity child : originalChildren)
-			{
-				// Pass 'true' to skip adding the child duplicate to the original parent's children
-				Entity duplicatedChild = DuplicateEntity(child, true);
-				duplicatedChild.AddOrReplaceComponent<Parent>().m_Parent = duplicate;
-				duplicateChildren.push_back(duplicatedChild);
-			}
-		}
+        // Recursively duplicate children
+        if (original.HasComponent<Children>()) {
+            auto& originalChildren = original.GetComponent<Children>().m_Children;
+            auto& duplicateChildren = duplicate.AddComponent<Children>().m_Children;
 
-		EQN_CORE_TRACE("Duplicated {0} '{1}'",
-			original.HasComponent<Children>() ? "hierarchy" : "entity",
-			original.GetName());
-		return duplicate;
-	}
+            for (Entity child : originalChildren) {
+                // Pass 'true' to skip adding the child duplicate to the original parent's children
+                Entity duplicatedChild = DuplicateEntity(child, true);
+                duplicatedChild.AddOrReplaceComponent<Parent>().m_Parent = duplicate;
+                duplicateChildren.push_back(duplicatedChild);
+            }
+        }
 
-	std::string Scene::GenerateUniqueName(Entity entity)
-	{
-		if (!entity.IsValid()) return "";
-		// Get the parent of the entity
-		Entity parent;
-		if (entity.HasComponent<Parent>())
-		{
-			parent = entity.GetComponent<Parent>().m_Parent;
-		}
+        EQN_CORE_TRACE("Duplicated {0} '{1}'",
+            original.HasComponent<Children>() ? "hierarchy" : "entity",
+            original.GetName());
+        return duplicate;
+    }
 
-		// Get all siblings (children of the parent or root entities)
-		std::vector<Entity> siblings;
-		if (parent.IsValid())
-		{
-			if (parent.HasComponent<Children>())
-			{
-				siblings = parent.GetComponent<Children>().m_Children;
-			}
-		}
-		else
-		{
-			// Assuming GetRootEntities() retrieves all root entities
-			//siblings = GetRootEntities();
-		}
+    std::string Scene::GenerateUniqueName(Entity entity)
+    {
+        if (!entity.IsValid()) return "";
 
-		// Extract base name and original number from the entity's name
-		std::string name = entity.GetName();
-		std::string base = name;
-		int originalNumber = 0;
+        // Get the parent of the entity
+        Entity parent;
+        if (entity.HasComponent<Parent>()) {
+            parent = entity.GetComponent<Parent>().m_Parent;
+        }
 
-		std::regex pattern(R"(^(.*?)\s\((\d+)\)$)");
-		std::smatch matches;
-		if (std::regex_match(name, matches, pattern))
-		{
-			base = matches[1].str();
-			originalNumber = std::stoi(matches[2].str());
-		}
+        // Get all siblings (children of the parent or root entities)
+        std::vector<Entity> siblings;
+        if (parent.IsValid()) {
+            if (parent.HasComponent<Children>()) {
+                siblings = parent.GetComponent<Children>().m_Children;
+            }
+        }
+        else {
+            // Assuming GetRootEntities() retrieves all root entities
+            //siblings = GetRootEntities();
+        }
 
-		// Collect all numbers from siblings' names matching the base
-		std::vector<int> numbers;
-		numbers.push_back(originalNumber); // Include the entity's own number
+        // Extract base name and original number from the entity's name
+        std::string name = entity.GetName();
+        std::string base = name;
+        int originalNumber = 0;
 
-		std::regex siblingPattern(R"(^(.*?)\s\((\d+)\)$)");
-		for (Entity sibling : siblings)
-		{
-			// Skip the entity itself
-			if (sibling == entity)
-				continue;
+        std::regex pattern(R"(^(.*?)\s\((\d+)\)$)");
+        std::smatch matches;
+        if (std::regex_match(name, matches, pattern)) {
+            base = matches[1].str();
+            originalNumber = std::stoi(matches[2].str());
+        }
 
-			std::string siblingName = sibling.GetName();
+        // Collect all numbers from siblings' names matching the base
+        std::vector<int> numbers;
+        numbers.push_back(originalNumber); // Include the entity's own number
 
-			if (siblingName == base)
-			{
-				numbers.push_back(0);
-			}
-			else
-			{
-				std::smatch siblingMatches;
-				if (std::regex_match(siblingName, siblingMatches, siblingPattern))
-				{
-					std::string siblingBase = siblingMatches[1].str();
-					if (siblingBase == base)
-					{
-						int num = std::stoi(siblingMatches[2].str());
-						numbers.push_back(num);
-					}
-				}
-			}
-		}
+        std::regex siblingPattern(R"(^(.*?)\s\((\d+)\)$)");
+        for (Entity sibling : siblings) {
+            // Skip the entity itself
+            if (sibling == entity)
+                continue;
 
-		// Determine the new number
-		int maxNumber = numbers.empty() ? -1 : *std::max_element(numbers.begin(), numbers.end());
-		int newNumber = maxNumber + 1;
+            std::string siblingName = sibling.GetName();
 
-		// Generate the new name
-		return base + " (" + std::to_string(newNumber) + ")";
-	}
+            if (siblingName == base) {
+                numbers.push_back(0);
+            }
+            else {
+                std::smatch siblingMatches;
+                if (std::regex_match(siblingName, siblingMatches, siblingPattern)) {
+                    std::string siblingBase = siblingMatches[1].str();
+                    if (siblingBase == base) {
+                        int num = std::stoi(siblingMatches[2].str());
+                        numbers.push_back(num);
+                    }
+                }
+            }
+        }
+
+        // Determine the new number
+        int maxNumber = numbers.empty() ? -1 : *std::max_element(numbers.begin(), numbers.end());
+        int newNumber = maxNumber + 1;
+
+        // Generate the new name
+        return base + " (" + std::to_string(newNumber) + ")";
+    }
 }

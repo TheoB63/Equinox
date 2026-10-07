@@ -7,9 +7,11 @@
 
 namespace Equinox
 {
-	class VertexArray
-	{
-	public:
+    // Vertex Array abstraction (OpenGL: VAO, Vulkan: no equivalent — the
+    // buffer bindings are part of the graphics pipeline layout).
+    class VertexArray
+    {
+    public:
         virtual ~VertexArray() = default;
 
         virtual void Bind() const = 0;
@@ -22,5 +24,5 @@ namespace Equinox
         virtual const std::shared_ptr<IndexBuffer>& GetIndexBuffer() const = 0;
 
         static std::unique_ptr<VertexArray> Create();
-	};
+    };
 }

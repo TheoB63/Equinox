@@ -2,9 +2,8 @@
 #include "equinox/renderer/Buffer.h"
 #include "equinox/renderer/Renderer.h"
 
-#include "equinox/renderer/openGL/GLBuffer.h"
-#include "equinox/renderer/OpenGL/GLVertexArray.h"
-#include "equinox/renderer/null/NullResources.h"
+#include "equinox/renderer/backend/vulkan/VulkanBuffer.h"
+#include "equinox/renderer/backend/opengl/GLBuffer.h"
 
 #include <vulkan/vulkan.h>
 
@@ -14,72 +13,69 @@ namespace Equinox
     {
         switch (type)
         {
-        case ShaderDataType::Bool:    return 1;
-        case ShaderDataType::Int:     return 4;
-        case ShaderDataType::Int2:    return 4 * 2;
-        case ShaderDataType::Int3:    return 4 * 3;
-        case ShaderDataType::Int4:    return 4 * 4;
-        case ShaderDataType::Float:   return 4;
-        case ShaderDataType::Float2:  return 4 * 2;
-        case ShaderDataType::Float3:  return 4 * 3;
-        case ShaderDataType::Float4:  return 4 * 4;
-        case ShaderDataType::Mat3:    return 4 * 3 * 3;
-        case ShaderDataType::Mat4:    return 4 * 4 * 4;
-        default:
-            EQN_CORE_ASSERT(false, "Unknown ShaderDataType!");
-            return 0;
+            case ShaderDataType::Bool:    return 1;
+            case ShaderDataType::Int:     return 4;
+            case ShaderDataType::Int2:    return 4 * 2;
+            case ShaderDataType::Int3:    return 4 * 3;
+            case ShaderDataType::Int4:    return 4 * 4;
+            case ShaderDataType::Float:   return 4;
+            case ShaderDataType::Float2:  return 4 * 2;
+            case ShaderDataType::Float3:  return 4 * 3;
+            case ShaderDataType::Float4:  return 4 * 4;
+            case ShaderDataType::Mat3:    return 4 * 3 * 3;
+            case ShaderDataType::Mat4:    return 4 * 4 * 4;
+            default:
+                EQN_CORE_ASSERT(false, "Unknown ShaderDataType!");
+                return 0;
         }
     }
 
     static VkFormat ShaderDataTypeToVkFormat(ShaderDataType type)
     {
         switch (type) {
-        case ShaderDataType::Float:   return VK_FORMAT_R32_SFLOAT;
-        case ShaderDataType::Float2:  return VK_FORMAT_R32G32_SFLOAT;
-        case ShaderDataType::Float3:  return VK_FORMAT_R32G32B32_SFLOAT;
-        case ShaderDataType::Float4:  return VK_FORMAT_R32G32B32A32_SFLOAT;
-        case ShaderDataType::Int:     return VK_FORMAT_R32_SINT;
-        case ShaderDataType::Int2:    return VK_FORMAT_R32G32_SINT;
-        case ShaderDataType::Int3:    return VK_FORMAT_R32G32B32_SINT;
-        case ShaderDataType::Int4:    return VK_FORMAT_R32G32B32A32_SINT;
-        case ShaderDataType::Bool:    return VK_FORMAT_R8_UINT;
-        default:
-            EQN_CORE_ASSERT(false, "Unknown ShaderDataType!");
-            return VK_FORMAT_UNDEFINED;
+            case ShaderDataType::Float:   return VK_FORMAT_R32_SFLOAT;
+            case ShaderDataType::Float2:  return VK_FORMAT_R32G32_SFLOAT;
+            case ShaderDataType::Float3:  return VK_FORMAT_R32G32B32_SFLOAT;
+            case ShaderDataType::Float4:  return VK_FORMAT_R32G32B32A32_SFLOAT;
+            case ShaderDataType::Int:     return VK_FORMAT_R32_SINT;
+            case ShaderDataType::Int2:    return VK_FORMAT_R32G32_SINT;
+            case ShaderDataType::Int3:    return VK_FORMAT_R32G32B32_SINT;
+            case ShaderDataType::Int4:    return VK_FORMAT_R32G32B32A32_SINT;
+            case ShaderDataType::Bool:    return VK_FORMAT_R8_UINT;
+            default:
+                EQN_CORE_ASSERT(false, "Unknown ShaderDataType!");
+                return VK_FORMAT_UNDEFINED;
         }
     }
 
     BufferElement::BufferElement(ShaderDataType type, const std::string& name, bool normalized)
         : Name(name), Type(type), Size(ShaderDataTypeSize(type)),
-        Offset(0), Normalized(normalized)
-    {
-    }
+        Offset(0), Normalized(normalized) {}
 
     uint32_t BufferElement::GetComponentCount() const
     {
         switch (Type)
         {
-        case ShaderDataType::Bool:    return 1;
-        case ShaderDataType::Int:     return 1;
-        case ShaderDataType::Int2:    return 2;
-        case ShaderDataType::Int3:    return 3;
-        case ShaderDataType::Int4:    return 4;
-        case ShaderDataType::Float:   return 1;
-        case ShaderDataType::Float2:  return 2;
-        case ShaderDataType::Float3:  return 3;
-        case ShaderDataType::Float4:  return 4;
-        case ShaderDataType::Mat3:    return 3 * 3;
-        case ShaderDataType::Mat4:    return 4 * 4;
-        default:
-            EQN_CORE_ASSERT(false, "Unknown ShaderDataType!");
-            return 0;
+            case ShaderDataType::Bool:    return 1;
+            case ShaderDataType::Int:     return 1;
+            case ShaderDataType::Int2:    return 2;
+            case ShaderDataType::Int3:    return 3;
+            case ShaderDataType::Int4:    return 4;
+            case ShaderDataType::Float:   return 1;
+            case ShaderDataType::Float2:  return 2;
+            case ShaderDataType::Float3:  return 3;
+            case ShaderDataType::Float4:  return 4;
+            case ShaderDataType::Mat3:    return 3 * 3;
+            case ShaderDataType::Mat4:    return 4 * 4;
+            default:
+                EQN_CORE_ASSERT(false, "Unknown ShaderDataType!");
+                return 0;
         }
     }
 
     // Buffer Layout
     BufferLayout::BufferLayout(std::initializer_list<BufferElement> elements)
-        : m_Elements(elements)
-    {
+        : m_Elements(elements) {
         CalculateOffsetsAndStride();
     }
 
@@ -129,16 +125,16 @@ namespace Equinox
     {
         switch (Renderer::GetAPI())
         {
-        case RendererAPI::API::None:
-            EQN_CORE_ASSERT(false, "RendererAPI::None is not supported!");
-            return nullptr;
+            case RendererAPI::API::None:
+                EQN_CORE_ASSERT(false, "RendererAPI::None is not supported!");
+                return nullptr;
 
-        case RendererAPI::API::OpenGL:
-            return std::make_shared<GLVertexBuffer>(size);
+            case RendererAPI::API::Vulkan:
+                return std::make_shared<VKVertexBuffer>(size);
 
-        case RendererAPI::API::Vulkan:
-            return std::make_shared<NullVertexBuffer>(size);
-
+            // [OP] Dual-backend: OpenGL vertex buffer
+            case RendererAPI::API::OpenGL:
+                return std::make_shared<GLVertexBuffer>(size);
         }
 
         EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
@@ -149,16 +145,16 @@ namespace Equinox
     {
         switch (Renderer::GetAPI())
         {
-        case RendererAPI::API::None:
-            EQN_CORE_ASSERT(false, "RendererAPI::None is not supported!");
-            return nullptr;
+            case RendererAPI::API::None:
+                EQN_CORE_ASSERT(false, "RendererAPI::None is not supported!");
+                return nullptr;
 
-        case RendererAPI::API::OpenGL:
-            return std::make_shared<GLVertexBuffer>(data, size);
+            case RendererAPI::API::Vulkan:
+                return std::make_shared<VKVertexBuffer>(data, size);
 
-        case RendererAPI::API::Vulkan:
-            return std::make_shared<NullVertexBuffer>(data, size);
-
+            // [OP] Dual-backend: OpenGL vertex buffer
+            case RendererAPI::API::OpenGL:
+                return std::make_shared<GLVertexBuffer>(data, size);
         }
 
         EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
@@ -170,16 +166,16 @@ namespace Equinox
     {
         switch (Renderer::GetAPI())
         {
-        case RendererAPI::API::OpenGL:
-            return std::make_shared<GLIndexBuffer>(indices, count);
+            case RendererAPI::API::Vulkan:
+                return std::make_shared<VKIndexBuffer>(indices, count);
 
-        case RendererAPI::API::Vulkan:
-            return std::make_shared<NullIndexBuffer>(indices, count);
+            // [OP] Dual-backend: OpenGL index buffer
+            case RendererAPI::API::OpenGL:
+                return std::make_shared<GLIndexBuffer>(indices, count);
 
-
-        default:
-            EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
-            return nullptr;
+            default:
+                EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
+                return nullptr;
         }
     }
 }

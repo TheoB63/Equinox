@@ -23,13 +23,17 @@ namespace Equinox::JobSystem
         std::atomic<u32> value = 0;
     };
 
-    // Lifecycle
-    void Init(u32 numThreads = 0);
-    void Shutdown();
+    struct Stats
+    {
+        u32 ThreadCount;
+        u32 TotalFibers;
+        u32 FreeFibers;
+        u32 QueueSize;
+    };
 
-    // Number of worker threads created by Init() (0 if the JobSystem is not
-    // initialized). Used by the panels to explain the jobs/mono-thread A/B.
-    u32 GetThreadCount();
+    // Lifecycle
+    void Init(u32 numThreads = 0); 
+    void Shutdown();
 
     // Run a single task
     void Execute(JobFunction function, void* data = nullptr, Counter* counter = nullptr);
@@ -43,6 +47,8 @@ namespace Equinox::JobSystem
 
     // Returns true if the counter has not reached the target value
     bool IsBusy(const Counter* counter);
+    
+    Stats GetStats();
 
     // Helper for lambdas (less performant but convenient)
     // Note: This requires allocating the lambda on the heap or LinearAllocator if it captures state!

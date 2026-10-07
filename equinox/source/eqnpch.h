@@ -19,6 +19,6 @@
 #include "equinox/core/Log.h"
 #include "equinox/core/Time.h"
 #include "equinox/core/Math.h"
-#include "equinox/core/ThreadPool.h"
+#include "equinox/core/Profiler.h"
 
 #include "equinox/utils/CustomFormatters.h"

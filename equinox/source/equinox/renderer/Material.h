@@ -2,218 +2,195 @@
 
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/UUID.h"
-
-#include "equinox/renderer/RendererAPI.h"
-
-#include "equinox/resources/Resource.h"
-#include "equinox/resources/libraries/ShaderLibrary.h"
-#include "equinox/resources/libraries/TextureCache.h"
+#include "equinox/resources/Asset.h"
+#include "equinox/resources/AssetManager.h"
+#include "equinox/renderer/Shader.h"
+#include "equinox/renderer/Texture.h"
 
 #include <nlohmann/json.hpp>
 #include <vector>
 #include <filesystem>
 #include <iostream>
+#include <optional>
 
 namespace Equinox
 {
-	enum class MapType
-	{
-		Diffuse = 0,
-		Alpha = 1,
-		Normal = 2,
-		Metalness = 3,
-		Roughness = 4,
-		Specular = 5,
-		Oclusion = 6,
-		Emissive = 7,
-		Thickness = 8
-	};
+    enum class MapType {
+        Diffuse     = 0,
+        Alpha       = 1,
+        Normal      = 2,
+        Metalness   = 3,
+        Roughness   = 4,
+        Specular    = 5,
+        Oclusion    = 6,
+        Emissive    = 7,
+        Thickness   = 8
+    };
 
-	struct MapInfo
-	{
-		UUID Uuid;
-		MapType type;
-		u32 uvIndex = 0;
-		bool useMap = true;
-		bool useTexture;
-	};
+    struct MapInfo {
+        UUID Uuid;
+        MapType type;
+        u32 uvIndex = 0;
+        bool useMap = true;
+        bool useTexture = true;
+    };
 
-	struct Subsurface 
-	{
-		Vec3 color = Vec3(0.0f);
-		float strength = 1.0f;
-		float thicknessScale = 1.0f;
-	};
+    struct Subsurface {
+        Vec3 color = Vec3(0.0f);
+        float strength = 1.0f;
+        float thicknessScale = 1.0f;
+    };
 
+    class Material : public Asset
+    {
+    public:
+        virtual AssetType GetType() const override { return AssetType::Material; }
+        
+        enum class RenderMode { Opaque, Cutout, Transparent, Fade };
+        enum class BlendFactor { Zero, One, SrcAlpha, OneMinusSrcAlpha, DstAlpha, OneMinusDstAlpha };
 
-	class Material : public Resource
-	{
-	public:
-		static constexpr const char* DefaultShaderName = "EquinoxForwardLight";
+        // Shader management
+        void SetShaderUUID(const UUID& uuid) { m_ShaderUUID = uuid; }
+        UUID GetShaderUUID() const { return m_ShaderUUID; }
+        std::shared_ptr<Shader> GetShader() const {
+             return AssetManager::GetAsset<Shader>(m_ShaderUUID);
+        }
 
-		void SetShaderUUID(const UUID& uuid) { m_ShaderUUID = uuid; }
-		UUID GetShaderUUID() const { return m_ShaderUUID; }
+        // Map management
+        void AddTexture(const MapInfo& texture) { m_Maps.push_back(texture); }
+        
+        void SetTexture(const MapInfo& texture) {
+            bool found = false;
+            for (auto& map : m_Maps) {
+                if (map.type == texture.type) {
+                    map = texture;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) m_Maps.push_back(texture);
+        }
+        
+        const std::vector<MapInfo>& GetTextures() const { return m_Maps; }
 
-		std::shared_ptr<Shader> GetShader() const
-		{
-			if (auto shader = ShaderLibrary::Get(m_ShaderUUID))
-				return shader;
-			return ShaderLibrary::Get(DefaultShaderName);
-		}
+        std::optional<u32> GetUVIndex(MapType type) const {
+            for (const auto& tex : m_Maps) {
+                if (tex.type == type) return tex.uvIndex;
+            }
+            return std::nullopt;
+        }
 
-		bool HasValidShader() const { return ShaderLibrary::Get(m_ShaderUUID) != nullptr; }
+        void EnableUseMap(MapType type, bool enable) {
+            for (auto& tex : m_Maps) {
+                if (tex.type == type) tex.useMap = enable;
+            }
+        }
+        
+        bool IsUseMapEnabled(MapType type) const {
+            for (const auto& tex : m_Maps) {
+                if (tex.type == type) return tex.useMap;
+            }
+            return false;
+        }
 
-		bool RepairShaderReference()
-		{
-			if (HasValidShader()) return false;
+        void EnableUseTexture(MapType type, bool enable) {
+            for (auto& tex : m_Maps) {
+                if (tex.type == type) tex.useTexture = enable;
+            }
+        }
+        
+        bool IsUseTextureEnabled(MapType type) const {
+            for (const auto& tex : m_Maps) {
+                if (tex.type == type) return tex.useTexture;
+            }
+            return false;
+        }
 
-			if (auto shader = ShaderLibrary::Get(DefaultShaderName))
-			{
-				m_ShaderUUID = shader->GetUUID();
-				return true;
-			}
-			return false;
-		}
+        // Runtime texture access
+        std::shared_ptr<Texture> GetTextureByType(MapType type) const {
+            for (const auto& tex : m_Maps) {
+                if (tex.type == type) return AssetManager::GetAsset<Texture>(tex.Uuid);
+            }
+            return nullptr;
+        }
 
-		void AddTexture(const MapInfo& texture) { m_Maps.push_back(texture); }
-		void SetTexture(const MapInfo& texture)
-		{
-			int index = static_cast<int>(texture.type);
-			if (index >= m_Maps.size()) AddTexture(texture);
-			else m_Maps[index] = texture;
-		}
-		const std::vector<MapInfo>& GetTextures() const { return m_Maps; }
+        // Render mode
+        RenderMode GetRenderMode() const { return m_RenderMode; }
+        void SetRenderMode(RenderMode mode) { m_RenderMode = mode; }
 
-		std::optional<u32> GetUVIndex(MapType type) const
-		{
-			for (const auto& tex : m_Maps)
-			{
-				if (tex.type == type) return tex.uvIndex;
-			}
-			return std::nullopt;
-		}
+        // Alpha cutoff for RenderMode::Cutout
+        float GetAlphaCutoff() const { return m_AlphaCutoff; }
+        void SetAlphaCutoff(float cutoff) { m_AlphaCutoff = cutoff; }
 
-		void EnableUseMap(MapType type, bool enable)
-		{
-			for (auto& tex : m_Maps)
-			{
-				if (tex.type == type) tex.useMap = enable;
-			}
-		}
-		bool IsUseMapEnabled(MapType type) const
-		{
-			for (const auto& tex : m_Maps)
-			{
-				if (tex.type == type) return tex.useMap;
-			}
-		}
+        // Blend factors
+        void SetBlendSrc(BlendFactor factor) { m_BlendSrc = factor; }
+        BlendFactor GetBlendSrc() const { return m_BlendSrc; }
 
-		void EnableUseTexture(MapType type, bool enable)
-		{
-			for (auto& tex : m_Maps)
-			{
-				if (tex.type == type) tex.useTexture = enable;
-			}
-		}
-		bool IsUseTextureEnabled(MapType type) const
-		{
-			for (const auto& tex : m_Maps)
-			{
-				if (tex.type == type) return tex.useTexture;
-			}
-		}
+        void SetBlendDst(BlendFactor factor) { m_BlendDst = factor; }
+        BlendFactor GetBlendDst() const { return m_BlendDst; }
 
-		// Runtime texture access
-		std::shared_ptr<Texture> GetTextureByType(MapType type) const
-		{
-			for (const auto& tex : m_Maps)
-			{
-				if (tex.type == type) return TextureCache::Get(tex.Uuid);
-			}
-			return nullptr;
-		}
+        void EnableAlphaFromDiffuse(bool enable) { m_AlphaFromDiffuse = enable; }
+        bool IsAlphaFromDiffuseEnabled() const { return m_AlphaFromDiffuse; }
 
-		// Render mode
-		RendererAPI::RenderMode GetRenderMode() const { return m_RenderMode; }
-		void SetRenderMode(RendererAPI::RenderMode mode) { m_RenderMode = mode; }
+        // Properties
+        Vec4 GetColor() const { return m_Color; }
+        void SetColor(Vec4 color) { m_Color = color; }
 
-		// Alpha cutoff for RenderMode::Cutout
-		float GetAlphaCutoff() const { return m_AlphaCutoff; }
-		void SetAlphaCutoff(float cutoff) { m_AlphaCutoff = cutoff; }
+        float GetAlpha() const { return m_Alpha; }
+        void SetAlpha(float alpha) { m_Alpha = alpha; }
 
-		// Blend factors
-		void SetBlendSrc(RendererAPI::BlendFactor factor) { m_BlendSrc = factor; }
-		RendererAPI::BlendFactor GetBlendSrc() const { return m_BlendSrc; }
+        float GetMetal() const { return m_Metal; }
+        void SetMetal(float metal) { m_Metal = metal; }
 
-		void SetBlendDst(RendererAPI::BlendFactor factor) { m_BlendDst = factor; }
-		RendererAPI::BlendFactor GetBlendDst() const { return m_BlendDst; }
+        float GetRough() const { return m_Rough; }
+        void SetRough(float rough) { m_Rough = rough; }
 
-		void EnableAlphaFromDiffuse(bool enable) { m_AlphaFromDiffuse = enable; }
-		bool IsAlphaFromDiffuseEnabled() const { return m_AlphaFromDiffuse; }
+        Vec3 GetEmissive() const { return m_Emissive; }
+        void SetEmissive(Vec3 emissive) { m_Emissive = emissive; }
 
-		// Properties
-		Vec4 GetColor() const { return m_Color; }
-		void SetColor(Vec4 color) { m_Color = color; }
+        Subsurface GetSubsurface() const { return m_Subsurface; }
+        void SetSubsurfaceParams(const Vec3& color, float strength, float thickness) {
+            m_Subsurface.color = color;
+            m_Subsurface.strength = strength;
+            m_Subsurface.thicknessScale = thickness;
+        }
+        void SetSubsurfaceColor(const Vec3& color) { m_Subsurface.color = color; }
+        void SetSubsurfaceStrength(float strength) { m_Subsurface.strength = strength; }
+        void SetSubsurfaceThicknessScale(float thickness) { m_Subsurface.thicknessScale = thickness; }
 
-		float GetAlpha() const { return m_Alpha; }
-		void SetAlpha(float alpha) { m_Alpha = alpha; }
+        bool IsGloss() const { return m_IsGloss; }
+        void SetGloss(bool gloss) { m_IsGloss = gloss; }
 
-		float GetMetal() const { return m_Metal; }
-		void SetMetal(float metal) { m_Metal = metal; }
+        bool IsSingleChannel() const { return m_IsSingleChannel; }
+        void SetSingleChannel(bool singleChannel) { m_IsSingleChannel = singleChannel; }
 
-		float GetRough() const { return m_Rough; }
-		void SetRough(float rough) { m_Rough = rough; }
+        // Serialization/Deserialization
+        void Serialize(nlohmann::json& json) const;
+        void Deserialize(const nlohmann::json& json);
 
-		Vec3 GetEmissive() const { return m_Emissive; }
-		void SetEmissive(Vec3 emissive) { m_Emissive = emissive; }
+        static const char* ToString(MapType type);
 
-		Subsurface GetSubsurface() const { return m_Subsurface; }
-		void SetSubsurfaceParams(const Vec3& color, float strength, float thickness) 
-		{
-			m_Subsurface.color = color;
-			m_Subsurface.strength = strength;
-			m_Subsurface.thicknessScale = thickness;
-		}
-		void SetSubsurfaceColor(const Vec3& color) { m_Subsurface.color = color; }
-		void SetSubsurfaceStrength(float strength) { m_Subsurface.strength = strength; }
-		void SetSubsurfaceThicknessScale(float thickness) { m_Subsurface.thicknessScale = thickness; }
+    private:
+        UUID m_ShaderUUID;
+        std::vector<MapInfo> m_Maps;
 
-		bool IsGloss() const { return m_IsGloss; }
-		void SetGloss(bool gloss) { m_IsGloss = gloss; }
+        RenderMode m_RenderMode = RenderMode::Opaque;
+        BlendFactor m_BlendSrc = BlendFactor::SrcAlpha;
+        BlendFactor m_BlendDst = BlendFactor::OneMinusSrcAlpha;
+        float m_AlphaCutoff = 0.5f;
+        bool m_AlphaFromDiffuse = false;
+        bool m_IsGloss = false;
+        bool m_IsSingleChannel = false;
 
-		bool IsSingleChannel() const { return m_IsSingleChannel; }
-		void SetSingleChannel(bool singleChannel) { m_IsSingleChannel = singleChannel; }
+        Vec4 m_Color = Vec4(1.0f);
+        float m_Alpha = 1.0f;
+        float m_Metal = 0.5f;
+        float m_Rough = 0.5f;
+        Vec3 m_Emissive = Vec3(0.0f);
+        Subsurface m_Subsurface;
+    };
 
-		// Serialization/Deserialization
-		void Serialize(nlohmann::json& json) const;
-		void Deserialize(const nlohmann::json& json);
-
-		static const char* ToString(MapType type);
-
-	private:
-		UUID m_ShaderUUID;
-		std::vector<MapInfo> m_Maps;
-
-		RendererAPI::RenderMode m_RenderMode = RendererAPI::RenderMode::Opaque;
-		RendererAPI::BlendFactor m_BlendSrc = RendererAPI::BlendFactor::SrcAlpha;
-		RendererAPI::BlendFactor m_BlendDst = RendererAPI::BlendFactor::OneMinusSrcAlpha;
-
-		float m_AlphaCutoff = 0.5f;
-		bool m_AlphaFromDiffuse = false;
-
-		bool m_IsGloss = false;
-		bool m_IsSingleChannel = false;
-
-		Vec4 m_Color = Vec4(1.0f);
-		float m_Alpha = 1.0f;
-		float m_Metal = 0.5f;
-		float m_Rough = 0.5f;
-		Vec3 m_Emissive = Vec3(0.0f);
-		Subsurface m_Subsurface;
-	};
-
-	inline std::ostream& operator<<(std::ostream& os, const MapType type)
-	{
-		return os << Material::ToString(type);
-	}
+    inline std::ostream& operator<<(std::ostream& os, const MapType type) {
+        return os << Material::ToString(type);
+    }
 }

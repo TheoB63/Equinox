@@ -1,193 +1,172 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/ResourcePanel.h"
-#include "equinox/resources/libraries/MaterialLibrary.h"
-#include "equinox/resources/libraries/ModelLibrary.h"
-#include "equinox/resources/libraries/ShaderLibrary.h"
-#include "equinox/resources/libraries/TextureCache.h"
+#include "equinox/resources/AssetDatabase.h"
+#include "equinox/resources/AssetManager.h"
 #include "equinox/utils/ImGuiUtils.h"
 #include "equinox/utils/EquinoxIcons.h"
 
 namespace Equinox
 {
-	ResourcePanel::ResourcePanel()
-	{
-		EQN_CORE_INFO("Created Resource panel");
-	}
+    ResourcePanel::ResourcePanel()
+    {
+        EQN_CORE_INFO("Created Resource panel");
+    }
 
-	void ResourcePanel::OnInit() {}
+    void ResourcePanel::OnInit() {}
 
-	void ResourcePanel::OnRender()
-	{
-		ImGui::PushFont(Editor::GetFASolid());
-		std::string resources = ICON_FA_DATABASE + std::string("  Resources");
+    void ResourcePanel::OnRender()
+    {
+        ImGui::PushFont(Editor::GetFASolid());
+        std::string resources = ICON_FA_DATABASE + std::string("  Resources");
 
-		if (ImGui::Begin(resources.c_str()))
-		{
-			// Filter controls
-			DrawFilterControls();
+        if (ImGui::Begin(resources.c_str()))
+        {
+            // Filter controls
+            DrawFilterControls();
 
-			// Main table
-			constexpr ImGuiTableFlags flags =
-				ImGuiTableFlags_Resizable |
-				ImGuiTableFlags_Borders |
-				ImGuiTableFlags_Sortable |
-				ImGuiTableFlags_RowBg |
-				ImGuiTableFlags_ScrollY;
+            // Main table
+            constexpr ImGuiTableFlags flags =
+                ImGuiTableFlags_Resizable |
+                ImGuiTableFlags_Borders |
+                ImGuiTableFlags_Sortable |
+                ImGuiTableFlags_RowBg |
+                ImGuiTableFlags_ScrollY;
 
-			if (ImGui::BeginTable("ResourceTable", 4, flags))
-			{
-				SetupColumns();
-				PopulateData();
-				ImGui::EndTable();
-			}
-		}
-		ImGui::End();
+            if (ImGui::BeginTable("ResourceTable", 4, flags)) {
+                SetupColumns();
+                PopulateData();
+                ImGui::EndTable();
+            }
+        }
+        ImGui::End();
 		ImGui::PopFont();
-	}
+    }
 
-	void ResourcePanel::DrawFilterControls()
-	{
-		ImGui::SetNextItemWidth(200);
-		ImGui::InputTextWithHint("##Search", ICON_FA_MAGNIFYING_GLASS, m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer));
+    void ResourcePanel::DrawFilterControls()
+    {
+        ImGui::SetNextItemWidth(200);
+        ImGui::InputTextWithHint("##Search", ICON_FA_MAGNIFYING_GLASS, m_SearchBuffer, IM_ARRAYSIZE(m_SearchBuffer));
 
-		ImGui::SameLine();
-		ButtonDropdown("Type Filter", ICON_FA_FILTER, [this]()
-			{
-				ImGui::Checkbox("Models", &m_ShowModels);
-				ImGui::Checkbox("Textures", &m_ShowTextures);
-				ImGui::Checkbox("Materials", &m_ShowMaterials);
-				ImGui::Checkbox("Shaders", &m_ShowShaders);
-			});
-	}
+        ImGui::SameLine();
 
-	void ResourcePanel::SetupColumns()
-	{
-		ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 200);
-		ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 100);
-		ImGui::TableSetupColumn("UUID", ImGuiTableColumnFlags_WidthStretch);
-		ImGui::TableSetupColumn("Refs", ImGuiTableColumnFlags_WidthFixed, 50);
-		ImGui::TableSetupScrollFreeze(0, 1); // Make header row visible
-		ImGui::TableHeadersRow();
-	}
+        ButtonDropdown(ICON_FA_FILTER, "type_filter", [this]() {
+            ImGui::Checkbox("Models", &m_ShowModels);
+            ImGui::Checkbox("Textures", &m_ShowTextures);
+            ImGui::Checkbox("Materials", &m_ShowMaterials);
+            ImGui::Checkbox("Shaders", &m_ShowShaders);
+        });
+    }
 
-	void ResourcePanel::PopulateData()
-	{
-		m_FilteredResources.clear();
+    void ResourcePanel::SetupColumns()
+    {
+        ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 200);
+        ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthFixed, 100);
+        ImGui::TableSetupColumn("UUID", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Refs", ImGuiTableColumnFlags_WidthFixed, 50);
+        ImGui::TableSetupScrollFreeze(0, 1); // Make header row visible
+        ImGui::TableHeadersRow();
+    }
 
-		// Collect resources from libraries
-		if (m_ShowModels) AddModelEntries();
-		if (m_ShowMaterials) AddMaterialEntries();
-		if (m_ShowShaders) AddShaderEntries();
-		if (m_ShowTextures) AddTextureEntries();
+    void ResourcePanel::PopulateData()
+    {
+        m_FilteredResources.clear();
 
-		// Display entries
-		for (const auto& entry : m_FilteredResources)
-		{
-			if (!ResourceMatchesSearch(entry)) continue;
+        const auto& registry = AssetDatabase::GetRegistry();
+ 
+        for (const auto& [uuid, metadata] : registry)
+        {
+            // Filter by type
+            if (metadata.Type == AssetType::Model && !m_ShowModels) continue;
+            if (metadata.Type == AssetType::Material && !m_ShowMaterials) continue;
+            if (metadata.Type == AssetType::Texture && !m_ShowTextures) continue;
+            if (metadata.Type == AssetType::Shader && !m_ShowShaders) continue;
+ 
+            // Create entry
+            ResourceEntry entry;
+            entry.Name = metadata.Path.filename().string();
+            entry.Uuid = uuid;
+             
+            switch (metadata.Type)
+            {
+            case AssetType::Model:    entry.Type = "Model"; break;
+            case AssetType::Material: entry.Type = "Material"; break;
+            case AssetType::Texture:  entry.Type = "Texture"; break;
+            case AssetType::Shader:   entry.Type = "Shader"; break;
+            case AssetType::Font:     entry.Type = "Font"; break;
+            case AssetType::Scene:    entry.Type = "Scene"; break;
+            default:                  entry.Type = "Unknown"; break;
+            }
+ 
+            // Check if loaded in AssetManager
+            if (auto asset = AssetManager::GetAsset<Asset>(uuid))
+            {
+                // -1 because AssetManager holds one reference
+                entry.RefCount = asset.use_count() - 1; 
+            }
+            else
+            {
+                entry.RefCount = 0;
+            }
+ 
+            if (ResourceMatchesSearch(entry))
+            {
+                m_FilteredResources.push_back(entry);
+            }
+        }
 
-			ImGui::TableNextRow();
+        // Display entries
+        for (const auto& entry : m_FilteredResources) {
+            //if (!ResourceMatchesSearch(entry)) continue;
 
-			// Name column
-			ImGui::TableSetColumnIndex(0);
-			ImGui::Text("%s", entry.Name.c_str());
+            ImGui::TableNextRow();
 
-			// Type column
-			ImGui::TableSetColumnIndex(1);
-			ImGui::TextColored(GetTypeColor(entry.Type), "%s", entry.Type.c_str());
+            // Name column
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("%s", entry.Name.c_str());
 
-			// UUID column
-			ImGui::TableSetColumnIndex(2);
-			ImGui::TextDisabled("%s", entry.Uuid.ToString().c_str());
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::BeginTooltip();
-				ImGui::Text("UUID: %s", entry.Uuid.ToString().c_str());
-				ImGui::EndTooltip();
-			}
+            // Type column
+            ImGui::TableSetColumnIndex(1);
+            ImGui::TextColored(GetTypeColor(entry.Type), "%s", entry.Type.c_str());
 
-			// Ref count column
-			ImGui::TableSetColumnIndex(3);
-			ImGui::Text("%d", entry.RefCount);
-		}
-	}
+            // UUID column
+            ImGui::TableSetColumnIndex(2);
+            ImGui::TextDisabled("%s", entry.Uuid.ToString().c_str());
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("UUID: %s", entry.Uuid.ToString().c_str());
+                ImGui::EndTooltip();
+            }
 
-	void ResourcePanel::AddModelEntries()
-	{
-		for (const auto& [uuid, model] : ModelLibrary::GetAllModels())
-		{
-			m_FilteredResources.push_back({
-				model.Model->GetName(),
-				uuid,
-				"Model",
-				model.Model.use_count() - 1 // Subtract library's own reference
-				});
-		}
-	}
+            // Ref count column
+            ImGui::TableSetColumnIndex(3);
+            ImGui::Text("%d", entry.RefCount);
+        }
+    }
 
-	void ResourcePanel::AddMaterialEntries()
-	{
-		for (const auto& [uuid, material] : MaterialLibrary::GetAllMaterials())
-		{
-			m_FilteredResources.push_back({
-				material->GetName(),
-				uuid,
-				"Material",
-				material.use_count() - 1
-				});
-		}
-	}
+    bool ResourcePanel::ResourceMatchesSearch(ResourceEntry entry)
+    {
+        if (strlen(m_SearchBuffer) == 0) return true;
 
-	void ResourcePanel::AddShaderEntries()
-	{
-		for (const auto& [uuid, shader] : ShaderLibrary::GetAllShaders())
-		{
-			m_FilteredResources.push_back({
-				shader.Shader->GetName(),
-				uuid,
-				"Shader",
-				shader.Shader.use_count() - 1
-				});
-		}
-	}
+        // Case-insensitive search
+        std::string name = entry.Name;
+        std::string uuid = entry.Uuid.ToString();
+        std::string filter = m_SearchBuffer;
 
-	void ResourcePanel::AddTextureEntries()
-	{
-		for (const auto& [uuid, texture] : TextureCache::GetAllTextures())
-		{
-			m_FilteredResources.push_back({
-				texture.Texture->GetName(),
-				uuid,
-				"Texture",
-				texture.Texture.use_count() - 1
-				});
-		}
-	}
+        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+        std::transform(uuid.begin(), uuid.end(), uuid.begin(), ::tolower);
+        std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
 
-	bool ResourcePanel::ResourceMatchesSearch(ResourceEntry entry)
-	{
-		if (strlen(m_SearchBuffer) == 0) return true;
+        return (name.find(filter) != std::string::npos) || (uuid.find(filter) != std::string::npos);
+    }
 
-		// Case-insensitive search
-		std::string name = entry.Name;
-		std::string uuid = entry.Uuid.ToString();
-		std::string filter = m_SearchBuffer;
-
-		std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-		std::transform(uuid.begin(), uuid.end(), uuid.begin(), ::tolower);
-		std::transform(filter.begin(), filter.end(), filter.begin(), ::tolower);
-
-		return (name.find(filter) != std::string::npos) || (uuid.find(filter) != std::string::npos);
-	}
-
-	ImVec4 ResourcePanel::GetTypeColor(const std::string& type) const
-	{
-		static const std::unordered_map<std::string, ImVec4> colors =
-		{
-			{"Model",    ImVec4(0.4f, 0.8f, 1.0f, 1.0f)},
-			{"Texture",  ImVec4(0.8f, 0.6f, 0.2f, 1.0f)},
-			{"Material", ImVec4(0.2f, 0.9f, 0.4f, 1.0f)},
-			{"Shader",   ImVec4(0.9f, 0.3f, 0.3f, 1.0f)}
-		};
-		return colors.at(type);
-	}
+    ImVec4 ResourcePanel::GetTypeColor(const std::string& type) const
+    {
+        static const std::unordered_map<std::string, ImVec4> colors = {
+            {"Model",    ImVec4(0.4f, 0.8f, 1.0f, 1.0f)},
+            {"Texture",  ImVec4(0.8f, 0.6f, 0.2f, 1.0f)},
+            {"Material", ImVec4(0.2f, 0.9f, 0.4f, 1.0f)},
+            {"Shader",   ImVec4(0.9f, 0.3f, 0.3f, 1.0f)}
+        };
+        return colors.at(type);
+    }
 }

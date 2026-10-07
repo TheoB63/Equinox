@@ -10,19 +10,16 @@ namespace Equinox
     {
     public:
         explicit FileDropEvent(std::vector<fs::path>&& paths)
-            : m_Paths(std::move(paths))
-        {
+            : m_Paths(std::move(paths)) {
         }
 
         const char* GetName() const override { return "FileDropEvent"; }
 
-        u32 GetCategoryFlags() const override 
-        {
+        u32 GetCategoryFlags() const override {
             return EventCategoryInput | EventCategoryFileDrop;
         }
 
-        const std::vector<fs::path>& GetPaths() const
-        {
+        const std::vector<fs::path>& GetPaths() const {
             return m_Paths;
         }
 

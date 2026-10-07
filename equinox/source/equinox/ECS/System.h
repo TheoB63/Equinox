@@ -4,10 +4,10 @@
 
 namespace Equinox
 {
-	class System
-	{
-	public:
-		virtual ~System() = default;
-		virtual void Update(entt::registry& registry) = 0;
-	};
+    class System
+    {
+    public:
+        virtual ~System() = default;
+        virtual void Update(entt::registry& registry) = 0;
+    };
 }

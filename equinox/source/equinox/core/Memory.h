@@ -11,7 +11,6 @@ namespace Equinox
     // =============================================
     //              Memory Utils
     // =============================================
-
     namespace Memory
     {
         constexpr u32 KB = 1024;
@@ -29,11 +28,11 @@ namespace Equinox
     // =============================================
     class Allocator
     {
-    public: 
+    public:
         virtual ~Allocator() = default;
 
         virtual void* Allocate(u64 size, u8 alignment = 8) = 0;
-
+        
         template<typename T, typename... Args>
         T* New(Args&&... args)
         {
@@ -57,11 +56,13 @@ namespace Equinox
             : m_TotalSize(size)
         {
             m_Start = malloc(size);
+            EQN_PROFILE_ALLOC(m_Start, size);
             m_Current = m_Start;
         }
 
         ~LinearAllocator()
         {
+            EQN_PROFILE_FREE(m_Start);
             free(m_Start);
         }
 
@@ -71,7 +72,7 @@ namespace Equinox
 
             void* currentAddress = m_Current;
             void* alignedAddress = Memory::AlignForward(currentAddress, alignment);
-
+            
             u64 adjustment = (u64)alignedAddress - (u64)currentAddress;
             u64 neededSize = size + adjustment;
 

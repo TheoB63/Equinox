@@ -1,39 +1,40 @@
 #include <Equinox.h>
-#include <Equinox/core/EntryPoint.h>
-
-#include <equinox/graphics/GfxRenderer.h>
-#include <equinox/graphics/GfxScene.h>
+#include <equinox/core/EntryPoint.h>
 
 #include <imgui.h>
 
 namespace Equinox
 {
-	class EquinoxApp : public App
-	{
-	public:
-		EquinoxApp(int argc, char** argv) : App(argc, argv) {}
-		~EquinoxApp() override = default;
+    class EquinoxApp : public App
+    {
+    public:
+        EquinoxApp(int argc, char** argv) : App(argc, argv) {}
+        ~EquinoxApp() override = default;
 
-	protected:
-		void OnInit() override {}
+    protected:
+        void OnInit() override {}
 
-		void OnUpdate() override
-		{
-		}
+        void OnUpdate() override
+        {
+        }
 
-		void OnUIRender() override
-		{
-			// Equinox Metrics is engine-owned (MetricsPanel), so every application
-			// gets exactly the same window without app-local duplicates.
-			static bool showDemo = true;
-			if (showDemo) ImGui::ShowDemoWindow(&showDemo);
-		}
+        void OnUIRender() override
+        {
+            // ImGui Demo
+            static bool showDemo = true;
+            if (showDemo) ImGui::ShowDemoWindow(&showDemo);
 
-		void OnShutdown() override {}
-	};
+            ImGuiIO& io = ImGui::GetIO();
+            ImGui::Begin("Equinox Metrics");
+            ImGui::Text("Frame time %.3f ms (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::End();
+        }
 
-	App* CreateApp(int argc, char** argv)
-	{
-		return new EquinoxApp(argc,argv);
-	}
+        void OnShutdown() override {}
+    };
+
+    App* CreateApp(int argc, char** argv)
+    {
+        return new EquinoxApp(argc, argv);
+    }
 }

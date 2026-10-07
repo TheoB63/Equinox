@@ -4,15 +4,13 @@
 
 #include <imgui.h>
 
-// TEST 
-#include <equinox/resources/libraries/ShaderLibrary.h>
+// TEST
 #include <equinox/resources/FileSystem.h>
 
 #include <equinox/renderer/Renderer.h>
 #include <equinox/renderer/Buffer.h>
 #include <equinox/renderer/Shader.h>
-#include <equinox/renderer/vulkan/VKRendererAPI.h>
-#include <equinox/renderer/vulkan/VKBuffer.h>
+#include <equinox/renderer/backend/vulkan/VKRendererAPI.h>
 #include <memory>
 
 // TEST VULKAN
@@ -21,21 +19,21 @@
 
 namespace Equinox
 {
-	struct VKVertex {
-		glm::vec2 pos;
-		glm::vec3 color;
-	};
+    struct VKVertex {
+        glm::vec2 pos;
+        glm::vec3 color;
+    };
 
-	class VulkanApp : public App
-	{
-	public:
-		VulkanApp(int argc, char** argv);
-		~VulkanApp() override = default;
-	
-	protected:
-		void OnInit() override;
-		void OnUpdate() override;
-		void OnUIRender() override;
-		void OnShutdown() override;
-	};
+    class VulkanApp : public App
+    {
+    public:
+        VulkanApp(int argc, char** argv);
+        ~VulkanApp() override = default;
+
+    protected:
+        void OnInit() override;
+        void OnUpdate() override;
+        void OnUIRender() override;
+        void OnShutdown() override;
+    };
 }

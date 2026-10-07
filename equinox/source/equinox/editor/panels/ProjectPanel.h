@@ -10,30 +10,26 @@ namespace Equinox
 {
     constexpr const char* ASSET_UUID = "ASSET_UUID";
     constexpr const char* ENTITY_UUID = "ENTITY_UUID";
-    
-    struct DirectoryNode
-    {
+
+    struct DirectoryNode {
         UUID Uuid;
         std::string Name;
-        ResourceType Type;
+        AssetType Type;
         bool IsOpen = false;
         DirectoryNode* Parent = nullptr;
         std::vector<DirectoryNode*> Directories;
         std::vector<DirectoryNode*> Contents;
 
-        /*bool operator==(const DirectoryNode& other) const
-        {
+        /*bool operator==(const DirectoryNode& other) const {
             return Uuid == other.Uuid;
         }*/
     };
 
-    class InspectorPanel;
+	class InspectorPanel;
 
     class ProjectPanel : public Panel
     {
     public:
-        
-
         ProjectPanel();
 
         void OnInit() override;
@@ -58,8 +54,8 @@ namespace Equinox
         void DrawGridItems(std::vector<DirectoryNode*>& items, bool isDirectory);
         void DrawGridItem(DirectoryNode& item, bool isDirectory);
 
-        const char* GetResourceIcon(ResourceType type);
-        void HandleDragDrop(DirectoryNode& item);
+        const char* GetResourceIcon(AssetType type);
+		void HandleDragDrop(DirectoryNode& item);
         void HandleItemInteraction(DirectoryNode& item, bool isDirectory);
         void HandleRenaming();
 
@@ -74,7 +70,7 @@ namespace Equinox
         void DeleteDirectoryRecursive(const fs::path& path);
 
         // Runtime state
-        InspectorPanel* m_InspectorPanel = nullptr;
+		InspectorPanel* m_InspectorPanel = nullptr;
         std::string m_AssetsPath;
 
         DirectoryNode* m_RootNode;
@@ -87,6 +83,6 @@ namespace Equinox
         char m_RenameBuffer[256] = "";
         std::string m_OriginalName;
 
-        bool m_ListView = true;
+		bool m_ListView = true;
     };
 }

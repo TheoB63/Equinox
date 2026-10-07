@@ -18,6 +18,7 @@ namespace Equinox
         void OnUpdate() override;
         void SwapBuffers();
 
+        // TODO: Relocate OpenGL specific stuff
         void SetVSync(bool enabled) override;
         void ToggleFullscreen() override;
 

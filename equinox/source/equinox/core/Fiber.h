@@ -12,41 +12,41 @@ namespace Equinox::JobSystem
     {
         void* Handle = nullptr;
         void* Args = nullptr; // User data passed to the fiber function
-
+        
         // Function pointer for the fiber entry point
         using EntryPoint = void(*)(void*);
-
+        
         static Fiber Create(EntryPoint entry, void* args, u32 stackSize = 64 * 1024)
         {
             Fiber f;
-#ifdef _WIN32
+            #ifdef _WIN32
             f.Handle = CreateFiber(stackSize, (LPFIBER_START_ROUTINE)entry, args);
-#endif
+            #endif
             f.Args = args;
             return f;
         }
 
         static void Destroy(Fiber& f)
         {
-#ifdef _WIN32
+            #ifdef _WIN32
             if (f.Handle) DeleteFiber(f.Handle);
-#endif
+            #endif
             f.Handle = nullptr;
         }
 
         static void SwitchTo(Fiber& f)
         {
-#ifdef _WIN32
+            #ifdef _WIN32
             SwitchToFiber(f.Handle);
-#endif
+            #endif
         }
 
         static Fiber ConvertThreadToFiber(void* args)
         {
             Fiber f;
-#ifdef _WIN32
+            #ifdef _WIN32
             f.Handle = ::ConvertThreadToFiber(args);
-#endif
+            #endif
             f.Args = args;
             return f;
         }

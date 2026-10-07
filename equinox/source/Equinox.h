@@ -13,10 +13,8 @@
 #include "equinox/editor/Editor.h"
 
 #include "equinox/resources/FileSystem.h"
-#include "equinox/resources/libraries/MaterialLibrary.h"
-#include "equinox/resources/libraries/ModelLibrary.h"
-#include "equinox/resources/libraries/ShaderLibrary.h"
-#include "equinox/resources/libraries/TextureCache.h"
+#include "equinox/resources/AssetManager.h"
+#include "equinox/resources/AssetDatabase.h"
 
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/Buffer.h"

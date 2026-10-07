@@ -1,50 +1,31 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
-#include "equinox/core/Math.h"
 #include "equinox/renderer/RendererAPI.h"
-#include "equinox/renderer/Mesh.h"
-#include "equinox/renderer/renderGraph/RenderGraph.h"
 
 #include <memory>
 
 namespace Equinox
 {
-	class Renderer
-	{
-	public:
-		static void Init(RendererAPI::API api, void* window);
-		static void Shutdown();
+    namespace RG { class RenderGraph; }
 
-		static void BindFramebuffer(const std::shared_ptr<Framebuffer>& framebuffer);
+    class Renderer
+    {
+    public:
+        // [OP] Dual-backend: choose the renderer API (default: Vulkan).
+        static void Init(void* windowHandle, RendererAPI::API api = RendererAPI::API::Vulkan);
+        static void Shutdown();
 
-		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-		static void SetClearColor(const glm::vec4& color);
-		static void Clear(BufferBit bits);
+        static bool BeginFrame();
+        static void EndFrame();
+        
+        static void ExecuteGraph(RG::RenderGraph& graph);
+        static void OnResize(u32 width, u32 height);
 
-		static void EnableDepthMask(bool enable);
-		static bool IsDepthMaskEnabled();
+        static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+        static RendererAPI* GetRendererAPI() { return s_RendererAPI.get(); }
 
-		static void EnableDepthTest(bool enable);
-		static bool IsDepthTestEnabled() { return true; }
-
-		static void EnableBlending(bool enable);
-		static void SetBlendFunction(RendererAPI::BlendFactor srcFactor, RendererAPI::BlendFactor dstFactor);
-
-		static void SubmitMesh(const std::shared_ptr<Mesh>& mesh);
-
-		static void DrawIndexed(uint32_t count);
-		static void DrawFrame();
-
-		static void ExecuteGraph(RG::RenderGraph& graph);
-
-		static void InitFullscreenQuad();
-		static void DrawFullscreenQuad();
-
-		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
-		static RendererAPI* GetRendererAPI() { return s_RendererAPI.get(); }
-
-	private:
-		static std::unique_ptr<RendererAPI> s_RendererAPI;
-	};
+    private:
+        static std::unique_ptr<RendererAPI> s_RendererAPI;
+    };
 }

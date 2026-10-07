@@ -1,50 +1,47 @@
 #include "eqnpch.h"
 #include "equinox/renderer/Shader.h"
 #include "equinox/renderer/Renderer.h"
-#include "equinox/renderer/openGL/GLShader.h"
-#include "equinox/renderer/null/NullResources.h"
+#include "equinox/renderer/backend/opengl/GLShader.h"
 
 namespace Equinox
 {
-	std::shared_ptr<Shader> Shader::Create(const fs::path& filePath)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case RendererAPI::API::OpenGL:
-				return std::make_shared<GLShader>(filePath);
-			case RendererAPI::API::Vulkan:
-				return std::make_shared<NullShader>(filePath); // Vulkan uses pre-compiled SPIR-V pipelines
-			default:
-				EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
-				return nullptr;
-		}
-	}
+    // Simple concrete class for now, just to hold the path
+    class VulkanShaderResource : public Shader
+    {
+    public:
+        VulkanShaderResource(const fs::path& path) : m_Path(path) {}
+        virtual const fs::path& GetPath() const override { return m_Path; }
+    private:
+        fs::path m_Path;
+    };
 
-	std::shared_ptr<Shader> Shader::Create(const std::string& vertexSrc, const std::string& fragmentSrc)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case RendererAPI::API::OpenGL:
-				return std::make_shared<GLShader>(vertexSrc, fragmentSrc);
-			case RendererAPI::API::Vulkan:
-				return std::make_shared<NullShader>(vertexSrc, fragmentSrc);
-			default:
-				EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
-				return nullptr;
-		}
-	}
+    std::shared_ptr<Shader> Shader::Create(const fs::path& filePath)
+    {
+        switch (Renderer::GetAPI())
+        {
+            case RendererAPI::API::Vulkan:
+                return std::make_shared<VulkanShaderResource>(filePath);
 
-	std::string Shader::Load(const fs::path& filePath)
-	{
-		std::ifstream in(filePath, std::ios::in | std::ios::binary);
-		if (!in)
-		{
-			EQN_CORE_ERROR("Could not open shader file: {0}", filePath.string());
-			return "";
-		}
+            // [OP] Dual-backend: OpenGL shader (GLSL program, see GLShader)
+            case RendererAPI::API::OpenGL:
+                return std::make_shared<GLShader>(filePath);
 
-		std::stringstream buffer;
-		buffer << in.rdbuf();
-		return buffer.str();
-	}
+            default:
+                EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
+                return nullptr;
+        }
+    }
+
+    std::string Shader::Load(const fs::path& filePath)
+    {
+        std::ifstream in(filePath, std::ios::in | std::ios::binary);
+        if (!in) {
+            EQN_CORE_ERROR("Could not open shader file: {0}", filePath.string());
+            return "";
+        }
+
+        std::stringstream buffer;
+        buffer << in.rdbuf();
+        return buffer.str();
+    }
 }

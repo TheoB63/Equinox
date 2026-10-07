@@ -5,8 +5,7 @@
 namespace Equinox
 {
     Entity::Entity(entt::entity handle, Scene* scene)
-        : m_EntityHandle(handle), m_Scene(scene) 
-    {
+        : m_EntityHandle(handle), m_Scene(scene) {
     }
 
     std::string Entity::GetName() const
@@ -24,18 +23,15 @@ namespace Equinox
     void Entity::SetParent(Entity parent)
     {
         // Prevent invalid parenting
-        if (!parent || parent == *this || IsAncestorOf(parent))
-        {
+        if (!parent || parent == *this || IsAncestorOf(parent)) {
             EQN_CORE_WARN("Invalid parenting operation");
             return;
         }
 
         // Remove from old parent
-        if (HasComponent<Parent>())
-        {
+        if (HasComponent<Parent>()) {
             Entity oldParent = GetComponent<Parent>().m_Parent;
-            if (oldParent && oldParent.HasComponent<Children>())
-            {
+            if (oldParent && oldParent.HasComponent<Children>()) {
                 auto& children = oldParent.GetComponent<Children>().m_Children;
                 children.erase(std::remove(children.begin(), children.end(), *this), children.end());
             }
@@ -70,8 +66,7 @@ namespace Equinox
     bool Entity::IsDescendantOf(Entity potentialAncestor) const
     {
         Entity current = *this;
-        while (current.HasParent())
-        {
+        while (current.HasParent()) {
             current = current.GetParent();
             if (current == potentialAncestor) return true;
         }
@@ -83,8 +78,7 @@ namespace Equinox
         if (!IsValid() || !potentialDescendant.IsValid()) return false;
 
         Entity current = potentialDescendant;
-        while (current.HasParent()) 
-        {
+        while (current.HasParent()) {
             current = current.GetParent();
             if (current == *this) return true;
         }

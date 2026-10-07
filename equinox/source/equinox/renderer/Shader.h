@@ -2,36 +2,24 @@
 
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/Math.h"
-
-#include "equinox/resources/Resource.h"
+#include "equinox/resources/Asset.h"
 
 #include <string>
 #include <unordered_map>
 
 namespace Equinox
 {
-    class Shader : public Resource
-    {
-    public:
-        virtual ~Shader() = default;
-
-        virtual void Bind() const = 0;
-        virtual void Unbind() const = 0;
-
-        virtual void SetBool(const std::string& name, bool value) = 0;
-        virtual void SetInt(const std::string& name, int value) = 0;
-        virtual void SetFloat(const std::string& name, float value) = 0;
-        virtual void SetVec2(const std::string& name, const glm::vec2& vector) = 0;
-        virtual void SetVec3(const std::string& name, const glm::vec3& vector) = 0;
-        virtual void SetVec4(const std::string& name, const glm::vec4& vector) = 0;
-        virtual void SetMat4(const std::string& name, const glm::mat4& matrix) = 0;
+	class Shader : public Asset
+	{
+	public:
+        virtual AssetType GetType() const override { return AssetType::Shader; }
+        
+		virtual ~Shader() = default;
+        
+        virtual const fs::path& GetPath() const = 0;
 
         static std::shared_ptr<Shader> Create(const fs::path& filePath);
-        static std::shared_ptr<Shader> Create(const std::string& vertexSrc, const std::string& fragmentSrc);
 
         static std::string Load(const fs::path& filePath);
-
-    protected:
-        virtual int GetUniformLocation(const std::string& name) = 0;
-    };
+	};
 }

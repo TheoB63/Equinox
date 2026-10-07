@@ -5,13 +5,12 @@
 
 #include <iostream>
 
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
     Equinox::Log::Init();
-    Equinox::App* app = Equinox::CreateApp(argc,argv);
+    Equinox::App* app = Equinox::CreateApp(argc, argv);
 
-    if (!app)
-    {
+    if (!app) {
         EQN_CORE_CRITICAL("Failed to create app. Exiting.");
 
         #ifdef _DEBUG

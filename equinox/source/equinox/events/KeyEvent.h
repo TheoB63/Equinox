@@ -21,8 +21,7 @@ namespace Equinox
     {
     public:
         KeyPressedEvent(u32 keycode, u32 repeatCount)
-            : KeyEvent(keycode), m_RepeatCount(repeatCount) {
-        }
+            : KeyEvent(keycode), m_RepeatCount(repeatCount) {}
 
         u32 GetRepeatCount() const { return m_RepeatCount; }
 

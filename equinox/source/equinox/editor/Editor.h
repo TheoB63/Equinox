@@ -4,7 +4,6 @@
 #include "equinox/window/Window.h"
 
 #include <memory>
-
 #include <imgui.h>
 #include <imgui/imgui_internal.h>
 
@@ -37,17 +36,17 @@ namespace Equinox
 
         template<typename T>
         static T* GetPanel() {
-            for (auto& panel : s_Panels)
-            {
+            for (auto& panel : s_Panels) {
                 if (auto found = dynamic_cast<T*>(panel.get()))
                     return found;
             }
             return nullptr;
         }
 
+        static bool ApplyRandomStyle();
         static void SetCustomStyle();
         static void SetBubblegumStyle();
-        static void SetMatrixStyle();
+		static void SetMatrixStyle();
         static void SetRandomStyle();
 
         static ImFont* GetMainFont() { return m_MainFont; }
@@ -57,7 +56,7 @@ namespace Equinox
     private:
         static inline ImGuiContext* s_Context = nullptr;
         static inline std::vector<std::unique_ptr<Panel>> s_Panels;
-        
+
         static inline ImFont* m_MainFont = nullptr;
         static inline ImFont* m_FARegular = nullptr;
         static inline ImFont* m_FASolid = nullptr;

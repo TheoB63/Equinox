@@ -10,7 +10,7 @@
 // Disable NTTP (for pre-C++20)
 //#define FMT_USE_NONTYPE_TEMPLATE_ARGS 0
 //#define FMT_HEADER_ONLY 1
- 
+
 // Ignore warnings
 #pragma warning(push, 0)
 #include <spdlog/spdlog.h>
@@ -43,11 +43,12 @@ namespace Equinox
 #define EQN_CORE_ERROR(...)    ::Equinox::Log::GetLogger()->error(FMT(__VA_ARGS__))
 #define EQN_CORE_CRITICAL(...) ::Equinox::Log::GetLogger()->critical(FMT(__VA_ARGS__))
 
+
 // Assert
-#define EQN_CORE_ASSERT(condition, ...) \
-    do { \
-        if (!(condition)) { \
+#define EQN_CORE_ASSERT(condition, ...)                              \
+    do {                                                            \
+        if (!(condition)) {                                         \
             EQN_CORE_CRITICAL("Assertion Failed: {0}", __VA_ARGS__); \
-            assert(false && #condition); \
-        } \
+            assert(false && #condition);                            \
+        }                                                           \
     } while(0)

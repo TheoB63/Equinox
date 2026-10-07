@@ -32,21 +32,34 @@ project "Sandbox"
       IncludeDir["glm"],
       IncludeDir["imgui"],
       IncludeDir["spdlog"],
+      IncludeDir["tracy"],
       IncludeDir["vulkan"]
+   }
+
+   libdirs
+   {
+      LibraryDir["vulkan"]
+   }
+
+   postbuildcommands
+   {
+      "{COPY} " .. LibraryDir["vulkan"] .. "/shaderc_shared.dll %{cfg.targetdir}"
    }
 
    links
    {
-      "Equinox"
+      "Equinox",
+      "vulkan-1",
+      "shaderc_shared"
    }
 
    filter "configurations:Debug"
-      defines { "DEBUG" }
+      defines { "DEBUG", "TRACY_ENABLE", "TRACY_FIBERS" }
       runtime "Debug"
       symbols "on"
 
    filter "configurations:Release"
-      defines { "RELEASE" }
+      defines { "RELEASE", "TRACY_ENABLE", "TRACY_FIBERS" }
       runtime "Release"
       optimize "on"
 
