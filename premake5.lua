@@ -30,6 +30,7 @@ group "Equinox/Extern"
    include "equinox/extern/premake5-glfw"
    include "equinox/extern/premake5-glm"
    include "equinox/extern/premake5-imgui"
+   include "equinox/extern/premake5-imguizmo"
    include "equinox/extern/premake5-tracy"
 group ""
 

@@ -6,6 +6,8 @@
 #include "equinox/events/Event.h"
 #include "equinox/events/EventBus.h"
 
+#include <ImGuizmo.h>
+
 namespace Equinox
 {
     class Scene;
@@ -80,6 +82,7 @@ namespace Equinox
 
     private:
         void HandleRenderResize(Event& e);
+        void DrawGizmos();
 
         std::shared_ptr<Scene> m_Context;
         std::shared_ptr<RenderingSystem> m_RenderingSystem;
@@ -91,6 +94,6 @@ namespace Equinox
 
         // Gizmo state
         Entity m_SelectedEntity;
-        //ImGuizmo::OPERATION m_GizmoOperation = ImGuizmo::TRANSLATE;
+        int m_GizmoType = -1; // -1 = None, or ImGuizmo::OPERATION
     };
 }

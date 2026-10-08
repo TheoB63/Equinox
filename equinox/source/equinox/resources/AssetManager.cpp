@@ -104,7 +104,7 @@ namespace Equinox
             else if (upload.Type == AssetType::Model)
             {
                 auto* modelData = static_cast<ModelAssetData*>(upload.Data.get());
-                newAsset = Model::Create(modelData->Meshes);
+                newAsset = Model::Create(modelData->Meshes, modelData->Materials);
             }
             else if (upload.Type == AssetType::Material)
             {

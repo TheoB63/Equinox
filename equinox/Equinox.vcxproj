@@ -76,7 +76,7 @@
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DEBUG;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -101,7 +101,7 @@
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;RELEASE;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -129,7 +129,7 @@
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -174,6 +174,7 @@
     <ClInclude Include="source\equinox\core\Time.h" />
     <ClInclude Include="source\equinox\core\UUID.h" />
     <ClInclude Include="source\equinox\editor\Editor.h" />
+    <ClInclude Include="source\equinox\editor\UI.h" />
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ProfilerPanel.h" />
@@ -181,7 +182,6 @@
     <ClInclude Include="source\equinox\editor\panels\RenderPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ResourcePanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ScenePanel.h" />
-    <ClInclude Include="source\equinox\editor\UI.h" />
     <ClInclude Include="source\equinox\events\AppEvent.h" />
     <ClInclude Include="source\equinox\events\Event.h" />
     <ClInclude Include="source\equinox\events\EventBus.h" />
@@ -251,6 +251,7 @@
     <ClCompile Include="source\equinox\core\Log.cpp" />
     <ClCompile Include="source\equinox\core\UUID.cpp" />
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
+    <ClCompile Include="source\equinox\editor\UI.cpp" />
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ProfilerPanel.cpp" />
@@ -258,7 +259,6 @@
     <ClCompile Include="source\equinox\editor\panels\RenderPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
-    <ClCompile Include="source\equinox\editor\UI.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
@@ -315,6 +315,9 @@
     </ProjectReference>
     <ProjectReference Include="extern\imgui.vcxproj">
       <Project>{0098A80F-6CAC-D0C0-352E-7420A101CDF1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="extern\imguizmo.vcxproj">
+      <Project>{76AD0322-627A-5E2D-8B93-4CD577BF93BB}</Project>
     </ProjectReference>
     <ProjectReference Include="extern\Tracy.vcxproj">
       <Project>{88372F0E-F44B-57BF-BDCD-FA1E29A153F0}</Project>

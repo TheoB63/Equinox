@@ -7,98 +7,108 @@
 #include <queue>
 #include <unordered_map>
 #include <functional>
+#include <mutex>
 
 namespace Equinox
 {
-    using EventPtr = std::unique_ptr<Event>;
-    using EventHandler = std::function<void(Event&)>;
-    using EventTypeID = size_t;
+	using EventPtr = std::unique_ptr<Event>;
+	using EventHandler = std::function<void(Event&)>;
+	using EventTypeID = size_t;
 
-    enum class BusType {
-        MainThread,
-        RenderThread,
-        COUNT
-    };
+	enum class BusType {
+		MainThread,
+		RenderThread,
+		COUNT
+	};
 
-    class EventBus
-    {
-    public:
-        // Queue an event for later processing
-        template<typename T, typename... Args>
-        static void Enqueue(BusType bus, Args&&... args) {
-            static_assert(std::is_base_of_v<Event, T>,
-                "T must inherit from Event");
-            GetBus(bus).Enqueue<T>(std::forward<Args>(args)...);
-        }
+	class EventBus
+	{
+	public:
+		// Queue an event for later processing
+		template<typename T, typename... Args>
+		static void Enqueue(BusType bus, Args&&... args) {
+			static_assert(std::is_base_of_v<Event, T>,
+				"T must inherit from Event");
+			GetBus(bus).Enqueue<T>(std::forward<Args>(args)...);
+		}
 
-        // Subscribe to specific event type
-        template<typename T>
-        static void Subscribe(BusType bus, EventHandler handler) {
-            GetBus(bus).Subscribe<T>(std::move(handler));
-        }
+		// Subscribe to specific event type
+		template<typename T>
+		static void Subscribe(BusType bus, EventHandler handler) {
+			GetBus(bus).Subscribe<T>(std::move(handler));
+		}
 
-        // Process all queued events
-        static void ProcessEvents(BusType bus) {
-            GetBus(bus).ProcessEvents();
-        }
+		// Process all queued events
+		static void ProcessEvents(BusType bus) {
+			GetBus(bus).ProcessEvents();
+		}
 
-        class BusInstance {
-        public:
-            template<typename T, typename... Args>
-            void Enqueue(Args&&... args) {
-                m_EventQueue.emplace(
-                    std::make_unique<T>(std::forward<Args>(args)...),
-                    GetEventTypeID<T>()
-                );
-            }
+		class BusInstance {
+		public:
+			template<typename T, typename... Args>
+			void Enqueue(Args&&... args) {
+				std::lock_guard<std::mutex> lock(m_QueueLock);
+				m_EventQueue.emplace(
+					std::make_unique<T>(std::forward<Args>(args)...),
+					GetEventTypeID<T>()
+				);
+			}
 
-            template<typename T>
-            void Subscribe(EventHandler handler) {
-                const auto typeID = GetEventTypeID<T>();
-                m_Subscribers[typeID].emplace_back(std::move(handler));
-            }
+			template<typename T>
+			void Subscribe(EventHandler handler) {
+				const auto typeID = GetEventTypeID<T>();
+				m_Subscribers[typeID].emplace_back(std::move(handler));
+			}
 
-            void ProcessEvents() {
-                while (!m_EventQueue.empty()) {
-                    auto& [event, typeID] = m_EventQueue.front();
-                    DispatchEvent(*event, typeID);
-                    m_EventQueue.pop();
-                }
-            }
+			void ProcessEvents() {
+				// Swap queue to allow enqueuing while processing
+				std::queue<std::pair<EventPtr, EventTypeID>> processingQueue;
+				{
+					std::lock_guard<std::mutex> lock(m_QueueLock);
+					processingQueue.swap(m_EventQueue);
+				}
 
-            template<typename T>
-            static EventTypeID GetEventTypeID() {
-                static EventTypeID typeID = NextEventTypeID();
-                return typeID;
-            }
+				while (!processingQueue.empty()) {
+					auto& [event, typeID] = processingQueue.front();
+					DispatchEvent(*event, typeID);
+					processingQueue.pop();
+				}
+			}
 
-        private:
-            void DispatchEvent(Event& event, EventTypeID typeID) {
-                if (auto it = m_Subscribers.find(typeID); it != m_Subscribers.end()) {
-                    for (auto& handler : it->second) {
-                        if (event.m_Handled) break;
-                        handler(event);
-                    }
-                }
-            }
+			template<typename T>
+			static EventTypeID GetEventTypeID() {
+				static EventTypeID typeID = NextEventTypeID();
+				return typeID;
+			}
 
-            static EventTypeID NextEventTypeID() {
-                static EventTypeID counter = 0;
-                return counter++;
-            }
+		private:
+			void DispatchEvent(Event& event, EventTypeID typeID) {
+				if (auto it = m_Subscribers.find(typeID); it != m_Subscribers.end()) {
+					for (auto& handler : it->second) {
+						if (event.m_Handled) break;
+						handler(event);
+					}
+				}
+			}
 
-            std::queue<std::pair<EventPtr, EventTypeID>> m_EventQueue;
-            std::unordered_map<EventTypeID, std::vector<EventHandler>> m_Subscribers;
-        };
+			static EventTypeID NextEventTypeID() {
+				static EventTypeID counter = 0;
+				return counter++;
+			}
 
-        static BusInstance& GetBus(BusType bus) {
-            static std::array<BusInstance, (size_t)BusType::COUNT> buses;
-            return buses[(size_t)bus];
-        }
+			std::queue<std::pair<EventPtr, EventTypeID>> m_EventQueue;
+			std::unordered_map<EventTypeID, std::vector<EventHandler>> m_Subscribers;
+			std::mutex m_QueueLock;
+		};
 
-        /*static EventTypeID GetEventTypeID() {
-            static EventTypeID m_NextTypeID = 0;
-            return m_NextTypeID++;
-        }*/
-    };
+		static BusInstance& GetBus(BusType bus) {
+			static std::array<BusInstance, (size_t)BusType::COUNT> buses;
+			return buses[(size_t)bus];
+		}
+
+		/*static EventTypeID GetEventTypeID() {
+			static EventTypeID m_NextTypeID = 0;
+			return m_NextTypeID++;
+		}*/
+	};
 }

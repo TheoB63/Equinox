@@ -20,7 +20,7 @@ project "Equinox"
    files
    {
       "source/**.h",
-      "source/**.cpp"
+      "source/**.cpp",
    }
 
    includedirs
@@ -33,6 +33,7 @@ project "Equinox"
       IncludeDir["glfw"],
       IncludeDir["glm"],
       IncludeDir["imgui"],
+      IncludeDir["imguizmo"],
       IncludeDir["spdlog"],
       IncludeDir["vulkan"],
       IncludeDir["tracy"]
@@ -50,6 +51,7 @@ project "Equinox"
       "glfw",
       "glm",
       "imgui",
+      "ImGuizmo",
       "Tracy",
       "vulkan-1",
       "shaderc_shared",

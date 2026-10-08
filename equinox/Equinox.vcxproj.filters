@@ -119,6 +119,9 @@
     <ClInclude Include="source\equinox\editor\Editor.h">
       <Filter>equinox\editor</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\editor\UI.h">
+      <Filter>equinox\editor</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h">
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
@@ -305,7 +308,6 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\editor\UI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -334,6 +336,9 @@
       <Filter>equinox\core</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\editor\Editor.cpp">
+      <Filter>equinox\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\editor\UI.cpp">
       <Filter>equinox\editor</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp">
@@ -477,6 +482,5 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\editor\UI.cpp" />
   </ItemGroup>
 </Project>

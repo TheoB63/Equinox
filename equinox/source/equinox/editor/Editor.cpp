@@ -50,7 +50,8 @@ namespace Equinox
         // TODO: Set Render specific Imgui Backends (GL/VK)
         if (Renderer::GetAPI() == RendererAPI::API::Vulkan) {
             EQN_CORE_TRACE(" - Initialized ImGui GLFW/Vulkan backend");
-            ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->GetNativeWindow(), true);
+            // We install callbacks manually in WinWindow to handle event routing
+            ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->GetNativeWindow(), false);
 
             auto& ctx = VulkanContext::Get();
             auto* vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI()); // Need access to swapchain info

@@ -6,13 +6,14 @@
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/Framebuffer.h"
 #include "equinox/events/RenderEvent.h"
-#include "equinox/input/Input.h"
 #include "equinox/utils/ImGuiUtils.h"
 #include "equinox/utils/EquinoxIcons.h"
 #include "equinox/renderer/backend/vulkan/VulkanTexture.h"
 #include "equinox/renderer/backend/opengl/GLTexture.h"
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <ImGuizmo.h>
 
 namespace Equinox
 {
@@ -22,6 +23,7 @@ namespace Equinox
         EQN_CORE_INFO("Created Scene panel");
 
         m_EditorCamera = EditorCamera(70, 1.77, 0.1, 10000);
+        m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
         EventBus::Subscribe<RenderResizeEvent>(BusType::MainThread, [this](Event& e) { 
             HandleRenderResize(e);
@@ -98,7 +100,7 @@ namespace Equinox
             m_IsHovered = ImGui::IsWindowHovered();
 
             // Handle gizmos
-            //DrawGizmos();
+            DrawGizmos();
 
             // Camera Control
             ImGui::SetNavCursorVisible(true);
@@ -128,6 +130,61 @@ namespace Equinox
             m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
         }
     }*/
+
+    void ScenePanel::DrawGizmos()
+    {
+        if (!m_SelectedEntity || !m_SelectedEntity.IsValid()) return;
+
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist();
+
+        float windowWidth = (float)ImGui::GetWindowWidth();
+        float windowHeight = (float)ImGui::GetWindowHeight();
+        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+
+        // Camera
+        const glm::mat4& view = m_EditorCamera.GetViewMatrix();
+        const glm::mat4& proj = m_EditorCamera.GetProjectionMatrix();
+
+        // Entity Transform
+        auto& tc = m_SelectedEntity.GetComponent<Transform>();
+        glm::mat4 transform = tc.GetTransform();
+
+        // Snapping
+        bool snap = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+        float snapValue = 0.5f; // Snap to 0.5m for translation/scale
+        if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
+            snapValue = 45.0f; // Snap to 45 degrees for rotation
+
+        float snapValues[3] = { snapValue, snapValue, snapValue };
+
+        ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
+            (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+            nullptr, snap ? snapValues : nullptr);
+
+        if (ImGuizmo::IsUsing())
+        {
+            float translation[3], rotation[3], scale[3];
+            ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform), translation, rotation, scale);
+
+            tc.m_Position = glm::make_vec3(translation);
+            tc.m_Rotation = glm::make_vec3(rotation);
+            tc.m_Scale = glm::make_vec3(scale);
+        }
+
+        // Gizmo Shortcuts
+        if (m_IsFocused && !ImGuizmo::IsUsing())
+        {
+            if (ImGui::IsKeyPressed(ImGuiKey_Q))
+                m_GizmoType = -1;
+            if (ImGui::IsKeyPressed(ImGuiKey_W))
+                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+            if (ImGui::IsKeyPressed(ImGuiKey_E))
+                m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+            if (ImGui::IsKeyPressed(ImGuiKey_R))
+                m_GizmoType = ImGuizmo::OPERATION::SCALE;
+        }
+    }
 
     void ScenePanel::HandleRenderResize(Event& e)
     {
