@@ -1,32 +1,86 @@
 #include "eqnpch.h"
 #include "equinox/input/Input.h"
 #include "equinox/editor/Editor.h"
-
-#include <GLFW/glfw3.h>
+#include "equinox/events/EventBus.h"
 
 namespace Equinox
 {
-    void Input::SetWindow(void* window)
-    {
-        s_Window = window;
-    }
+	// Define static members
+	//std::array<bool, 512> Input::s_KeyData;
+	//std::array<bool, 8> Input::s_MouseData;
+	//Vec2 Input::s_MousePos;
 
-    bool Input::IsKeyPressed(int keycode)
-    {
-        if (Editor::WantCaptureKeyboard()) return false;
-        return glfwGetKey(static_cast<GLFWwindow*>(s_Window), keycode) == GLFW_PRESS;
-    }
+	void Input::Init()
+	{
+		s_KeyData.fill(false);
+		s_MouseData.fill(false);
+		s_MousePos = { 0.0f, 0.0f };
 
-    bool Input::IsMouseButtonPressed(int button)
-    {
-        if (Editor::WantCaptureMouse()) return false;
-        return glfwGetMouseButton(static_cast<GLFWwindow*>(s_Window), button) == GLFW_PRESS;
-    }
+		EventBus::Subscribe<KeyPressedEvent>(BusType::MainThread, [](Event& e) {
+			OnKeyPressed(static_cast<KeyPressedEvent&>(e));
+			});
 
-    Vec2 Input::GetMousePosition()
-    {
-        double x, y;
-        glfwGetCursorPos(static_cast<GLFWwindow*>(s_Window), &x, &y);
-        return { static_cast<f32>(x), static_cast<f32>(y) };
-    }
+		EventBus::Subscribe<KeyReleasedEvent>(BusType::MainThread, [](Event& e) {
+			OnKeyReleased(static_cast<KeyReleasedEvent&>(e));
+			});
+
+		EventBus::Subscribe<MouseButtonPressedEvent>(BusType::MainThread, [](Event& e) {
+			OnMouseButtonPressed(static_cast<MouseButtonPressedEvent&>(e));
+			});
+
+		EventBus::Subscribe<MouseButtonReleasedEvent>(BusType::MainThread, [](Event& e) {
+			OnMouseButtonReleased(static_cast<MouseButtonReleasedEvent&>(e));
+			});
+
+		EventBus::Subscribe<MouseMovedEvent>(BusType::MainThread, [](Event& e) {
+			OnMouseMoved(static_cast<MouseMovedEvent&>(e));
+			});
+
+		EQN_CORE_INFO("Input System Initialized");
+	}
+
+	bool Input::IsKeyPressed(int keycode)
+	{
+		if (Editor::WantCaptureKeyboard()) return false;
+		if (keycode >= 0 && keycode < 512)
+			return s_KeyData[keycode];
+		return false;
+	}
+
+	bool Input::IsMouseButtonPressed(int button)
+	{
+		if (Editor::WantCaptureMouse()) return false;
+		if (button >= 0 && button < 8)
+			return s_MouseData[button];
+		return false;
+	}
+
+	Vec2 Input::GetMousePosition()
+	{
+		return s_MousePos;
+	}
+
+	float Input::GetMouseX() { return s_MousePos.x; }
+	float Input::GetMouseY() { return s_MousePos.y; }
+
+	bool Input::OnKeyPressed(KeyPressedEvent& e) {
+		if (e.GetKeyCode() < 512) s_KeyData[e.GetKeyCode()] = true;
+		return false;
+	}
+	bool Input::OnKeyReleased(KeyReleasedEvent& e) {
+		if (e.GetKeyCode() < 512) s_KeyData[e.GetKeyCode()] = false;
+		return false;
+	}
+	bool Input::OnMouseButtonPressed(MouseButtonPressedEvent& e) {
+		if (e.GetButton() < 8) s_MouseData[e.GetButton()] = true;
+		return false;
+	}
+	bool Input::OnMouseButtonReleased(MouseButtonReleasedEvent& e) {
+		if (e.GetButton() < 8) s_MouseData[e.GetButton()] = false;
+		return false;
+	}
+	bool Input::OnMouseMoved(MouseMovedEvent& e) {
+		s_MousePos = { e.GetX(), e.GetY() };
+		return false;
+	}
 }

@@ -229,7 +229,7 @@ namespace Equinox
 		// Textures
 		matJson["textures"] = nlohmann::json::array();
 
-		auto TryAddTexture = [&](aiTextureType aiType, MapType luthType) {
+		auto TryAddTexture = [&](aiTextureType aiType, MapType equinoxType) {
 			if (aiMat->GetTextureCount(aiType) > 0) {
 				aiString path;
 				if (aiMat->GetTexture(aiType, 0, &path) == AI_SUCCESS) {
@@ -255,7 +255,7 @@ namespace Equinox
 
 					if (texUUID.IsValid()) {
 						nlohmann::json texNode;
-						texNode["type"] = (int)luthType;
+						texNode["type"] = (int)equinoxType;
 						texNode["uuid"] = texUUID.ToString();
 						texNode["uv"] = 0;
 						texNode["useTexture"] = true;

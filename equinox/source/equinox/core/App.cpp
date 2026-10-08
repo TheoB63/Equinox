@@ -28,7 +28,7 @@ namespace Equinox
         WindowSpec ws = ParseCommandLineArgs(argc, argv);
         SetAppTitle(ws);
         m_Window = Window::Create(ws);
-        Input::SetWindow(m_Window->GetNativeWindow());
+        Input::Init();
 
         // [OP] Dual-backend: initialize the requested renderer API
         // (the window was already created for this API: GL context or
@@ -75,11 +75,12 @@ namespace Equinox
             m_Window->OnUpdate();
             EventBus::ProcessEvents(BusType::MainThread);
 
+            // Editor Begin
+            Editor::BeginFrame();
+
             OnUpdate();
             AssetManager::Update();
 
-            // Editor Begin
-            Editor::BeginFrame();
             Editor::Render(); // Submits ImGui commands to ImGui internal buffers
 
             // Editor End (Generates DrawData for ImGui)
