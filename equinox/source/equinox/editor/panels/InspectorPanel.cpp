@@ -1,6 +1,7 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/InspectorPanel.h"
 #include "equinox/editor/panels/HierarchyPanel.h"
+#include "equinox/editor/UI.h"
 #include "equinox/ECS/Components.h"
 #include "equinox/resources/AssetDatabase.h"
 #include "equinox/resources/AssetManager.h"
@@ -17,7 +18,9 @@ namespace Equinox
         EQN_CORE_INFO("Created Inspector panel");
     }
 
-    void InspectorPanel::OnInit() {}
+    void InspectorPanel::OnInit()
+    {
+    }
 
     void InspectorPanel::OnRender()
     {
@@ -26,10 +29,12 @@ namespace Equinox
 
         if (ImGui::Begin(inspector.c_str()))
         {
-            if (m_SelectedEntity) {
+            if (m_SelectedEntity)
+            {
                 DrawEntityComponents();
             }
-            else if (m_SelectedResource.IsValid()) {
+            else if (m_SelectedResource.IsValid())
+            {
                 DrawResourceProperties();
             }
         }
@@ -40,7 +45,8 @@ namespace Equinox
     void InspectorPanel::DrawEntityComponents()
     {
         // Display and edit the entity's Tag component (name)
-        if (m_SelectedEntity.HasComponent<Tag>()) {
+        if (m_SelectedEntity.HasComponent<Tag>())
+        {
             auto& tag = m_SelectedEntity.GetComponent<Tag>();
 
             // Create a horizontal group for checkbox + name
@@ -48,12 +54,14 @@ namespace Equinox
 
             // Checkbox for active state
             bool isActive = m_SelectedEntity.IsActive();
-            if (ImGui::Checkbox("##Active", &isActive)) {
+            if (ImGui::Checkbox("##Active", &isActive))
+            {
                 m_SelectedEntity.SetActive(isActive);
             }
 
             // Tooltip and spacing
-            if (ImGui::IsItemHovered()) {
+            if (ImGui::IsItemHovered())
+            {
                 ImGui::SetTooltip("Toggle Entity Active State");
             }
             ImGui::SameLine();
@@ -63,106 +71,88 @@ namespace Equinox
             strncpy(buffer, tag.m_Tag.c_str(), sizeof(buffer) - 1);
             buffer[sizeof(buffer) - 1] = 0;
             ImGui::PushItemWidth(-1);
-            if (ImGui::InputText("##Name", buffer, sizeof(buffer))) {
+            if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
+            {
                 tag.m_Tag = std::string(buffer);
             }
 
             ImGui::EndGroup();
-            ImGui::Dummy({ 0, 4 });
+            ImGui::Dummy({0, 4});
         }
 
         // Draw each component with a collapsible UI section
-        #if defined(DEBUG)
-        DrawComponent<ID>("ID", m_SelectedEntity, [](Entity entity, ID& component) {
+#if defined(DEBUG)
+        DrawComponent<ID>("ID", m_SelectedEntity, [](Entity entity, ID& component)
+        {
             ImGui::Text("ID: %llu", component.m_ID);
         });
 
-        DrawComponent<Parent>("Parent", m_SelectedEntity, [](Entity entity, Parent& component) {
-            if (component.m_Parent && component.m_Parent.IsValid()) {
+        DrawComponent<Parent>("Parent", m_SelectedEntity, [](Entity entity, Parent& component)
+        {
+            if (component.m_Parent && component.m_Parent.IsValid())
+            {
                 ImGui::Text("Parent: %s", component.m_Parent.GetName().c_str());
-                if (ImGui::Button("Clear Parent")) {
+                if (ImGui::Button("Clear Parent"))
+                {
                     entity.SetParent({});
                 }
             }
-            else {
+            else
+            {
                 ImGui::Text("No Parent");
             }
         });
 
-        DrawComponent<Children>("Children", m_SelectedEntity, [](Entity entity, Children& component) {
+        DrawComponent<Children>("Children", m_SelectedEntity, [](Entity entity, Children& component)
+        {
             ImGui::Text("Children: %d", component.m_Children.size());
-            for (auto& child : component.m_Children) {
-                if (child.IsValid()) {
+            for (auto& child : component.m_Children)
+            {
+                if (child.IsValid())
+                {
                     ImGui::BulletText("%s", child.GetName().c_str());
                 }
-                else {
+                else
+                {
                     ImGui::BulletText("Invalid Entity");
                 }
             }
         });
 
-        DrawComponent<WorldTransform>("World Transform", m_SelectedEntity, [](Entity entity, WorldTransform& transform) {});
-        #endif
+        DrawComponent<WorldTransform>("World Transform", m_SelectedEntity, [](Entity entity, WorldTransform& transform)
+        {
+        });
+#endif
 
-        DrawComponent<Transform>("Transform", m_SelectedEntity, [](Entity entity, Transform& transform) {
-            // Position control
-            ImGui::Text("Position"); ImGui::SameLine();
-            ImGui::PushItemWidth(-1);
-            ImGui::DragFloat3("##Position", glm::value_ptr(transform.m_Position), 0.1f);
-
-            // Rotation control (Euler angles)
-            ImGui::Text("Rotation"); ImGui::SameLine();
-            glm::vec3 rotationDegrees = transform.m_Rotation;
-            if (ImGui::DragFloat3("##Rotation", glm::value_ptr(rotationDegrees), 0.5f)) {
-                transform.m_Rotation = rotationDegrees;
-            }
-
-            // Scale control
-            ImGui::Text("Scale"); ImGui::SameLine();
-            
-            // Lock toggle button (using padlock icon)
-            static bool scaleLocked = false;
-            ImGui::Checkbox("##ScaleLock", &scaleLocked);
-            ImGui::SameLine();
-            if (scaleLocked) {
-                // Uniform scale control
-                float uniformScale = transform.m_Scale.x;
-                if (ImGui::DragFloat("##UniformScale", &uniformScale, 0.1f)) {
-                    transform.m_Scale = glm::vec3(uniformScale);
-                }
-            }
-            else {
-                // Independent axis control
-                if (ImGui::DragFloat3("##Scale", glm::value_ptr(transform.m_Scale), 0.1f)) {
-                    // Optional: Sync scale if any component was changed to zero
-                    if (transform.m_Scale.x == 0 || transform.m_Scale.y == 0 || transform.m_Scale.z == 0) {
-                        transform.m_Scale = glm::max(transform.m_Scale, glm::vec3(0.001f));
-                    }
-                }
-            }
-
-            // Reset buttons
-            if (ImGui::Button("Reset Transform")) {
-                transform.m_Position = { 0,0,0 };
-                transform.m_Rotation = { 0,0,0 };
-                transform.m_Scale    = { 1,1,1 };
-            }
+        DrawComponent<Transform>("Transform", m_SelectedEntity, [](Entity entity, Transform& transform)
+        {
+            UI::BeginProperties();
+            UI::Property("Position", transform.m_Position);
+            UI::Property("Rotation", transform.m_Rotation);
+            UI::Property("Scale", transform.m_Scale, 0.1f, 1.0f);
+            UI::EndProperties();
         });
 
-        DrawComponent<Camera>("Camera", m_SelectedEntity, [](Entity e, Camera& camera) {
+        DrawComponent<Camera>("Camera", m_SelectedEntity, [](Entity e, Camera& camera)
+        {
             // Projection type combo box
-            const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
+            const char* projectionTypeStrings[] = {"Perspective", "Orthographic"};
             const char* currentProjectionType = projectionTypeStrings[(int)camera.Projection];
 
-            ImGui::Text("Projection"); ImGui::SameLine();
-            if (ImGui::BeginCombo("##Projection", currentProjectionType)) {
-                for (int i = 0; i < 2; i++) {
+            ImGui::Text("Projection");
+            ImGui::SameLine();
+            if (ImGui::BeginCombo("##Projection", currentProjectionType))
+            {
+                for (int i = 0; i < 2; i++)
+                {
                     bool isSelected = currentProjectionType == projectionTypeStrings[i];
-                    if (ImGui::Selectable(projectionTypeStrings[i], isSelected)) {
+                    if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
+                    {
                         camera.Projection = (Camera::ProjectionType)i;
                         camera.RecalculateProjection();
                     }
-                    if (isSelected) {
+                    if (isSelected)
+                    {
                         ImGui::SetItemDefaultFocus();
                     }
                 }
@@ -170,142 +160,128 @@ namespace Equinox
             }
 
             // Perspective settings
-            if (camera.Projection == Camera::ProjectionType::Perspective) {
+            if (camera.Projection == Camera::ProjectionType::Perspective)
+            {
                 bool changed = false;
-                ImGui::Text("FOV "); ImGui::SameLine();
+                ImGui::Text("FOV ");
+                ImGui::SameLine();
                 changed |= ImGui::DragFloat("##FOV", &camera.VerticalFOV, 0.1f, 1.0f, 180.0f);
-                ImGui::Text("Near"); ImGui::SameLine();
+                ImGui::Text("Near");
+                ImGui::SameLine();
                 changed |= ImGui::DragFloat("##Near", &camera.NearClip, 0.01f, 0.01f, camera.FarClip);
-                ImGui::Text("Far "); ImGui::SameLine();
+                ImGui::Text("Far ");
+                ImGui::SameLine();
                 changed |= ImGui::DragFloat("##Far", &camera.FarClip, 0.1f, camera.NearClip, 10000.0f);
 
                 if (changed) camera.RecalculateProjection();
             }
             // Orthographic settings
-            else {
+            else
+            {
                 bool changed = false;
-                ImGui::Text("Size"); ImGui::SameLine();
+                ImGui::Text("Size");
+                ImGui::SameLine();
                 changed |= ImGui::DragFloat("##Size", &camera.OrthographicSize, 0.1f, 0.1f, 100.0f);
-                ImGui::Text("Near"); ImGui::SameLine();
+                ImGui::Text("Near");
+                ImGui::SameLine();
                 changed |= ImGui::DragFloat("##Near", &camera.OrthographicNear, 0.01f);
-                ImGui::Text("Far "); ImGui::SameLine();
+                ImGui::Text("Far ");
+                ImGui::SameLine();
                 changed |= ImGui::DragFloat("##Far", &camera.OrthographicFar, 0.01f);
 
                 if (changed) camera.RecalculateProjection();
             }
 
             // Aspect ratio (could be auto-calculated from viewport)
-            ImGui::Text("Aspect"); ImGui::SameLine();
+            ImGui::Text("Aspect");
+            ImGui::SameLine();
             ImGui::DragFloat("##Aspect", &camera.AspectRatio, 0.01f, 0.1f, 10.0f);
         });
 
-        DrawComponent<MeshRenderer>("Mesh Renderer", m_SelectedEntity, [](Entity entity, MeshRenderer& meshRenderer) {
-            // Model Selection
-            ImGui::Text("Mesh");
-            ImGui::SameLine();
+        DrawComponent<MeshRenderer>("Mesh Renderer", m_SelectedEntity, [](Entity entity, MeshRenderer& meshRenderer)
+        {
+            UI::BeginProperties();
 
-            // Model UUID drag target
-            if (ImGui::Button(meshRenderer.modelNamePreview.empty() ?
-                "Drop Model Here" : meshRenderer.modelNamePreview.c_str()))
+            UI::PropertyAsset("Model", meshRenderer.ModelUUID, AssetType::Model);
+
+            if (auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID))
             {
-                // TODO: Open model selection window
+                int meshIndex = (int)meshRenderer.MeshIndex;
+                if (UI::Property("Mesh Index", meshIndex, 0, (int)model->GetMeshes().size() - 1))
+                    meshRenderer.MeshIndex = (u32)meshIndex;
             }
 
-            if (ImGui::BeginDragDropTarget()) {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID")) {
-                    const UUID* droppedUUID = static_cast<const UUID*>(payload->Data);
-                    if (auto model = AssetManager::GetAsset<Model>(*droppedUUID)) {
-                        meshRenderer.ModelUUID = *droppedUUID;
-                        meshRenderer.modelNamePreview = model->GetName();
-                    }
-                }
-                ImGui::EndDragDropTarget();
-            }
-            ImGui::SameLine();
-
-            // Mesh Index Selection
-            if (auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID)) {
-                const uint32_t meshCount = static_cast<uint32_t>(model->GetMeshes().size());
-                ImGui::Text("#");
-                ImGui::SameLine();
-                ImGui::SetNextItemWidth(20);
-                ImGui::DragInt("##MeshIndex", reinterpret_cast<int*>(&meshRenderer.MeshIndex), 1.0f, 0, meshCount - 1);
-            }
-
-            // Material Selection
-            ImGui::Text("Material");
-            ImGui::SameLine();
-
-            if (ImGui::Button(meshRenderer.materialNamePreview.empty() ?
-                "Drop Material Here" : meshRenderer.materialNamePreview.c_str()))
+            if (UI::PropertyAsset("Material", meshRenderer.MaterialUUID, AssetType::Material))
             {
-                // TODO: Open material selection window
-            }
-
-            if (ImGui::BeginDragDropTarget()) {
-                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID")) {
-                    const UUID droppedUUID = *static_cast<const UUID*>(payload->Data);
-                    if (auto material = AssetManager::GetAsset<Material>(droppedUUID)) {
-                        meshRenderer.MaterialUUID = droppedUUID;
-                        meshRenderer.materialNamePreview = material->GetName();
-                        // AssetRegistry::SetDirty(meshRenderer.ModelUUID); // TODO: Implement dirty state in AssetManager
-                         if(auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID))
-                             model->AddMaterial(droppedUUID, meshRenderer.MeshIndex);
-                    }
+                // Update model's material list if possible
+                if (auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID))
+                {
+                    model->AddMaterial(meshRenderer.MaterialUUID, meshRenderer.MeshIndex);
                 }
-                ImGui::EndDragDropTarget();
             }
+            UI::EndProperties();
         });
 
-        DrawComponent<Animation>("Animation", m_SelectedEntity, [](Entity entity, Animation& animation) {
-			// TODO: Implement animation component properties
-			ImGui::SliderInt("##Animation Index", &animation.AnimationIndex, 0, 20, "Index: %d", ImGuiSliderFlags_AlwaysClamp);
+        DrawComponent<Animation>("Animation", m_SelectedEntity, [](Entity entity, Animation& animation)
+        {
+            // TODO: Implement animation component properties
+            ImGui::SliderInt("##Animation Index", &animation.AnimationIndex, 0, 20, "Index: %d",
+                             ImGuiSliderFlags_AlwaysClamp);
         });
 
-        DrawComponent<DirectionalLight>("Directional Light", m_SelectedEntity, [](Entity entity, DirectionalLight& dirLight) {
-            ImGui::Text("Color"); ImGui::SameLine();
-            ImGui::ColorEdit3("##Color", &dirLight.Color.x);
-            ImGui::Text("Intensity"); ImGui::SameLine();
-            ImGui::DragFloat("##Intensity", &dirLight.Intensity, 0.01f, 0.0f, 1000.0f);
-        });
+        DrawComponent<DirectionalLight>("Directional Light", m_SelectedEntity,
+                                        [](Entity entity, DirectionalLight& dirLight)
+                                        {
+                                            UI::BeginProperties();
+                                            UI::PropertyColor("Color", dirLight.Color);
+                                            UI::Property("Intensity", dirLight.Intensity, 0.1f, 0.0f, 1000.0f);
+                                            UI::EndProperties();
+                                        });
 
-        DrawComponent<PointLight>("Point Light", m_SelectedEntity, [](Entity entity, PointLight& pointLight) {
-            ImGui::Text("Color"); ImGui::SameLine();
-            ImGui::ColorEdit3("##Color", &pointLight.Color.x);
-            ImGui::Text("Intensity"); ImGui::SameLine();
-            ImGui::DragFloat("##Intensity", &pointLight.Intensity, 0.01f, 0.0f, 1000.0f);
-            ImGui::Text("Range"); ImGui::SameLine();
-            ImGui::DragFloat("##Range", &pointLight.Range, 0.1f, 0.0f, 10000.0f);
+        DrawComponent<PointLight>("Point Light", m_SelectedEntity, [](Entity entity, PointLight& pointLight)
+        {
+            UI::BeginProperties();
+            UI::PropertyColor("Color", pointLight.Color);
+            UI::Property("Intensity", pointLight.Intensity, 0.1f, 0.0f, 1000.0f);
+            UI::Property("Range", pointLight.Range, 0.1f, 0.0f, 10000.0f);
+            UI::EndProperties();
         });
 
         // Add Component button
         ImGui::Separator();
-        ImGui::Dummy({ 0, 4 });
+        ImGui::Dummy({0, 4});
         AlignItemToCenter(100);
-        ButtonDropdown("Add Component", "inspector_addcomponent", [this]() {
-            #if defined(DEBUG)
-            if (!m_SelectedEntity.HasComponent<Tag>() && ImGui::MenuItem("Tag")) {
+        ButtonDropdown("Add Component", "inspector_addcomponent", [this]()
+        {
+#if defined(DEBUG)
+            if (!m_SelectedEntity.HasComponent<Tag>() && ImGui::MenuItem("Tag"))
+            {
                 m_SelectedEntity.AddOrReplaceComponent<Tag>();
                 ImGui::CloseCurrentPopup();
             }
-            if (!m_SelectedEntity.HasComponent<Parent>() && ImGui::MenuItem("Parent")) {
+            if (!m_SelectedEntity.HasComponent<Parent>() && ImGui::MenuItem("Parent"))
+            {
                 m_SelectedEntity.AddOrReplaceComponent<Parent>();
                 ImGui::CloseCurrentPopup();
             }
-            if (!m_SelectedEntity.HasComponent<Children>() && ImGui::MenuItem("Children")) {
+            if (!m_SelectedEntity.HasComponent<Children>() && ImGui::MenuItem("Children"))
+            {
                 m_SelectedEntity.AddOrReplaceComponent<Children>();
                 ImGui::CloseCurrentPopup();
             }
-            #endif
-            if (!m_SelectedEntity.HasComponent<Camera>() && ImGui::MenuItem("Camera")) {
+#endif
+            if (!m_SelectedEntity.HasComponent<Camera>() && ImGui::MenuItem("Camera"))
+            {
                 m_SelectedEntity.AddOrReplaceComponent<Camera>();
                 ImGui::CloseCurrentPopup();
             }
-            if (!m_SelectedEntity.HasComponent<DirectionalLight>() && ImGui::MenuItem("Directional Light")) {
+            if (!m_SelectedEntity.HasComponent<DirectionalLight>() && ImGui::MenuItem("Directional Light"))
+            {
                 m_SelectedEntity.AddOrReplaceComponent<DirectionalLight>();
                 ImGui::CloseCurrentPopup();
             }
-            if (!m_SelectedEntity.HasComponent<PointLight>() && ImGui::MenuItem("Point Light")) {
+            if (!m_SelectedEntity.HasComponent<PointLight>() && ImGui::MenuItem("Point Light"))
+            {
                 m_SelectedEntity.AddOrReplaceComponent<PointLight>();
                 ImGui::CloseCurrentPopup();
             }
@@ -313,44 +289,53 @@ namespace Equinox
         });
     }
 
-    template<typename T, typename UIFunction>
+    template <typename T, typename UIFunction>
     void InspectorPanel::DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction)
     {
         const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed
             | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
-        if (entity.HasComponent<T>()) {
+        if (entity.HasComponent<T>())
+        {
             bool open = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags);
 
             // Right-click to open context menu
             std::string popId = "##Pop_" + name;
-            if (ImGui::BeginPopupContextItem(popId.c_str())) {
+            if (ImGui::BeginPopupContextItem(popId.c_str()))
+            {
                 constexpr bool enabled = (std::is_same_v<T, Transform> || std::is_same_v<T, ID>) ? false : true;
-                if (ImGui::MenuItem("Remove component", nullptr, nullptr, enabled)) {
+                if (ImGui::MenuItem("Remove component", nullptr, nullptr, enabled))
+                {
                     entity.RemoveComponent<T>();
                 }
                 ImGui::EndPopup();
             }
 
-            if (open) {
+            if (open)
+            {
                 uiFunction(entity, entity.GetComponent<T>());
                 ImGui::TreePop();
             }
-            
-            ImGui::Dummy({ 0, 4 });
+
+            ImGui::Dummy({0, 4});
         }
     }
-    
+
     void InspectorPanel::DrawResourceProperties()
     {
         // Determine type from DB
         AssetType type = AssetDatabase::GetMetadata(m_SelectedResource).Type;
- 
-        if (type == AssetType::Model) {
+
+        if (type == AssetType::Model)
+        {
             if (auto model = AssetManager::GetAsset<Model>(m_SelectedResource)) DrawModel(*model);
-        } else if (type == AssetType::Material) {
+        }
+        else if (type == AssetType::Material)
+        {
             if (auto mat = AssetManager::GetAsset<Material>(m_SelectedResource)) DrawMaterial(*mat);
-        } else if (type == AssetType::Texture) {
+        }
+        else if (type == AssetType::Texture)
+        {
             if (auto tex = AssetManager::GetAsset<Texture>(m_SelectedResource)) DrawTexture(*tex);
         }
     }
@@ -358,20 +343,25 @@ namespace Equinox
     void InspectorPanel::DrawModel(Model& model)
     {
         // Model header with name and type
-        if (ImGui::BeginChild("##Header", { 0, 30 })) {
-			ImGui::Dummy({ 0, 4 }); ImGui::Dummy({ 4, 0 }); ImGui::SameLine();
-            ImGui::TextColored({ 0.4f, 0.8f, 1.0f, 1.0f }, "%s (Model)", model.GetName().c_str());
+        if (ImGui::BeginChild("##Header", {0, 30}))
+        {
+            ImGui::Dummy({0, 4});
+            ImGui::Dummy({4, 0});
+            ImGui::SameLine();
+            ImGui::TextColored({0.4f, 0.8f, 1.0f, 1.0f}, "%s (Model)", model.GetName().c_str());
         }
         ImGui::EndChild();
-        ImGui::Dummy({ 0, 8 });
+        ImGui::Dummy({0, 8});
 
         // Get cached model info
         const auto& info = model.GetCachedModelInfo();
 
         // Basic model info section
-        if (ImGui::CollapsingHeader("Model Info", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::CollapsingHeader("Model Info", ImGuiTreeNodeFlags_DefaultOpen))
+        {
             // Basic counts
-            if (ImGui::BeginTable("ModelProps", 2, ImGuiTableFlags_SizingStretchSame)) {
+            if (ImGui::BeginTable("ModelProps", 2, ImGuiTableFlags_SizingStretchSame))
+            {
                 ImGui::TableNextRow();
                 ImGui::TableSetColumnIndex(0);
                 ImGui::Text("Meshes");
@@ -405,18 +395,21 @@ namespace Equinox
                 ImGui::EndTable();
             }
         }
-        ImGui::Dummy({ 0, 4 });
+        ImGui::Dummy({0, 4});
 
         // Meshes section
-        if (ImGui::CollapsingHeader("Meshes")) {
-            if (ImGui::BeginTable("MeshesTable", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+        if (ImGui::CollapsingHeader("Meshes"))
+        {
+            if (ImGui::BeginTable("MeshesTable", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            {
                 ImGui::TableSetupColumn("Name");
                 ImGui::TableSetupColumn("Vertices");
                 ImGui::TableSetupColumn("Indices");
                 ImGui::TableSetupColumn("Material");
                 ImGui::TableHeadersRow();
 
-                for (const auto& mesh : info.Meshes) {
+                for (const auto& mesh : info.Meshes)
+                {
                     ImGui::TableNextRow();
                     ImGui::TableNextColumn();
                     ImGui::Text("%s", mesh.Name.c_str());
@@ -431,17 +424,21 @@ namespace Equinox
                 ImGui::EndTable();
             }
         }
-        ImGui::Dummy({ 0, 4 });
+        ImGui::Dummy({0, 4});
 
         // Skinned model specific sections
-        if (info.IsSkinned) {
+        if (info.IsSkinned)
+        {
             // Bones section
-            if (ImGui::CollapsingHeader("Bones")) {
+            if (ImGui::CollapsingHeader("Bones"))
+            {
                 ImGui::Text("Total Bones: %d", info.BoneCount);
 
-                if (ImGui::TreeNode("Bone Hierarchy")) {
+                if (ImGui::TreeNode("Bone Hierarchy"))
+                {
                     // Recursive function to display bone hierarchy
-                    std::function<void(int)> DisplayBoneNode = [&](int index) {
+                    std::function<void(int)> DisplayBoneNode = [&](int index)
+                    {
                         const auto& node = info.BoneHierarchy[index];
                         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
                         if (node.BoneIndex == -1) flags |= ImGuiTreeNodeFlags_Leaf;
@@ -449,16 +446,20 @@ namespace Equinox
                         bool isOpen = ImGui::TreeNodeEx(node.Name.c_str(), flags);
 
                         // Tooltip for bone info
-                        if (ImGui::IsItemHovered()) {
+                        if (ImGui::IsItemHovered())
+                        {
                             ImGui::BeginTooltip();
                             ImGui::Text("Bone Index: %d", node.BoneIndex);
                             ImGui::Text("Parent Index: %d", node.ParentIndex);
                             ImGui::EndTooltip();
                         }
 
-                        if (isOpen) {
-                            for (int childIndex = 0; childIndex < info.BoneHierarchy.size(); ++childIndex) {
-                                if (info.BoneHierarchy[childIndex].ParentIndex == index) {
+                        if (isOpen)
+                        {
+                            for (int childIndex = 0; childIndex < info.BoneHierarchy.size(); ++childIndex)
+                            {
+                                if (info.BoneHierarchy[childIndex].ParentIndex == index)
+                                {
                                     DisplayBoneNode(childIndex);
                                 }
                             }
@@ -467,8 +468,10 @@ namespace Equinox
                     };
 
                     // Find root nodes (parentIndex == -1)
-                    for (int i = 0; i < info.BoneHierarchy.size(); ++i) {
-                        if (info.BoneHierarchy[i].ParentIndex == -1) {
+                    for (int i = 0; i < info.BoneHierarchy.size(); ++i)
+                    {
+                        if (info.BoneHierarchy[i].ParentIndex == -1)
+                        {
                             DisplayBoneNode(i);
                         }
                     }
@@ -476,19 +479,22 @@ namespace Equinox
                     ImGui::TreePop();
                 }
             }
-            ImGui::Dummy({ 0, 4 });
+            ImGui::Dummy({0, 4});
 
             // Animations section
-            if (ImGui::CollapsingHeader("Animations")) {
+            if (ImGui::CollapsingHeader("Animations"))
+            {
                 ImGui::Text("Total Animations: %d", info.AnimationCount);
 
-                if (ImGui::BeginTable("AnimationsTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+                if (ImGui::BeginTable("AnimationsTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+                {
                     ImGui::TableSetupColumn("Name");
                     ImGui::TableSetupColumn("Duration");
                     ImGui::TableSetupColumn("TPS");
                     ImGui::TableHeadersRow();
 
-                    for (const auto& anim : info.Animations) {
+                    for (const auto& anim : info.Animations)
+                    {
                         ImGui::TableNextRow();
                         ImGui::TableNextColumn();
                         ImGui::Text("%s", anim.Name.c_str());
@@ -507,19 +513,24 @@ namespace Equinox
     void InspectorPanel::DrawMaterial(Material& material)
     {
         // Material header with name and type
-        if (ImGui::BeginChild("##Header", { 0, 30 })) {
-            ImGui::Dummy({ 0, 4 }); ImGui::Dummy({ 4, 0 }); ImGui::SameLine();
-            ImGui::TextColored({ 0.2f, 0.9f, 0.4f, 1.0f }, "%s (Material)", material.GetName().c_str());
+        if (ImGui::BeginChild("##Header", {0, 30}))
+        {
+            ImGui::Dummy({0, 4});
+            ImGui::Dummy({4, 0});
+            ImGui::SameLine();
+            ImGui::TextColored({0.2f, 0.9f, 0.4f, 1.0f}, "%s (Material)", material.GetName().c_str());
         }
         ImGui::EndChild();
-        ImGui::Dummy({ 0, 8 });
+        ImGui::Dummy({0, 8});
 
         // Shader selection
         ImGui::Text("Shader     ");
         ImGui::SameLine();
-        if (auto shader = material.GetShader()) {
+        if (auto shader = material.GetShader())
+        {
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::BeginCombo("##Shader", shader->GetName().c_str())) {
+            if (ImGui::BeginCombo("##Shader", shader->GetName().c_str()))
+            {
                 // TODO: Iterate all shaders in AssetDatabase
                 // for (const auto& [uuid, s] : ShaderLibrary::GetAllShaders()) {
                 //     bool selected;
@@ -531,7 +542,8 @@ namespace Equinox
                 ImGui::EndCombo();
             }
         }
-        else {
+        else
+        {
             ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Missing Shader");
         }
 
@@ -539,19 +551,24 @@ namespace Equinox
         Material::RenderMode currentMode = material.GetRenderMode();
         int modeIndex = static_cast<int>(currentMode);
 
-        ImGui::Text("Render Mode"); ImGui::SameLine();
+        ImGui::Text("Render Mode");
+        ImGui::SameLine();
         ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        const char* renderModes[] = { "Opaque", "Cutout", "Transparent", "Fade" };
-        if (ImGui::Combo("##RenderMode", &modeIndex, renderModes, IM_ARRAYSIZE(renderModes))) {
+        const char* renderModes[] = {"Opaque", "Cutout", "Transparent", "Fade"};
+        if (ImGui::Combo("##RenderMode", &modeIndex, renderModes, IM_ARRAYSIZE(renderModes)))
+        {
             material.SetRenderMode(static_cast<Material::RenderMode>(modeIndex));
             //AssetRegistry::SetDirty(material.GetUUID());
         }
 
-        if (material.GetRenderMode() == Material::RenderMode::Cutout) {
+        if (material.GetRenderMode() == Material::RenderMode::Cutout)
+        {
             float cutoff = material.GetAlphaCutoff();
-            ImGui::Text("Alpha Cutoff"); ImGui::SameLine();
+            ImGui::Text("Alpha Cutoff");
+            ImGui::SameLine();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::SliderFloat("##Alpha Cutoff", &cutoff, 0.0f, 1.0f)) {
+            if (ImGui::SliderFloat("##Alpha Cutoff", &cutoff, 0.0f, 1.0f))
+            {
                 material.SetAlphaCutoff(cutoff);
                 //AssetRegistry::SetDirty(material.GetUUID());
             }
@@ -563,40 +580,49 @@ namespace Equinox
             int srcFactor = static_cast<int>(material.GetBlendSrc());
             int dstFactor = static_cast<int>(material.GetBlendDst());
 
-            const char* blendFactors[] = { "Zero", "One", "SrcAlpha", "OneMinusSrcAlpha" };
+            const char* blendFactors[] = {"Zero", "One", "SrcAlpha", "OneMinusSrcAlpha"};
 
-            ImGui::Text("Blend Src  "); ImGui::SameLine();
+            ImGui::Text("Blend Src  ");
+            ImGui::SameLine();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::Combo("##Blend Src", &srcFactor, blendFactors, IM_ARRAYSIZE(blendFactors))) {
+            if (ImGui::Combo("##Blend Src", &srcFactor, blendFactors, IM_ARRAYSIZE(blendFactors)))
+            {
                 material.SetBlendSrc(static_cast<Material::BlendFactor>(srcFactor));
                 //AssetRegistry::SetDirty(material.GetUUID());
             }
 
-            ImGui::Text("Blend Dst  "); ImGui::SameLine();
+            ImGui::Text("Blend Dst  ");
+            ImGui::SameLine();
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-            if (ImGui::Combo("##Blend Dst", &dstFactor, blendFactors, IM_ARRAYSIZE(blendFactors))) {
+            if (ImGui::Combo("##Blend Dst", &dstFactor, blendFactors, IM_ARRAYSIZE(blendFactors)))
+            {
                 material.SetBlendDst(static_cast<Material::BlendFactor>(dstFactor));
                 //AssetRegistry::SetDirty(material.GetUUID());
             }
 
             bool fromDiffuse = material.IsAlphaFromDiffuseEnabled();
-            if (ImGui::Checkbox("Alpha from Diffuse", &fromDiffuse)) {
+            if (ImGui::Checkbox("Alpha from Diffuse", &fromDiffuse))
+            {
                 material.EnableAlphaFromDiffuse(fromDiffuse);
                 //AssetRegistry::SetDirty(material.GetUUID());
             }
         }
 
-        ImGui::Dummy({ 0, 4 });
+        ImGui::Dummy({0, 4});
 
         // Texture properties with collapsable headers
         const auto& textures = material.GetTextures();
 
-        auto DrawTextureProperty = [&](MapType type, const char* label) {
+        auto DrawTextureProperty = [&](MapType type, const char* label)
+        {
             std::shared_ptr<Texture> texture;
             bool hasTexture = false;
-            for (const auto& texInfo : textures) {
-                if (texInfo.type == type) {
-                    if (texture = AssetManager::GetAsset<Texture>(texInfo.Uuid)) {
+            for (const auto& texInfo : textures)
+            {
+                if (texInfo.type == type)
+                {
+                    if (texture = AssetManager::GetAsset<Texture>(texInfo.Uuid))
+                    {
                         hasTexture = true;
                         break;
                     }
@@ -616,31 +642,38 @@ namespace Equinox
             ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 12);
             std::string toggleId = "##Toggle_" + std::string(label);
             bool enabled = material.IsUseMapEnabled(type);
-            if (ImGui::Checkbox(toggleId.c_str(), &enabled)) {
+            if (ImGui::Checkbox(toggleId.c_str(), &enabled))
+            {
                 material.EnableUseMap(type, enabled);
             }
 
             ImGui::PopStyleVar();
 
-            if (headerOpen) {
+            if (headerOpen)
+            {
                 ImGui::BeginDisabled(!enabled);
                 ImGui::Indent();
 
                 // Texture slot with drag-drop support
                 ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
                 std::string textureId = "##Texture_" + std::string(label);
-                if (hasTexture) {
-                    ImGui::ImageButton(textureId.c_str(), (ImTextureID)texture->GetRendererID(), { 32, 32 }, { 0, 1 }, { 1, 0 });
+                if (hasTexture)
+                {
+                    ImGui::ImageButton(textureId.c_str(), (ImTextureID)texture->GetRendererID(), {32, 32}, {0, 1},
+                                       {1, 0});
                 }
-                else {
-                    ImGui::Button(textureId.c_str(), { 32, 32 });
+                else
+                {
+                    ImGui::Button(textureId.c_str(), {32, 32});
                 }
                 ImGui::PopStyleVar();
 
-                if (ImGui::BeginDragDropTarget()) {
-                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID")) {
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_UUID"))
+                    {
                         const UUID* droppedUUID = static_cast<const UUID*>(payload->Data);
-                        material.SetTexture({ *droppedUUID, type, 0 });
+                        material.SetTexture({*droppedUUID, type, 0});
                         material.EnableUseTexture(type, true);
                         //AssetRegistry::SetDirty(material.GetUUID());
                     }
@@ -648,14 +681,16 @@ namespace Equinox
                 }
 
                 // [SUPR] Handle texture deletion
-                if (ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete)) {
-                    material.SetTexture({ UUID::Invalid(), type, 0 });
+                if (ImGui::IsItemActive() && ImGui::IsKeyPressed(ImGuiKey_Delete))
+                {
+                    material.SetTexture({UUID::Invalid(), type, 0});
                     material.EnableUseTexture(type, false);
                     //AssetRegistry::SetDirty(material.GetUUID());
                 }
 
                 // Texture properties
-                if (hasTexture) {
+                if (hasTexture)
+                {
                     ImGui::SameLine();
                     ImGui::BeginGroup();
                     ImGui::Text("%s", texture->GetName().c_str());
@@ -664,82 +699,100 @@ namespace Equinox
                 }
 
                 // Texture specific properties
-                if (type == MapType::Diffuse) {
+                if (type == MapType::Diffuse)
+                {
                     ImGui::SameLine();
 
                     Vec4 color = material.GetColor();
                     if (ImGui::ColorEdit4("##DiffuseColor", &color.r, ImGuiColorEditFlags_NoInputs |
-                        ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview)) {
+                                          ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreview))
+                    {
                         material.SetColor(color);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
 
-                    if (ImGui::IsItemHovered()) {
+                    if (ImGui::IsItemHovered())
+                    {
                         ImGui::SetTooltip("Diffuse Color");
                     }
                 }
-                else if (type == MapType::Alpha) {
+                else if (type == MapType::Alpha)
+                {
                     float alpha = material.GetAlpha();
-                    if (ImGui::SliderFloat("##Alpha", &alpha, 0.0f, 1.0f)) {
+                    if (ImGui::SliderFloat("##Alpha", &alpha, 0.0f, 1.0f))
+                    {
                         material.SetAlpha(alpha);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
                 }
-                else if (type == MapType::Metalness) {
+                else if (type == MapType::Metalness)
+                {
                     float metal = material.GetMetal();
-                    if (ImGui::SliderFloat("##Metalness", &metal, 0.0f, 1.0f)) {
+                    if (ImGui::SliderFloat("##Metalness", &metal, 0.0f, 1.0f))
+                    {
                         material.SetMetal(metal);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
                 }
-                else if (type == MapType::Roughness) {
+                else if (type == MapType::Roughness)
+                {
                     float rough = material.GetRough();
-                    if (ImGui::SliderFloat("##Roughness", &rough, 0.0f, 1.0f)) {
+                    if (ImGui::SliderFloat("##Roughness", &rough, 0.0f, 1.0f))
+                    {
                         material.SetRough(rough);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
                     bool isGloss = material.IsGloss();
-                    if (ImGui::Checkbox("Is Gloss", &isGloss)) {
+                    if (ImGui::Checkbox("Is Gloss", &isGloss))
+                    {
                         material.SetGloss(isGloss);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
                 }
-                else if (type == MapType::Emissive) {
+                else if (type == MapType::Emissive)
+                {
                     ImGui::SameLine();
 
                     Vec3 emissive = material.GetEmissive();
-                    if (ImGui::ColorEdit3("##EmissiveColor", &emissive.r, ImGuiColorEditFlags_NoInputs)) {
+                    if (ImGui::ColorEdit3("##EmissiveColor", &emissive.r, ImGuiColorEditFlags_NoInputs))
+                    {
                         material.SetEmissive(emissive);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
 
-                    if (ImGui::IsItemHovered()) {
+                    if (ImGui::IsItemHovered())
+                    {
                         ImGui::SetTooltip("Emissive Color");
                     }
 
                     bool isSingle = material.IsSingleChannel();
-                    if (ImGui::Checkbox("Single Channel", &isSingle)) {
+                    if (ImGui::Checkbox("Single Channel", &isSingle))
+                    {
                         material.SetSingleChannel(isSingle);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
                 }
-                else if (type == MapType::Thickness) {
+                else if (type == MapType::Thickness)
+                {
                     ImGui::SameLine();
 
                     Vec3 thick = material.GetSubsurface().color;
-                    if (ImGui::ColorEdit3("##ThicknessColor", &thick.r, ImGuiColorEditFlags_NoInputs)) {
+                    if (ImGui::ColorEdit3("##ThicknessColor", &thick.r, ImGuiColorEditFlags_NoInputs))
+                    {
                         material.SetSubsurfaceColor(thick);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
 
                     float strength = material.GetSubsurface().strength;
-                    if (ImGui::SliderFloat("##ThicknessStrength", &strength, 0.0f, 1.0f)) {
+                    if (ImGui::SliderFloat("##ThicknessStrength", &strength, 0.0f, 1.0f))
+                    {
                         material.SetSubsurfaceStrength(strength);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
 
                     float scale = material.GetSubsurface().thicknessScale;
-                    if (ImGui::SliderFloat("##ThicknessScale", &scale, 0.0f, 1.0f)) {
+                    if (ImGui::SliderFloat("##ThicknessScale", &scale, 0.0f, 1.0f))
+                    {
                         material.SetSubsurfaceThicknessScale(scale);
                         // AssetRegistry::SetDirty(material.GetUUID());
                     }
@@ -749,7 +802,7 @@ namespace Equinox
                 ImGui::EndDisabled();
             }
             ImGui::Spacing();
-            };
+        };
 
         DrawTextureProperty(MapType::Diffuse, "Albedo");
         DrawTextureProperty(MapType::Alpha, "Alpha");
@@ -765,22 +818,26 @@ namespace Equinox
     void InspectorPanel::DrawTexture(Texture& texture)
     {
         // Texture header with name and type
-        if (ImGui::BeginChild("##Header", { 0, 30 })) {
-            ImGui::Dummy({ 0, 4 }); ImGui::Dummy({ 4, 0 }); ImGui::SameLine();
-            ImGui::TextColored({ 0.8f, 0.6f, 0.2f, 1.0f }, "%s (Texture)", texture.GetName().c_str());
+        if (ImGui::BeginChild("##Header", {0, 30}))
+        {
+            ImGui::Dummy({0, 4});
+            ImGui::Dummy({4, 0});
+            ImGui::SameLine();
+            ImGui::TextColored({0.8f, 0.6f, 0.2f, 1.0f}, "%s (Texture)", texture.GetName().c_str());
         }
         ImGui::EndChild();
-        ImGui::Dummy({ 0, 8 });
+        ImGui::Dummy({0, 8});
 
         // Properties table
         static int wrapMode = (int)texture.GetWrapMode();
-        const char* wrapModes[] = { "Repeat", "Clamp to Edge", "Mirrored Repeat" };
+        const char* wrapModes[] = {"Repeat", "Clamp to Edge", "Mirrored Repeat"};
 
         static int minFilter = (int)texture.GetFilterMode().first;
         static int magFilter = (int)texture.GetFilterMode().second;
-        const char* filterModes[] = { "Nearest", "Linear", "Linear Mipmap", "Nearest Mipmap" };
+        const char* filterModes[] = {"Nearest", "Linear", "Linear Mipmap", "Nearest Mipmap"};
 
-        if (ImGui::BeginTable("TextureProps", 2, ImGuiTableFlags_SizingStretchSame)) {
+        if (ImGui::BeginTable("TextureProps", 2, ImGuiTableFlags_SizingStretchSame))
+        {
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("Dimensions");
@@ -804,13 +861,13 @@ namespace Equinox
             ImGui::Text("Mip Levels");
             ImGui::TableSetColumnIndex(1);
             ImGui::Text("%d", texture.GetMipLevels());
-            ImGui::Dummy({ 0, 8 });
+            ImGui::Dummy({0, 8});
 
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
             ImGui::Text("Wrap Mode");
             ImGui::TableSetColumnIndex(1);
-			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
             ImGui::Combo("##Wrap Mode", &wrapMode, wrapModes, IM_ARRAYSIZE(wrapModes));
 
             ImGui::TableNextRow();
@@ -829,11 +886,13 @@ namespace Equinox
 
             ImGui::EndTable();
         }
-        ImGui::Dummy({ 0, 8 });
+        ImGui::Dummy({0, 8});
 
         // Apply button
-		ImGui::SetCursorPosX(ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Apply").x - ImGui::GetStyle().ItemSpacing.x);
-        if (ImGui::Button("Apply")) {
+        ImGui::SetCursorPosX(
+            ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Apply").x - ImGui::GetStyle().ItemSpacing.x);
+        if (ImGui::Button("Apply"))
+        {
             // TODO: Apply texture settings here
             texture.SetWrapMode((TextureWrapMode)wrapMode);
             //texture.SetFilterMode((TextureFilterMode)filterMode, (TextureFilterMode)filterMode);
@@ -841,7 +900,7 @@ namespace Equinox
 
         // Padding
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4());
-        ImGui::BeginChild("##Padding", { 0, 8 }, ImGuiChildFlags_ResizeY);
+        ImGui::BeginChild("##Padding", {0, 8}, ImGuiChildFlags_ResizeY);
         ImGui::EndChild();
         ImGui::PopStyleColor();
 
@@ -853,22 +912,27 @@ namespace Equinox
         float availAR = availHeight / availWidth;
         float previewWidth, previewHeight;
         ImVec2 offset;
-		if (availAR > 1.0f) {   // Portrait
-			previewWidth = availWidth;
-			previewHeight = previewWidth * imageAR;
-			offset = { 0, (availHeight - previewHeight) / 2.0f };
-		}
-		else {  // Landscape
-			previewHeight = availHeight;
-			previewWidth = previewHeight / imageAR;
-			offset = { (availWidth - previewWidth) / 2.0f, 0 };
-		}
+        if (availAR > 1.0f)
+        {
+            // Portrait
+            previewWidth = availWidth;
+            previewHeight = previewWidth * imageAR;
+            offset = {0, (availHeight - previewHeight) / 2.0f};
+        }
+        else
+        {
+            // Landscape
+            previewHeight = availHeight;
+            previewWidth = previewHeight / imageAR;
+            offset = {(availWidth - previewWidth) / 2.0f, 0};
+        }
 
         // Preview region with texture
-        if (ImGui::BeginChild("PreviewRegion", { availWidth, 0 })) {
+        if (ImGui::BeginChild("PreviewRegion", {availWidth, 0}))
+        {
             ImGui::SetCursorPos(offset);
             ImGui::Image((ImTextureID)(intptr_t)texture.GetRendererID(),
-                { previewWidth, previewHeight }, { 0, 1 }, { 1, 0 });
+                         {previewWidth, previewHeight}, {0, 1}, {1, 0});
         }
         ImGui::EndChild();
     }

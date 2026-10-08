@@ -34,7 +34,7 @@ namespace Equinox
         // (the window was already created for this API: GL context or
         // context-less for Vulkan).
         Renderer::Init(m_Window->GetNativeWindow(), ws.rendererAPI);
-        
+
         // Scene & Systems
         m_Scene = std::make_shared<Scene>();
         Systems::Init();
@@ -43,20 +43,25 @@ namespace Equinox
         Editor::Init(m_Window.get());
 
         // Subscribe to events
-        EventBus::Subscribe<WindowResizeEvent>(BusType::MainThread, [this](Event& e) {
+        EventBus::Subscribe<WindowResizeEvent>(BusType::MainThread, [this](Event& e)
+        {
             OnWindowResize(static_cast<WindowResizeEvent&>(e));
         });
 
-        EventBus::Subscribe<WindowCloseEvent>(BusType::MainThread, [this](Event& e) {
+        EventBus::Subscribe<WindowCloseEvent>(BusType::MainThread, [this](Event& e)
+        {
             OnWindowClose(static_cast<WindowCloseEvent&>(e));
         });
 
-        EventBus::Subscribe<FileDropEvent>(BusType::MainThread, [this](Event& e) {
+        EventBus::Subscribe<FileDropEvent>(BusType::MainThread, [this](Event& e)
+        {
             OnFileDrop(static_cast<FileDropEvent&>(e));
         });
     }
 
-    App::~App() {}
+    App::~App()
+    {
+    }
 
     void App::Run()
     {
@@ -69,7 +74,7 @@ namespace Equinox
             Time::Update();
             m_Window->OnUpdate();
             EventBus::ProcessEvents(BusType::MainThread);
-            
+
             OnUpdate();
             AssetManager::Update();
 
@@ -103,9 +108,9 @@ namespace Equinox
 
     void App::Close()
     {
-		Editor::Shutdown();
-		Systems::Shutdown();
-        
+        Editor::Shutdown();
+        Systems::Shutdown();
+
         // Renderer::Shutdown(); // Phase 3
 
         AssetManager::Shutdown();
@@ -120,7 +125,8 @@ namespace Equinox
         spec.rendererAPI = RendererAPI::API::Vulkan; // Equinox's default API
 
         if (argc < 2)
-        {   // No arguments
+        {
+            // No arguments
             EQN_CORE_WARN("Usage: {0} [--vulkan|--opengl]", argv[0]);
             EQN_CORE_WARN("Initializing default [--vulkan]");
             return spec;
@@ -140,7 +146,8 @@ namespace Equinox
                 break;
             }
             else
-            {   // Invalid argument
+            {
+                // Invalid argument
                 EQN_CORE_WARN("Unknown argument: {0}", arg);
             }
         }
@@ -149,21 +156,24 @@ namespace Equinox
 
     void App::SetAppTitle(WindowSpec& ws)
     {
-		std::string title = "Equinox 0.1";
+        std::string title = "Equinox 0.1";
 
         // [OP] Dual-backend: show the active renderer API in the title
         switch (ws.rendererAPI)
         {
-        case RendererAPI::API::OpenGL: title += " [OpenGL]"; break;
-        case RendererAPI::API::Vulkan: title += " [Vulkan]"; break;
-        default: title += " [Unknown API]"; break;
+        case RendererAPI::API::OpenGL: title += " [OpenGL]";
+            break;
+        case RendererAPI::API::Vulkan: title += " [Vulkan]";
+            break;
+        default: title += " [Unknown API]";
+            break;
         }
 
 #ifdef _WIN32
-		title += " - Windows";
+        title += " - Windows";
 #endif
 
-		ws.Title = title;
+        ws.Title = title;
     }
 
     void App::OnWindowResize(WindowResizeEvent& e)
@@ -181,17 +191,21 @@ namespace Equinox
 
     void App::OnFileDrop(FileDropEvent& e)
     {
-        for (const auto& srcPath : e.GetPaths()) {
-            try {
+        for (const auto& srcPath : e.GetPaths())
+        {
+            try
+            {
                 // 1. Validate file
-                if (!fs::exists(srcPath)) {
+                if (!fs::exists(srcPath))
+                {
                     EQN_CORE_ERROR("Dropped file not found: {0}", srcPath.string());
                     continue;
                 }
 
                 // 2. Classify asset type
                 AssetType resType = FileSystem::ClassifyFileType(srcPath);
-                if (resType == AssetType::None) {
+                if (resType == AssetType::None)
+                {
                     EQN_CORE_WARN("Unsupported file type: {0}", srcPath.string());
                     continue;
                 }
@@ -211,10 +225,12 @@ namespace Equinox
 
                 EQN_CORE_INFO("Created asset {0} with UUID {1}", destPath.filename().string(), newUuid.ToString());
             }
-            catch (const fs::filesystem_error& err) {
+            catch (const fs::filesystem_error& err)
+            {
                 EQN_CORE_ERROR("Import failed: {0} - {1}", srcPath.string(), err.what());
             }
-            catch (const std::exception& ex) {
+            catch (const std::exception& ex)
+            {
                 EQN_CORE_ERROR("Asset processing error: {0} - {1}", srcPath.string(), ex.what());
             }
         }

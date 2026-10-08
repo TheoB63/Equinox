@@ -90,7 +90,7 @@ namespace Equinox
         bool m_IsHovered = false;
 
         // Gizmo state
-        Entity* m_SelectedEntity;
+        Entity m_SelectedEntity;
         //ImGuizmo::OPERATION m_GizmoOperation = ImGuizmo::TRANSLATE;
     };
 }

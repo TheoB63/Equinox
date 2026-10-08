@@ -181,6 +181,7 @@
     <ClInclude Include="source\equinox\editor\panels\RenderPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ResourcePanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ScenePanel.h" />
+    <ClInclude Include="source\equinox\editor\UI.h" />
     <ClInclude Include="source\equinox\events\AppEvent.h" />
     <ClInclude Include="source\equinox\events\Event.h" />
     <ClInclude Include="source\equinox\events\EventBus.h" />
@@ -257,6 +258,7 @@
     <ClCompile Include="source\equinox\editor\panels\RenderPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
+    <ClCompile Include="source\equinox\editor\UI.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
