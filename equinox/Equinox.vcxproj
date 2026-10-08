@@ -76,7 +76,7 @@
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DEBUG;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;extern\source\spirv-cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
@@ -101,7 +101,7 @@
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;RELEASE;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;extern\source\spirv-cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -129,7 +129,7 @@
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;extern\source\spirv-cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -216,6 +216,7 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanContext.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanDescriptors.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanPipeline.h" />
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanShader.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanSwapchain.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanTexture.h" />
     <ClInclude Include="source\equinox\renderer\null\NullResources.h" />
@@ -284,6 +285,7 @@
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanContext.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanDescriptors.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanPipeline.cpp" />
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanShader.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanSwapchain.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanTexture.cpp" />
     <ClCompile Include="source\equinox\renderer\rendergraph\RenderGraph.cpp" />
@@ -321,6 +323,9 @@
     </ProjectReference>
     <ProjectReference Include="extern\Tracy.vcxproj">
       <Project>{88372F0E-F44B-57BF-BDCD-FA1E29A153F0}</Project>
+    </ProjectReference>
+    <ProjectReference Include="extern\spirv-cross.vcxproj">
+      <Project>{F0E19980-5C97-1276-E58B-0C4D5140097A}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

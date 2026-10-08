@@ -8,6 +8,7 @@ IncludeDir["imguizmo"]  = "%{wks.location}/equinox/extern/source/imguizmo"
 IncludeDir["spdlog"] = "%{wks.location}/equinox/extern/source/spdlog/include"
 IncludeDir["tracy"] = "%{wks.location}/equinox/extern/source/tracy/public"
 IncludeDir["vulkan"] = "%{wks.location}/equinox/extern/source/vulkan/include"
+IncludeDir["spirv_cross"] = "%{wks.location}/equinox/extern/source/spirv-cross"
 
 LibraryDir = {}
 LibraryDir["vulkan"] = "%{wks.location}/equinox/extern/source/vulkan/lib"

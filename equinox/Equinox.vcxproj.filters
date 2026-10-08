@@ -245,6 +245,9 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanPipeline.h">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanShader.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanSwapchain.h">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
@@ -435,6 +438,9 @@
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanPipeline.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanShader.cpp">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanSwapchain.cpp">

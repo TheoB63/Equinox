@@ -10,3 +10,6 @@
 [submodule "equinox/extern/source/spdlog"]
 	path = equinox/extern/source/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "equinox/extern/source/spirv-cross"]
+	path = equinox/extern/source/spirv-cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git

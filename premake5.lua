@@ -32,6 +32,7 @@ group "Equinox/Extern"
    include "equinox/extern/premake5-imgui"
    include "equinox/extern/premake5-imguizmo"
    include "equinox/extern/premake5-tracy"
+   include "equinox/extern/premake5-spirv-cross"
 group ""
 
 group "EquinoxApp"

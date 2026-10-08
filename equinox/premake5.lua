@@ -36,7 +36,8 @@ project "Equinox"
       IncludeDir["imguizmo"],
       IncludeDir["spdlog"],
       IncludeDir["vulkan"],
-      IncludeDir["tracy"]
+      IncludeDir["tracy"],
+      IncludeDir["spirv_cross"]
    }
 
    libdirs
@@ -56,7 +57,8 @@ project "Equinox"
       "vulkan-1",
       "shaderc_shared",
       "ws2_32",
-      "dbghelp"
+      "dbghelp",
+      "spirv-cross"
    }
    
    filter "configurations:Debug"

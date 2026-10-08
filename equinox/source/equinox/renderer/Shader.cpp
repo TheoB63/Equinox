@@ -2,25 +2,16 @@
 #include "equinox/renderer/Shader.h"
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/backend/opengl/GLShader.h"
+#include "equinox/renderer/backend/vulkan/VulkanShader.h"
 
 namespace Equinox
 {
-    // Simple concrete class for now, just to hold the path
-    class VulkanShaderResource : public Shader
-    {
-    public:
-        VulkanShaderResource(const fs::path& path) : m_Path(path) {}
-        virtual const fs::path& GetPath() const override { return m_Path; }
-    private:
-        fs::path m_Path;
-    };
-
     std::shared_ptr<Shader> Shader::Create(const fs::path& filePath)
     {
         switch (Renderer::GetAPI())
         {
             case RendererAPI::API::Vulkan:
-                return std::make_shared<VulkanShaderResource>(filePath);
+                return std::make_shared<VulkanShader>(filePath);
 
             // [OP] Dual-backend: OpenGL shader (GLSL program, see GLShader)
             case RendererAPI::API::OpenGL:
