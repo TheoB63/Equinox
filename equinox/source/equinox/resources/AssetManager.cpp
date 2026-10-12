@@ -10,117 +10,136 @@
 
 namespace Equinox
 {
-    std::unordered_map<UUID, std::shared_ptr<Asset>, UUIDHash> AssetManager::s_Assets;
-    std::unordered_map<AssetType, std::unique_ptr<AssetImporter>> AssetManager::s_Importers;
-    std::mutex AssetManager::s_AssetMutex;
-    std::mutex AssetManager::s_UploadMutex;
-    std::vector<AssetManager::PendingUpload> AssetManager::s_UploadQueue;
+	std::unordered_map<UUID, std::shared_ptr<Asset>, UUIDHash> AssetManager::s_Assets;
+	std::unordered_set<UUID, UUIDHash> AssetManager::s_LoadingAssets;
+	std::unordered_map<AssetType, std::unique_ptr<AssetImporter>> AssetManager::s_Importers;
+	std::mutex AssetManager::s_AssetMutex;
+	std::mutex AssetManager::s_UploadMutex;
+	std::vector<AssetManager::PendingUpload> AssetManager::s_UploadQueue;
 
-    void AssetManager::Init()
-    {
-        s_Importers[AssetType::Texture] = std::make_unique<TextureImporter>();
-        s_Importers[AssetType::Model] = std::make_unique<ModelImporter>();
-        s_Importers[AssetType::Material] = std::make_unique<MaterialImporter>();
-    }
+	void AssetManager::Init()
+	{
+		s_Importers[AssetType::Texture] = std::make_unique<TextureImporter>();
+		s_Importers[AssetType::Model] = std::make_unique<ModelImporter>();
+		s_Importers[AssetType::Material] = std::make_unique<MaterialImporter>();
+	}
 
-    void AssetManager::Shutdown()
-    {
-        s_Assets.clear();
-        s_Importers.clear();
-        s_UploadQueue.clear();
-    }
+	void AssetManager::Shutdown()
+	{
+		s_Assets.clear();
+		s_LoadingAssets.clear();
+		s_Importers.clear();
+		s_UploadQueue.clear();
+	}
 
-    void AssetManager::LoadAsync(UUID handle)
-    {
-        if (IsLoaded(handle)) return;
+	void AssetManager::LoadAsync(UUID handle)
+	{
+		std::lock_guard<std::mutex> lock(s_AssetMutex);
 
-        const auto& info = AssetDatabase::GetMetadata(handle);
-        if (info.Path.empty())
-        {
-            EQN_CORE_ERROR("AssetManager: UUID {0} not found in DB", handle.ToString());
-            return;
-        }
+		// Check if already loaded or currently loading
+		if (s_Assets.find(handle) != s_Assets.end()) return;
+		if (s_LoadingAssets.find(handle) != s_LoadingAssets.end()) return;
 
-        // Mark as loading to prevent duplicate requests (TODO: Insert placeholder)
-        
-        LoadRequest* req = new LoadRequest{ handle, info.Path, info.Type };
-        
-        // Dispatch to JobSystem
-        JobSystem::Execute(LoadJob, req);
-    }
+		const auto& info = AssetDatabase::GetMetadata(handle);
+		if (info.Path.empty())
+		{
+			EQN_CORE_ERROR("AssetManager: UUID {0} not found in DB", handle.ToString());
+			return;
+		}
 
-    bool AssetManager::IsLoaded(UUID handle)
-    {
-        std::lock_guard<std::mutex> lock(s_AssetMutex);
-        return s_Assets.find(handle) != s_Assets.end();
-    }
+		// Mark as loading to prevent duplicate requests
+		s_LoadingAssets.insert(handle);
 
-    void AssetManager::LoadJob(JobSystem::JobArgs args)
-    {
-        EQN_PROFILE_FUNCTION();
+		LoadRequest* req = new LoadRequest{ handle, info.Path, info.Type };
 
-        LoadRequest* req = (LoadRequest*)args.data;
-        EQN_PROFILE_TAG("Asset", req->Path.string().c_str());
-        
-        if (s_Importers.find(req->Type) == s_Importers.end())
-        {
-            EQN_CORE_ERROR("AssetManager: No importer for type {0}", (int)req->Type);
-            delete req;
-            return;
-        }
+		// Dispatch to JobSystem
+		JobSystem::Execute(LoadJob, req);
+	}
 
-        auto& importer = s_Importers[req->Type];
-        std::unique_ptr<AssetData> data;
+	bool AssetManager::IsLoaded(UUID handle)
+	{
+		std::lock_guard<std::mutex> lock(s_AssetMutex);
+		return s_Assets.find(handle) != s_Assets.end();
+	}
 
-        if (importer->Import(req->Path, data))
-        {
-            std::lock_guard<std::mutex> lock(s_UploadMutex);
-            s_UploadQueue.push_back({ req->Handle, std::move(data), req->Type });
-        }
-        else
-        {
-            EQN_CORE_ERROR("AssetManager: Failed to import {0}", req->Path.string());
-        }
+	void AssetManager::LoadJob(JobSystem::JobArgs args)
+	{
+		EQN_PROFILE_FUNCTION();
 
-        delete req;
-    }
+		LoadRequest* req = (LoadRequest*)args.data;
+		EQN_PROFILE_TAG("Asset", req->Path.string().c_str());
 
-    void AssetManager::Update()
-    {
-        EQN_PROFILE_FUNCTION();
+		std::unique_ptr<AssetData> data = nullptr;
+		bool success = false;
 
-        std::lock_guard<std::mutex> lock(s_UploadMutex);
-        if (s_UploadQueue.empty()) return;
+		if (s_Importers.find(req->Type) != s_Importers.end())
+		{
+			auto& importer = s_Importers[req->Type];
+			success = importer->Import(req->Path, data);
+		}
+		else
+		{
+			EQN_CORE_ERROR("AssetManager: No importer for type {0}", (int)req->Type);
+		}
 
-        for (auto& upload : s_UploadQueue)
-        {
-            std::shared_ptr<Asset> newAsset = nullptr;
+		if (!success)
+		{
+			EQN_CORE_ERROR("AssetManager: Failed to import {0}", req->Path.string());
+		}
 
-            if (upload.Type == AssetType::Texture)
-            {
-                auto* texData = static_cast<TextureAssetData*>(upload.Data.get());
-                newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data());
-            }
-            else if (upload.Type == AssetType::Model)
-            {
-                auto* modelData = static_cast<ModelAssetData*>(upload.Data.get());
-                newAsset = Model::Create(modelData->Meshes, modelData->Materials);
-            }
-            else if (upload.Type == AssetType::Material)
-            {
-                auto* matData = static_cast<MaterialAssetData*>(upload.Data.get());
-                auto material = std::make_shared<Material>();
-                material->Deserialize(matData->JsonData);
-                newAsset = material;
-            }
+		// Push to upload queue regardless of success to clear the loading flag on main thread
+		{
+			std::lock_guard<std::mutex> lock(s_UploadMutex);
+			s_UploadQueue.push_back({ req->Handle, std::move(data), req->Type });
+		}
 
-            if (newAsset)
-            {
-                newAsset->Handle = upload.Handle;
-                std::lock_guard<std::mutex> assetLock(s_AssetMutex);
-                s_Assets[upload.Handle] = newAsset;
-            }
-        }
-        s_UploadQueue.clear();
-    }
+		delete req;
+	}
+
+	void AssetManager::Update()
+	{
+		EQN_PROFILE_FUNCTION();
+
+		std::lock_guard<std::mutex> lock(s_UploadMutex);
+		if (s_UploadQueue.empty()) return;
+
+		for (auto& upload : s_UploadQueue)
+		{
+			std::shared_ptr<Asset> newAsset = nullptr;
+
+			if (upload.Data)
+			{
+				if (upload.Type == AssetType::Texture)
+				{
+					auto* texData = static_cast<TextureAssetData*>(upload.Data.get());
+					newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data());
+				}
+				else if (upload.Type == AssetType::Model)
+				{
+					auto* modelData = static_cast<ModelAssetData*>(upload.Data.get());
+					newAsset = Model::Create(modelData->Meshes, modelData->Materials);
+				}
+				else if (upload.Type == AssetType::Material)
+				{
+					auto* matData = static_cast<MaterialAssetData*>(upload.Data.get());
+					auto material = std::make_shared<Material>();
+					material->Deserialize(matData->JsonData);
+					newAsset = material;
+				}
+			}
+
+			{
+				std::lock_guard<std::mutex> assetLock(s_AssetMutex);
+				
+				// Clear loading flag
+				s_LoadingAssets.erase(upload.Handle);
+
+				if (newAsset) {
+					newAsset->Handle = upload.Handle;
+					s_Assets[upload.Handle] = newAsset;
+				}
+			}
+		}
+		s_UploadQueue.clear();
+	}
 }

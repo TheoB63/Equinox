@@ -6,6 +6,7 @@
 #include "equinox/core/JobSystem.h"
 
 #include <unordered_map>
+#include <unordered_set>
 #include <queue>
 #include <mutex>
 #include <memory>
@@ -55,6 +56,7 @@ namespace Equinox
         static void LoadJob(JobSystem::JobArgs args);
 
         static std::unordered_map<UUID, std::shared_ptr<Asset>, UUIDHash> s_Assets;
+        static std::unordered_set<UUID, UUIDHash> s_LoadingAssets;
         static std::unordered_map<AssetType, std::unique_ptr<AssetImporter>> s_Importers;
         
         static std::mutex s_AssetMutex;
