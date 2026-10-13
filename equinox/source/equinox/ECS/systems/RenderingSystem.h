@@ -40,6 +40,9 @@ namespace Equinox
         void InitGlobalUniforms();
         void UpdateGlobalUniforms();
 
+        RG::ResourceHandle AddGeometryPass(RG::RenderGraph& rg, entt::registry& registry);
+        void AddImGuiPass(RG::RenderGraph& rg, RG::ResourceHandle sceneColor);
+
         // [OP] Dual-backend: OpenGL scene framebuffer (SceneColor + depth)
         void CreateGLSceneFramebuffer(u32 width, u32 height);
         void DestroyGLSceneFramebuffer();
