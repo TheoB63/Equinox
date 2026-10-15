@@ -48,6 +48,7 @@ namespace Equinox
         
         // Update Context Frame Index and Flush Deletions for this frame
         VulkanContext::Get().SetCurrentFrameIndex(m_CurrentFrame);
+        VulkanContext::Get().GetResourceCache().NewFrame(); // Tick Cache
 
         // Wait for previous frame
         vkWaitForFences(device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
@@ -73,8 +74,6 @@ namespace Equinox
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         vkBeginCommandBuffer(m_CommandBuffers[m_CurrentFrame], &beginInfo);
         
-        // Transition Swapchain Image to Color Attachment (if needed manually, usually RenderGraph handles this)
-        // For now, we leave it as is, RenderGraph will handle transitions.
         return true;
     }
 

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/renderer/backend/vulkan/VulkanDescriptors.h"
+#include "equinox/renderer/rendergraph/RenderResourceCache.h"
+
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <functional>
 #include <deque>
-#include "VulkanDescriptors.h"
 
 // Forward declare VMA types to avoid including the huge header here
 typedef struct VmaAllocator_T* VmaAllocator;
@@ -26,7 +28,8 @@ namespace Equinox
         const VkPhysicalDeviceProperties& GetPhysicalDeviceProperties() const { return m_PhysicalDeviceProperties; }
         BindlessDescriptorSet& GetBindlessSet() { return m_BindlessSet; }
         DescriptorAllocator& GetDescriptorAllocator() { return m_DescriptorAllocator; }
-        
+        RG::RenderResourceCache& GetResourceCache() { return m_ResourceCache; } // Getter
+
         // Queue Access
         VkQueue GetGraphicsQueue() const { return m_GraphicsQueue; }
         u32 GetGraphicsFamily() const { return m_GraphicsFamily; }
@@ -67,6 +70,7 @@ namespace Equinox
         VkCommandPool m_CommandPool = VK_NULL_HANDLE;
         BindlessDescriptorSet m_BindlessSet;
         DescriptorAllocator m_DescriptorAllocator;
+        RG::RenderResourceCache m_ResourceCache; // Instance
 
         VmaAllocator m_Allocator = VK_NULL_HANDLE;
         void* m_WindowHandle = nullptr; // Raw GLFW window handle

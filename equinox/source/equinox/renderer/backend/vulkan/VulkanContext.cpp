@@ -1,6 +1,6 @@
 #include "eqnpch.h"
-#include "VulkanContext.h"
-#include "VulkanAllocator.h"
+#include "equinox/renderer/backend/vulkan/VulkanContext.h"
+#include "equinox/renderer/backend/vulkan/VulkanAllocator.h"
 #include "equinox/core/Log.h"
 
 #include <GLFW/glfw3.h>
@@ -36,6 +36,7 @@ namespace Equinox
         s_Instance->InitAllocator();
         s_Instance->m_BindlessSet.Init(s_Instance->m_Device);
         s_Instance->m_DescriptorAllocator.Init(s_Instance->m_Device);
+        s_Instance->m_ResourceCache.Init();
     }
 
     void VulkanContext::Shutdown()
@@ -50,6 +51,7 @@ namespace Equinox
             s_Instance->m_DeletionQueues[i].deletors.clear();
         }
 
+        s_Instance->m_ResourceCache.Shutdown();
         s_Instance->m_BindlessSet.Shutdown();
         s_Instance->m_DescriptorAllocator.Shutdown();
         VulkanAllocator::Shutdown();

@@ -198,6 +198,7 @@
     <ClInclude Include="source\equinox\renderer\Model.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
     <ClInclude Include="source\equinox\renderer\RendererAPI.h" />
+    <ClInclude Include="source\equinox\renderer\rendergraph\RenderResourceCache.h" />
     <ClInclude Include="source\equinox\renderer\Shader.h" />
     <ClInclude Include="source\equinox\renderer\ShaderCompiler.h" />
     <ClInclude Include="source\equinox\renderer\SkinnedModel.h" />
@@ -268,6 +269,7 @@
     <ClCompile Include="source\equinox\renderer\Model.cpp" />
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />
     <ClCompile Include="source\equinox\renderer\RendererAPI.cpp" />
+    <ClCompile Include="source\equinox\renderer\rendergraph\RenderResourceCache.cpp" />
     <ClCompile Include="source\equinox\renderer\Shader.cpp" />
     <ClCompile Include="source\equinox\renderer\ShaderCompiler.cpp" />
     <ClCompile Include="source\equinox\renderer\SkinnedModel.cpp" />

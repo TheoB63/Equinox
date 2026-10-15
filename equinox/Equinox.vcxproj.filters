@@ -311,6 +311,7 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\rendergraph\RenderResourceCache.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -488,5 +489,6 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\rendergraph\RenderResourceCache.cpp" />
   </ItemGroup>
 </Project>
