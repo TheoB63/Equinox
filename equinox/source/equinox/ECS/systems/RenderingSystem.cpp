@@ -10,6 +10,7 @@
 #include "equinox/renderer/backend/vulkan/VulkanContext.h"
 #include "equinox/renderer/backend/vulkan/VulkanTexture.h"
 #include "equinox/renderer/backend/vulkan/VulkanBuffer.h"
+#include "equinox/renderer/Material.h"
 #include "equinox/renderer/Model.h"
 #include "equinox/resources/AssetManager.h"
 #include "equinox/renderer/Buffer.h"
@@ -18,6 +19,7 @@
 #include "equinox/renderer/backend/opengl/GLRendererAPI.h"
 #include "equinox/renderer/backend/opengl/GLTexture.h"
 #include "equinox/renderer/backend/opengl/GLTriangleShader.h"
+
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
@@ -60,6 +62,13 @@ namespace Equinox
 			};
 			config.bindingDescriptions = vertexLayout.GetBindingDescriptions();
 			config.attributeDescriptions = vertexLayout.GetAttributeDescriptions();
+
+			// Push Constants
+			VkPushConstantRange pushConstantRange{};
+			pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+			pushConstantRange.offset = 0;
+			pushConstantRange.size = sizeof(ObjectPushConstants);
+			config.pushConstantRanges = { pushConstantRange };
 
 			// Layouts: Set 0 = Global Uniforms, Set 1 = Bindless
 			std::vector<VkDescriptorSetLayout> layouts = {
@@ -358,8 +367,23 @@ namespace Equinox
 
 						if (!vb || !ib) continue;
 
-						Mat4 modelMatrix = transform.GetTransform();
-						vkCmdPushConstants(cmd, m_TrianglePipeline->GetLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(Mat4), &modelMatrix);
+						ObjectPushConstants pc{};
+						pc.modelMatrix = transform.GetTransform();
+						pc.albedoMapIndex = 0; // Default to 0 (white texture usually)
+
+						// Get Material
+						if (meshRenderer.MaterialUUID.IsValid())
+						{
+							auto material = AssetManager::GetAsset<Material>(meshRenderer.MaterialUUID);
+							if (material)
+							{
+								auto albedoTex = std::static_pointer_cast<VKTexture>(material->GetTextureByType(MapType::Diffuse));
+								if (albedoTex)
+									pc.albedoMapIndex = albedoTex->GetBindlessIndex();
+							}
+						}
+
+						vkCmdPushConstants(cmd, m_TrianglePipeline->GetLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(ObjectPushConstants), &pc);
 
 						VkBuffer vertexBuffers[] = { vb->GetVulkanBuffer() };
 						VkDeviceSize offsets[] = { 0 };

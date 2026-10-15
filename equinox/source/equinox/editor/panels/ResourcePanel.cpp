@@ -72,7 +72,8 @@ namespace Equinox
         m_FilteredResources.clear();
 
         const auto& registry = AssetDatabase::GetRegistry();
- 
+        if (registry.empty()) return;
+
         for (const auto& [uuid, metadata] : registry)
         {
             // Filter by type

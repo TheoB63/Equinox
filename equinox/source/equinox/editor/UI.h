@@ -3,9 +3,11 @@
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/UUID.h"
 #include "equinox/resources/Asset.h"
+#include "equinox/renderer/Texture.h"
 
 #include <string>
 #include <glm/glm.hpp>
+#include <imgui.h>
 
 namespace Equinox::UI
 {
@@ -29,4 +31,7 @@ namespace Equinox::UI
 
     // Asset Slot with Drag & Drop support
     bool PropertyAsset(const char* label, UUID& assetHandle, AssetType type);
+
+    // Helper to get ImGui Texture ID (Handles Vulkan Descriptor creation/caching)
+    ImTextureID GetTextureID(const std::shared_ptr<Texture>& texture);
 }

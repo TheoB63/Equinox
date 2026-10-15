@@ -22,6 +22,11 @@ namespace Equinox
         float time;
     };
 
+    struct ObjectPushConstants {
+        glm::mat4 modelMatrix;
+        u32 albedoMapIndex;
+    };
+
     class RenderingSystem : public System
     {
     public:
