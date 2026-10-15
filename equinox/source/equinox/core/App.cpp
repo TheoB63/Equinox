@@ -11,6 +11,7 @@
 #include "equinox/editor/panels/ScenePanel.h"
 #include "equinox/ECS/Systems.h"
 #include "equinox/resources/AssetManager.h"
+#include "equinox/resources/AssetDatabase.h"
 #include "equinox/ECS/systems/TransformSystem.h"
 #include "equinox/core/JobSystem.h"
 #include "equinox/core/Profiler.h"
@@ -23,6 +24,7 @@ namespace Equinox
 		// Core Systems Init
 		JobSystem::Init();
 		FileSystem::Init();
+		AssetDatabase::Init(FileSystem::AssetsPath());
 		AssetManager::Init();
 
 		WindowSpec ws = ParseCommandLineArgs(argc, argv);
@@ -115,6 +117,7 @@ namespace Equinox
 		// Renderer::Shutdown(); // Phase 3
 
 		AssetManager::Shutdown();
+		AssetDatabase::Shutdown();
 		JobSystem::Shutdown();
 	}
 

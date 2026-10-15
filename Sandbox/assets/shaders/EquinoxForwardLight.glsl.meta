@@ -1,9 +1,9 @@
 {
-  "dependencies": [],
-  "type_settings": {
-    "hot_reload": true,
-    "optimization_level": 3
-  },
-  "uuid": "74f3cf6dd9bd6315",
-  "version": 1
+    "dependencies": [],
+    "type_settings": {
+        "hot_reload": true,
+        "optimization_level": 3
+    },
+    "uuid": "6e9a9de9-3b03-42ed-8b21-ad0a582a2ab5",
+    "version": 1
 }
