@@ -4,6 +4,7 @@
 #include "equinox/resources/AssetDatabase.h"
 #include "equinox/resources/MetaFile.h"
 #include "equinox/resources/FileSystem.h"
+#include "equinox/resources/AssetSerializer.h"
 #include "equinox/renderer/Material.h"
 
 #include <assimp/Importer.hpp>
@@ -287,24 +288,24 @@ namespace Equinox
 		return matUUID;
 	}
 
-	bool ModelImporter::Import(const std::filesystem::path& path, std::unique_ptr<AssetData>& outData)
+	bool ModelImporter::Import(const std::filesystem::path& source, const std::filesystem::path& destination)
 	{
 		EQN_PROFILE_FUNCTION();
 
 		// Setup Context
 		ImportContext ctx;
-		ctx.SourcePath = path;
-		ctx.TextureDir = path.parent_path() / (path.stem().string() + "_Textures");
-		ctx.MaterialDir = path.parent_path() / (path.stem().string() + "_Materials");
+		ctx.SourcePath = source;
+		ctx.TextureDir = source.parent_path() / (source.stem().string() + "_Textures");
+		ctx.MaterialDir = source.parent_path() / (source.stem().string() + "_Materials");
 
 		Assimp::Importer importer;
 		// Important: Read file with flags to generate what we need
-		const aiScene* scene = importer.ReadFile(path.string(),
+		const aiScene* scene = importer.ReadFile(source.string(),
 			aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs |
 			aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices);
 
 		if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-			EQN_CORE_ERROR("ModelImporter: Failed to load model {0} : {1}", path.string(), importer.GetErrorString());
+			EQN_CORE_ERROR("ModelImporter: Failed to load model {0} : {1}", source.string(), importer.GetErrorString());
 			return false;
 		}
 
@@ -320,11 +321,10 @@ namespace Equinox
 		}
 
 		// 3. Process Geometry
-		auto modelData = std::make_unique<ModelAssetData>();
-		ProcessNode(scene->mRootNode, scene, AxisCorrectionMatrix(scene), modelData->Meshes);
-		modelData->Materials = ctx.MaterialUUIDs;
+		ModelAssetData modelData;
+		ProcessNode(scene->mRootNode, scene, AxisCorrectionMatrix(scene), modelData.Meshes);
+		modelData.Materials = ctx.MaterialUUIDs;
 
-		outData = std::move(modelData);
-		return true;
+		return AssetSerializer::SerializeModel(destination, modelData);
 	}
 }

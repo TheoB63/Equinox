@@ -227,6 +227,7 @@
     <ClInclude Include="source\equinox\resources\AssetDatabase.h" />
     <ClInclude Include="source\equinox\resources\AssetImporter.h" />
     <ClInclude Include="source\equinox\resources\AssetManager.h" />
+    <ClInclude Include="source\equinox\resources\AssetSerializer.h" />
     <ClInclude Include="source\equinox\resources\FileSystem.h" />
     <ClInclude Include="source\equinox\resources\FileWatcher.h" />
     <ClInclude Include="source\equinox\resources\MetaFile.h" />
@@ -294,6 +295,7 @@
     <ClCompile Include="source\equinox\resources\Asset.cpp" />
     <ClCompile Include="source\equinox\resources\AssetDatabase.cpp" />
     <ClCompile Include="source\equinox\resources\AssetManager.cpp" />
+    <ClCompile Include="source\equinox\resources\AssetSerializer.cpp" />
     <ClCompile Include="source\equinox\resources\FileSystem.cpp" />
     <ClCompile Include="source\equinox\resources\FileWatcher.cpp" />
     <ClCompile Include="source\equinox\resources\MetaFile.cpp" />
