@@ -91,6 +91,18 @@ namespace Equinox
 			}
 			ImGui::EndChild();
 
+			// Process pending instantiations (Async Loading)
+			for (auto it = m_PendingInstantiations.begin(); it != m_PendingInstantiations.end(); )
+			{
+				if (AssetManager::IsLoaded(it->ModelUUID)) {
+					InstantiateModel(it->ModelUUID, it->Parent);
+					it = m_PendingInstantiations.erase(it);
+				}
+				else {
+					++it;
+				}
+			}
+
 			// Execute deferred actions to avoid iterator invalidation during rendering
 			for (auto& action : m_DeferredActions)
 				action();
@@ -319,22 +331,13 @@ namespace Equinox
 
 				if (meta.Type == AssetType::Model)
 				{
-					if (auto model = std::static_pointer_cast<Model>(AssetManager::LoadImmediate(assetUuid)))
+					if (AssetManager::IsLoaded(assetUuid))
 					{
-						Entity root = m_Context->CreateEntity(model->GetName());
-						root.SetParent(targetEntity);
-
-						const auto& meshes = model->GetMeshes();
-						for (size_t i = 0; i < meshes.size(); i++)
-						{
-							Entity child = m_Context->CreateEntity(model->GetCachedModelInfo().Meshes[i].Name);
-							child.SetParent(root);
-							auto& mr = child.AddComponent<MeshRenderer>();
-							mr.ModelUUID = assetUuid;
-							mr.MeshIndex = (u32)i;
-							if (i < model->GetMaterials().size()) mr.MaterialUUID = model->GetMaterials()[i];
-						}
-						SetSelectedEntity(root);
+						InstantiateModel(assetUuid, targetEntity);
+					}
+					else {
+						AssetManager::LoadAsync(assetUuid);
+						m_PendingInstantiations.push_back({ assetUuid, targetEntity });
 					}
 				}
 			}
@@ -366,21 +369,13 @@ namespace Equinox
 
 				if (meta.Type == AssetType::Model)
 				{
-					if (auto model = std::static_pointer_cast<Model>(AssetManager::LoadImmediate(assetUuid)))
+					if (AssetManager::IsLoaded(assetUuid))
 					{
-						Entity root = m_Context->CreateEntity(model->GetName());
-
-						const auto& meshes = model->GetMeshes();
-						for (size_t i = 0; i < meshes.size(); i++)
-						{
-							Entity child = m_Context->CreateEntity(model->GetCachedModelInfo().Meshes[i].Name);
-							child.SetParent(root);
-							auto& mr = child.AddComponent<MeshRenderer>();
-							mr.ModelUUID = assetUuid;
-							mr.MeshIndex = (u32)i;
-							if (i < model->GetMaterials().size()) mr.MaterialUUID = model->GetMaterials()[i];
-						}
-						SetSelectedEntity(root);
+						InstantiateModel(assetUuid, {});
+					}
+					else {
+						AssetManager::LoadAsync(assetUuid);
+						m_PendingInstantiations.push_back({ assetUuid,{} });
 					}
 				}
 			}
@@ -482,5 +477,27 @@ namespace Equinox
 	bool HierarchyPanel::IsDescendant(Entity potentialDescendant, Entity potentialAncestor)
 	{
 		return potentialDescendant.IsDescendantOf(potentialAncestor);
+	}
+
+	void HierarchyPanel::InstantiateModel(UUID assetUuid, Entity parent)
+	{
+		auto model = AssetManager::GetAsset<Model>(assetUuid);
+		if (!model) return;
+
+		Entity root = m_Context->CreateEntity(model->GetName());
+		if (parent.IsValid()) root.SetParent(parent);
+
+		const auto& meshes = model->GetMeshes();
+		for (size_t i = 0; i < meshes.size(); i++)
+		{
+			Entity child = m_Context->CreateEntity(model->GetCachedModelInfo().Meshes[i].Name);
+			child.SetParent(root);
+			auto& mr = child.AddComponent<MeshRenderer>();
+			mr.ModelUUID = assetUuid;
+			mr.MeshIndex = (u32)i;
+			mr.isSkinned = model->IsSkinned();
+			if (i < model->GetMaterials().size()) mr.MaterialUUID = model->GetMaterials()[i];
+		}
+		SetSelectedEntity(root);
 	}
 }

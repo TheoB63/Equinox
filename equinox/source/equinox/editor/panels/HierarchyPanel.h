@@ -1,6 +1,7 @@
 #pragma once
 
 #include "equinox/editor/Editor.h"
+#include "equinox/core/UUID.h"
 #include "equinox/ECS/Entity.h"
 #include "equinox/ECS/Scene.h"
 
@@ -35,6 +36,7 @@ namespace Equinox
         void RenameEntity(Entity entity);
         void DeleteSelectedEntity();
         bool IsDescendant(Entity potentialDescendant, Entity potentialAncestor);
+        void InstantiateModel(UUID modelUUID, Entity parent);
 
     private:
         std::shared_ptr<Scene> m_Context;
@@ -49,5 +51,11 @@ namespace Equinox
         char m_SearchFilter[256] = "";
         
         std::vector<std::function<void()>> m_DeferredActions;
+
+        struct PendingInstantiation {
+            UUID ModelUUID;
+            Entity Parent;
+        };
+        std::vector<PendingInstantiation> m_PendingInstantiations;
     };
 }
