@@ -1,5 +1,6 @@
 #pragma once
 
+#include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/UUID.h"
 #include <string>
 
@@ -25,6 +26,7 @@ namespace Equinox
         
         UUID Handle;
         AssetFlag Flags = AssetFlag::None;
+        f32 LastAccessedTime = 0.0f;
         
         virtual AssetType GetType() const = 0;
         bool IsValid() const { return (int)Flags & (int)AssetFlag::Invalid; }

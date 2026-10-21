@@ -4,6 +4,7 @@
 #include "equinox/resources/Asset.h"
 #include "equinox/resources/AssetImporter.h"
 #include "equinox/core/JobSystem.h"
+#include "equinox/core/Time.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -29,8 +30,11 @@ namespace Equinox
         {
             std::lock_guard<std::mutex> lock(s_AssetMutex);
             auto it = s_Assets.find(handle);
-            if (it != s_Assets.end())
+            if (it != s_Assets.end()) 
+            {
+                it->second->LastAccessedTime = Time::GetTime();
                 return std::static_pointer_cast<T>(it->second);
+            }
             return nullptr;
         }
 
@@ -46,6 +50,9 @@ namespace Equinox
         // Check status
         static bool IsLoaded(UUID handle);
         static bool IsLoading(UUID handle);
+
+        // Unloads assets that are only referenced by the AssetManager
+        static void Trim();
 
     private:
         struct LoadRequest {

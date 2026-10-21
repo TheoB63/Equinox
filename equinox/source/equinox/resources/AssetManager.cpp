@@ -5,9 +5,12 @@
 #include "equinox/resources/importers/TextureImporter.h"
 #include "equinox/resources/importers/ModelImporter.h"
 #include "equinox/resources/importers/MaterialImporter.h"
+
 #include "equinox/renderer/Texture.h"
 #include "equinox/renderer/Model.h"
 #include "equinox/renderer/Material.h"
+
+#include "equinox/core/Time.h"
 
 namespace Equinox
 {
@@ -17,6 +20,9 @@ namespace Equinox
 	std::mutex AssetManager::s_AssetMutex;
 	std::mutex AssetManager::s_UploadMutex;
 	std::vector<AssetManager::PendingUpload> AssetManager::s_UploadQueue;
+
+	static float s_GCTimer = 0.0f;
+	static const float k_GCInterval = 2.0f; // Run GC every 2 seconds
 
 	void AssetManager::Init()
 	{
@@ -117,7 +123,12 @@ namespace Equinox
 			newAsset = material;
 		}
 
-		if (newAsset) { newAsset->Handle = handle; s_Assets[handle] = newAsset; }
+		if (newAsset)
+		{
+			newAsset->Handle = handle;
+			newAsset->LastAccessedTime = Time::GetTime();
+			s_Assets[handle] = newAsset;
+		}
 		return newAsset;
 	}
 
@@ -148,6 +159,26 @@ namespace Equinox
 	{
 		std::lock_guard<std::mutex> lock(s_AssetMutex);
 		return s_LoadingAssets.find(handle) != s_LoadingAssets.end();
+	}
+
+	void AssetManager::Trim()
+	{
+		std::lock_guard<std::mutex> lock(s_AssetMutex);
+		f32 currentTime = Time::GetTime();
+		const f32 timeout = 5.0f; // Keep unused assets for 5 seconds
+
+		for (auto it = s_Assets.begin(); it != s_Assets.end(); )
+		{
+			// If use_count is 1, it means only s_Assets holds a reference
+			if (it->second.use_count() == 1 && (currentTime - it->second->LastAccessedTime > timeout))
+			{
+				it = s_Assets.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
 	}
 
 	void AssetManager::LoadJob(JobSystem::JobArgs args)
@@ -204,6 +235,14 @@ namespace Equinox
 	void AssetManager::Update()
 	{
 		EQN_PROFILE_FUNCTION();
+
+		// Automatic Garbage Collection
+		s_GCTimer += Time::UnscaledDeltaTime();
+		if (s_GCTimer >= k_GCInterval)
+		{
+			Trim();
+			s_GCTimer = 0.0f;
+		}
 
 		std::lock_guard<std::mutex> lock(s_UploadMutex);
 		if (s_UploadQueue.empty()) return;

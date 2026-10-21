@@ -6,6 +6,7 @@
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/RendererAPI.h"
 #include "equinox/renderer/backend/vulkan/VulkanTexture.h"
+#include "equinox/renderer/backend/vulkan/VulkanContext.h"
 #include "equinox/utils/EquinoxIcons.h"
 
 #include <imgui.h>
@@ -283,7 +284,10 @@ namespace Equinox::UI
 			{
 				if (it->second.second.expired())
 				{
-					ImGui_ImplVulkan_RemoveTexture(it->second.first);
+					VkDescriptorSet set = it->second.first;
+					VulkanContext::Get().PushDeletion([set]() {
+						ImGui_ImplVulkan_RemoveTexture(set);
+						});
 					it = s_TextureCache.erase(it);
 				}
 				else

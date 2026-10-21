@@ -1,10 +1,12 @@
 #include "eqnpch.h"
 #include "ProfilerPanel.h"
+
 #include "equinox/core/JobSystem.h"
 #include "equinox/core/Time.h"
 #include "equinox/renderer/backend/vulkan/VulkanAllocator.h"
 #include "equinox/ECS/Systems.h"
 #include "equinox/ECS/systems/RenderingSystem.h"
+#include "equinox/resources/AssetManager.h"
 #include "equinox/utils/EquinoxIcons.h"
 
 #include <imgui.h>
@@ -46,7 +48,7 @@ namespace Equinox
                 ImGui::Text("FPS: %.1f", m_FPS);
                 ImGui::Text("Frame Time: %.3f ms", m_FrameTime);
                 
-                ImGui::PlotLines("##FrameTimes", m_FrameTimeHistory.data(), (int)m_FrameTimeHistory.size(), 0, nullptr, 0.0f, 33.0f, ImVec2(0, 80));
+                ImGui::PlotLines("##FrameTimes", m_FrameTimeHistory.data(), (int)m_FrameTimeHistory.size(), 0, nullptr, 0.0f, 33.0f, ImVec2(0, 40));
             }
 
             // 2. Job System
@@ -76,6 +78,12 @@ namespace Equinox
                 ImGui::Text("Free: %.2f MB", freeMB);
                 ImGui::Text("Allocations: %d", gpuStats.AllocationCount);
                 
+
+                if (ImGui::Button("Trim Unused Assets"))
+                {
+                    AssetManager::Trim();
+                }
+
                 if (totalMB > 0.0f)
                     ImGui::ProgressBar(usedMB / totalMB, ImVec2(-1, 0));
 
