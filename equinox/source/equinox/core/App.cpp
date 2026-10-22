@@ -88,6 +88,7 @@ namespace Equinox
 		while (m_Running)
 		{
 			EQN_PROFILE_FRAME("MainThread");
+			JobSystem::ResetFrameStats();
 
 			Time::Update();
 			m_Window->OnUpdate();
