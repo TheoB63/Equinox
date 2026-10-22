@@ -64,7 +64,8 @@ namespace Equinox
 		{
 			EQN_PROFILE_FUNCTION();
 
-			if (scene->GetHierarchyVersion() != m_LastHierarchyVersion)
+			// Rebuild if version changed OR if we have roots but no levels (first frame init)
+			if (scene->GetHierarchyVersion() != m_LastHierarchyVersion || (m_Levels.empty() && !scene->GetRootEntities().empty()))
 			{
 				RebuildHierarchy(scene);
 				m_LastHierarchyVersion = scene->GetHierarchyVersion();

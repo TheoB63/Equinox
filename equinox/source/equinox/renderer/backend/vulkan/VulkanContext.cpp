@@ -296,7 +296,10 @@ namespace Equinox
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
+        {
+            std::lock_guard<std::mutex> lock(m_CommandPoolMutex);
+            vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
+        }
 
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -317,12 +320,35 @@ namespace Equinox
         VkFence fence;
         vkCreateFence(m_Device, &fenceInfo, nullptr, &fence);
 
-        vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, fence);
+        {
+            std::lock_guard<std::mutex> lock(m_QueueMutex);
+            vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, fence);
+        }
         
         vkWaitForFences(m_Device, 1, &fence, VK_TRUE, UINT64_MAX);
         vkDestroyFence(m_Device, fence, nullptr);
 
-        vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &commandBuffer);
+        {
+            std::lock_guard<std::mutex> lock(m_CommandPoolMutex);
+            vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &commandBuffer);
+        }
+    }
+
+    bool VulkanContext::Submit(const VkSubmitInfo& submitInfo, VkFence fence)
+    {
+        std::lock_guard<std::mutex> lock(m_QueueMutex);
+        if (vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, fence) != VK_SUCCESS)
+        {
+            EQN_CORE_ERROR("VulkanContext: Queue Submit Failed!");
+            return false;
+        }
+        return true;
+    }
+
+    VkResult VulkanContext::Present(const VkPresentInfoKHR& presentInfo)
+    {
+        std::lock_guard<std::mutex> lock(m_QueueMutex);
+        return vkQueuePresentKHR(m_GraphicsQueue, &presentInfo);
     }
 
     void VulkanContext::PushDeletion(std::function<void()>&& function)

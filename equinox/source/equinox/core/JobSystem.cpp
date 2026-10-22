@@ -14,385 +14,355 @@
 
 namespace Equinox::JobSystem
 {
-    // ===================================================================================
-    // Internal Structures
-    // ===================================================================================
+	// ===================================================================================
+	// Internal Structures
+	// ===================================================================================
 
-    struct Job
-    {
-        JobFunction function;
-        void* data;
-        Counter* counter;
-        u32 start;
-        u32 end;
-    };
+	struct Job
+	{
+		JobFunction function;
+		void* data;
+		Counter* counter;
+		u32 start;
+		u32 end;
+	};
 
-    struct FiberContext
-    {
-        Fiber fiber;
-        Job currentJob;
-        bool isMainThread = false;
-        const char* debugName = nullptr;
-        FiberContext* fiberToRecycle = nullptr;
-    };
+	struct FiberContext
+	{
+		Fiber fiber;
+		Job currentJob;
+		JobContext publicContext; // The public FLS
+		bool isMainThread = false;
+		const char* debugName = nullptr;
+		FiberContext* fiberToRecycle = nullptr;
+	};
 
-    // We use a fixed pool of counters to avoid allocation during runtime
-    constexpr u32 MAX_COUNTERS = 1024;
-    struct CounterData
-    {
-        std::atomic<u32> value = 0;
-        std::vector<FiberContext*> waitingFibers; // Fibers waiting on this counter
-        std::mutex lock;
-    };
+	// ===================================================================================
+	// Global State
+	// ===================================================================================
 
-    // ===================================================================================
-    // Global State
-    // ===================================================================================
+	static std::vector<std::thread> s_WorkerThreads;
+	static std::atomic<bool> s_Running = false;
 
-    static std::vector<std::thread> s_WorkerThreads;
-    static std::atomic<bool> s_Running = false;
+	// Job Queue
+	static std::deque<Job> s_JobQueue;
+	static std::mutex s_QueueLock;
+	static std::condition_variable s_WakeCondition;
 
-    // Job Queue
-    static std::deque<Job> s_JobQueue;
-    static std::mutex s_QueueLock;
-    static std::condition_variable s_WakeCondition;
+	// Fiber Pool
+	static std::vector<FiberContext*> s_FreeFibers;
+	static std::vector<FiberContext*> s_AllFibers; // To delete them at shutdown
+	static std::mutex s_FiberPoolLock;
+	static u32 s_ActiveFibers = 0;
+	static u32 s_PeakFibers = 0;
 
-    // Fiber Pool
-    static std::vector<FiberContext*> s_FreeFibers;
-    static std::vector<FiberContext*> s_AllFibers; // To delete them at shutdown
-    static std::mutex s_FiberPoolLock;
-    static u32 s_ActiveFibers = 0;
-    static u32 s_PeakFibers = 0;
+	// Thread Local State - ONLY for the Scheduler Fiber
+	// We use this to know which Fiber is currently running on this OS thread.
+	// This is the ONLY valid use of thread_local in the system.
+	static thread_local FiberContext* s_CurrentFiber = nullptr;
+	static thread_local FiberContext* s_SchedulerFiber = nullptr;
 
-    // Thread Local State
-    static thread_local FiberContext* s_CurrentFiber = nullptr;
-    static thread_local FiberContext* s_ThreadFiber = nullptr; // The "OS Thread" fiber (scheduler)
+	// ===================================================================================
+	// Forward Declarations
+	// ===================================================================================
 
-    // ===================================================================================
-    // Forward Declarations
-    // ===================================================================================
+	static void WorkerThreadEntryPoint(u32 threadIndex);
+	static void FiberEntryPoint(void* args);
+	static void SchedulerEntryPoint(void* args);
 
-    static void WorkerThreadEntryPoint(u32 threadIndex);
-    static void FiberEntryPoint(void* args);
-    static void SchedulerEntryPoint(void* args);
+	// ===================================================================================
+	// Implementation
+	// ===================================================================================
 
-    // ===================================================================================
-    // Implementation
-    // ===================================================================================
+	void Init(u32 numThreads)
+	{
+		if (s_Running) return;
+		s_Running = true;
 
-    void Init(u32 numThreads)
-    {
-        if (s_Running) return;
-        s_Running = true;
+		if (numThreads == 0)
+			numThreads = std::max(1u, std::thread::hardware_concurrency() - 1);
 
-        if (numThreads == 0)
-            numThreads = std::max(1u, std::thread::hardware_concurrency() - 1);
+		EQN_CORE_INFO("Initializing Fiber JobSystem with {0} threads", numThreads);
 
-        EQN_CORE_INFO("Initializing Fiber JobSystem with {0} threads", numThreads);
+		// Create Fiber Pool
+		for (u32 i = 0; i < 128; ++i)
+		{
+			FiberContext* ctx = new FiberContext();
+			ctx->fiber = Fiber::Create(FiberEntryPoint, ctx, 512 * 1024); // 512 KB stack
+			ctx->debugName = "Worker Fiber";
+			s_FreeFibers.push_back(ctx);
+			s_AllFibers.push_back(ctx);
+		}
 
-        // Create Fiber Pool
-        // We need enough fibers to cover all threads + waiting jobs.
-        // 128 is a safe starting number for a "Swarm" demo.
-        for (u32 i = 0; i < 128; ++i)
-        {
-            FiberContext* ctx = new FiberContext();
-            ctx->fiber = Fiber::Create(FiberEntryPoint, ctx, 512 * 1024); // 512 KB stack
-            ctx->debugName = "Worker Fiber";
-            s_FreeFibers.push_back(ctx);
-            s_AllFibers.push_back(ctx);
-        }
+		// Convert Main Thread to Fiber (This becomes the Scheduler for Thread 0)
+		s_SchedulerFiber = new FiberContext();
+		s_SchedulerFiber->fiber = Fiber::ConvertThreadToFiber(nullptr);
+		s_SchedulerFiber->isMainThread = true;
+		s_SchedulerFiber->debugName = "Main Thread";
+		s_SchedulerFiber->publicContext.ThreadIndex = 0;
+		s_CurrentFiber = s_SchedulerFiber;
 
-        // Convert Main Thread to Fiber
-        s_ThreadFiber = new FiberContext();
-        s_ThreadFiber->fiber = Fiber::ConvertThreadToFiber(nullptr);
-        s_ThreadFiber->isMainThread = true;
-        s_ThreadFiber->debugName = "Main Thread";
-        s_CurrentFiber = s_ThreadFiber;
+		// Spawn Workers
+		for (u32 i = 0; i < numThreads; ++i)
+		{
+			s_WorkerThreads.emplace_back(std::bind(WorkerThreadEntryPoint, i + 1));
+		}
+	}
 
-        // Spawn Workers
-        for (u32 i = 0; i < numThreads; ++i)
-        {
-            s_WorkerThreads.emplace_back(std::bind(WorkerThreadEntryPoint, i));
-        }
-    }
+	void Shutdown()
+	{
+		if (!s_Running) return;
+		s_Running = false;
+		s_WakeCondition.notify_all();
 
-    void Shutdown()
-    {
-        if (!s_Running) return;
-        s_Running = false;
-        s_WakeCondition.notify_all();
+		for (auto& thread : s_WorkerThreads)
+			if (thread.joinable()) thread.join();
 
-        for (auto& thread : s_WorkerThreads)
-            if (thread.joinable()) thread.join();
+		s_WorkerThreads.clear();
 
-        s_WorkerThreads.clear();
+		// Cleanup Fibers
+		for (auto* ctx : s_AllFibers)
+		{
+			Fiber::Destroy(ctx->fiber);
+			delete ctx;
+		}
+		s_AllFibers.clear();
+		s_FreeFibers.clear();
 
-        // Cleanup Fibers
-        for (auto* ctx : s_AllFibers)
-        {
-            Fiber::Destroy(ctx->fiber);
-            delete ctx;
-        }
-        s_AllFibers.clear();
-        s_FreeFibers.clear();
-        
-        // Cleanup Main Thread Fiber wrapper
-        // Note: We don't destroy the main thread fiber handle, OS does it? 
-        // Actually ConvertThreadToFiber requires ConvertFiberToThread to undo? 
-        // Or just let it die.
-        delete s_ThreadFiber;
-    }
+		delete s_SchedulerFiber;
+	}
 
-    void ResetFrameStats()
-    {
-        std::lock_guard<std::mutex> lock(s_FiberPoolLock);
-        s_PeakFibers = s_ActiveFibers;
-    }
+	void ResetFrameStats()
+	{
+		std::lock_guard<std::mutex> lock(s_FiberPoolLock);
+		s_PeakFibers = s_ActiveFibers;
+	}
 
-    void Execute(JobFunction function, void* data, Counter* counter)
-    {
-        if (counter) counter->value++;
+	JobContext* GetCurrentJobContext()
+	{
+		// This is safe because s_CurrentFiber is updated on every switch
+		return &s_CurrentFiber->publicContext;
+	}
 
-        {
-            std::lock_guard<std::mutex> lock(s_QueueLock);
-            s_JobQueue.push_back({ function, data, counter, 0, 1 });
-        }
-        s_WakeCondition.notify_one();
-    }
+	void Execute(JobFunction function, void* data, Counter* counter)
+	{
+		if (counter) counter->value++;
 
-    void Dispatch(u32 jobCount, u32 groupSize, JobFunction function, void* data, Counter* counter)
-    {
-        if (jobCount == 0 || groupSize == 0) return;
+		{
+			std::lock_guard<std::mutex> lock(s_QueueLock);
+			s_JobQueue.push_back({ function, data, counter, 0, 1 });
+		}
+		s_WakeCondition.notify_one();
+	}
 
-        u32 groupCount = (jobCount + groupSize - 1) / groupSize;
+	void Dispatch(u32 jobCount, u32 groupSize, JobFunction function, void* data, Counter* counter)
+	{
+		if (jobCount == 0 || groupSize == 0) return;
 
-        if (counter) counter->value += groupCount;
+		u32 groupCount = (jobCount + groupSize - 1) / groupSize;
 
-        {
-            std::lock_guard<std::mutex> lock(s_QueueLock);
-            for (u32 i = 0; i < groupCount; ++i)
-            {
-                u32 start = i * groupSize;
-                u32 end = std::min(start + groupSize, jobCount);
-                s_JobQueue.push_back({ function, data, counter, start, end });
-            }
-        }
-        s_WakeCondition.notify_all();
-    }
+		if (counter) counter->value += groupCount;
 
-    bool IsBusy(const Counter* counter)
-    {
-        return counter && counter->value.load() > 0;
-    }
+		{
+			std::lock_guard<std::mutex> lock(s_QueueLock);
+			for (u32 i = 0; i < groupCount; ++i)
+			{
+				u32 start = i * groupSize;
+				u32 end = std::min(start + groupSize, jobCount);
+				s_JobQueue.push_back({ function, data, counter, start, end });
+			}
+		}
+		s_WakeCondition.notify_all();
+	}
 
-    Stats GetStats()
-    {
-        Stats stats;
-        stats.ThreadCount = (u32)s_WorkerThreads.size();
-        
-        std::lock_guard<std::mutex> fiberLock(s_FiberPoolLock);
-        stats.TotalFibers = (u32)s_AllFibers.size();
-        stats.FreeFibers = (u32)s_FreeFibers.size();
-        stats.PeakFibers = s_PeakFibers;
-        
-        std::lock_guard<std::mutex> queueLock(s_QueueLock);
-        stats.QueueSize = (u32)s_JobQueue.size();
-        
-        return stats;
-    }
+	bool IsBusy(const Counter* counter)
+	{
+		return counter && counter->value.load() > 0;
+	}
 
-    // ===================================================================================
-    // Fiber Logic
-    // ===================================================================================
+	Stats GetStats()
+	{
+		Stats stats;
+		stats.ThreadCount = (u32)s_WorkerThreads.size();
 
-    // This runs on the "Thread Fiber" (Scheduler)
-    static void SchedulerEntryPoint(void* args)
-    {
-        while (s_Running)
-        {
-            Job job;
-            bool found = false;
+		std::lock_guard<std::mutex> fiberLock(s_FiberPoolLock);
+		stats.TotalFibers = (u32)s_AllFibers.size();
+		stats.FreeFibers = (u32)s_FreeFibers.size();
+		stats.PeakFibers = s_PeakFibers;
 
-            // 1. Try to get a job
-            {
-                std::unique_lock<std::mutex> lock(s_QueueLock);
-                if (!s_JobQueue.empty())
-                {
-                    job = s_JobQueue.front();
-                    s_JobQueue.pop_front();
-                    found = true;
-                }
-                else
-                {
-                    // If no jobs, wait (sleep the OS thread)
-                    // Only if we are NOT the main thread. Main thread shouldn't sleep here usually.
-                    // But if Main calls WaitForCounter, it enters here.
-                    if (s_CurrentFiber != s_ThreadFiber) 
-                    {
-                        // We are a worker fiber returning to scheduler? 
-                        // No, Scheduler IS s_ThreadFiber.
-                    }
-                    
-                    // If we are a worker thread, we wait.
-                    // If we are main thread, we yield?
-                    // For simplicity, we use condition variable.
-                    s_WakeCondition.wait(lock);
-                }
-            }
+		std::lock_guard<std::mutex> queueLock(s_QueueLock);
+		stats.QueueSize = (u32)s_JobQueue.size();
 
-            if (found)
-            {
-                // 2. Get a free fiber
-                FiberContext* fiberCtx = nullptr;
-                {
-                    std::lock_guard<std::mutex> lock(s_FiberPoolLock);
-                    if (!s_FreeFibers.empty())
-                    {
-                        fiberCtx = s_FreeFibers.back();
-                        s_FreeFibers.pop_back();
+		return stats;
+	}
 
-                        s_ActiveFibers++;
-                        if (s_ActiveFibers > s_PeakFibers)
-                            s_PeakFibers = s_ActiveFibers;
-                    }
-                }
+	// ===================================================================================
+	// Fiber Logic
+	// ===================================================================================
 
-                if (fiberCtx)
-                {
-                    // 3. Switch to Fiber
-                    fiberCtx->currentJob = job;
-                    s_CurrentFiber = fiberCtx;
-                    EQN_PROFILE_FIBER_ENTER(fiberCtx->debugName);
-                    Fiber::SwitchTo(fiberCtx->fiber);
-                    
-                    // 4. Back from Fiber (Job finished or suspended)
-                    EQN_PROFILE_FIBER_ENTER("Scheduler");
-                    s_CurrentFiber = s_ThreadFiber;
+	// This runs on the "Thread Fiber" (Scheduler)
+	static void SchedulerEntryPoint(void* args)
+	{
+		while (s_Running)
+		{
+			Job job;
+			bool found = false;
 
-                    // Recycle the fiber if it finished
-                    if (s_ThreadFiber->fiberToRecycle)
-                    {
-                        std::lock_guard<std::mutex> lock(s_FiberPoolLock);
-                        s_ActiveFibers--;
-                        s_FreeFibers.push_back(s_ThreadFiber->fiberToRecycle);
-                        s_ThreadFiber->fiberToRecycle = nullptr;
-                    }
-                }
-                else
-                {
-                    // No fibers available! This is bad.
-                    // We should probably run the job on the thread stack as fallback?
-                    // Or spin wait.
-                    EQN_CORE_ERROR("Fiber pool exhausted!");
-                }
-            }
-        }
-    }
+			// 1. Try to get a job
+			{
+				std::unique_lock<std::mutex> lock(s_QueueLock);
+				if (!s_JobQueue.empty())
+				{
+					job = s_JobQueue.front();
+					s_JobQueue.pop_front();
+					found = true;
+				}
+				else
+				{
+					// If no jobs, wait (sleep the OS thread)
+					// Only if we are NOT the main thread.
+					if (s_CurrentFiber != s_SchedulerFiber)
+					{
+						// Should not happen, we are in scheduler loop
+					}
 
-    // This runs inside a Fiber
-    static void FiberEntryPoint(void* args)
-    {
-        FiberContext* ctx = (FiberContext*)args;
+					s_WakeCondition.wait(lock);
+				}
+			}
 
-        while (true)
-        {
-            // 1. Execute Job
-            Job& job = ctx->currentJob;
-            
-            JobArgs jobArgs{ 0, 0, job.data };
-            for (u32 i = job.start; i < job.end; ++i)
-            {
-                jobArgs.jobIndex = i;
-                job.function(jobArgs);
-            }
+			if (found)
+			{
+				// 2. Get a free fiber
+				FiberContext* fiberCtx = nullptr;
+				{
+					std::lock_guard<std::mutex> lock(s_FiberPoolLock);
+					if (!s_FreeFibers.empty())
+					{
+						fiberCtx = s_FreeFibers.back();
+						s_FreeFibers.pop_back();
 
-            // 2. Decrement Counter
-            if (job.counter)
-            {
-                u32 prev = job.counter->value.fetch_sub(1);
-                if (prev == 1)
-                {
-                    // Counter reached 0. Wake up waiting fibers?
-                    // We don't have a central wait list yet.
-                    // In this simple implementation, waiting fibers are just polling or 
-                    // we need to implement the "Waiting List" logic.
-                }
-            }
+						s_ActiveFibers++;
+						if (s_ActiveFibers > s_PeakFibers)
+							s_PeakFibers = s_ActiveFibers;
+					}
+				}
 
-            // 3. Mark for recycling (Scheduler will handle it after switch)
-            s_ThreadFiber->fiberToRecycle = ctx;
-            
-            // Switch back to the thread that scheduled us
-            EQN_PROFILE_FIBER_ENTER("Scheduler");
-            Fiber::SwitchTo(s_ThreadFiber->fiber);
-            EQN_PROFILE_FIBER_ENTER(ctx->debugName);
-        }
-    }
+				if (fiberCtx)
+				{
+					// 3. Switch to Fiber
+					fiberCtx->currentJob = job;
 
-    static void WorkerThreadEntryPoint(u32 threadIndex)
-    {
-        EQN_PROFILE_THREAD(fmt::format("Worker Thread {}", threadIndex).c_str());
+					// Inherit thread index for debugging/profiling
+					fiberCtx->publicContext.ThreadIndex = s_SchedulerFiber->publicContext.ThreadIndex;
 
-        // Convert this thread to a fiber so we can switch FROM it
-        s_ThreadFiber = new FiberContext();
-        s_ThreadFiber->fiber = Fiber::ConvertThreadToFiber(nullptr);
-        s_ThreadFiber->debugName = "Worker Thread";
-        s_CurrentFiber = s_ThreadFiber;
+					s_CurrentFiber = fiberCtx;
+					EQN_PROFILE_FIBER_ENTER(fiberCtx->debugName);
+					Fiber::SwitchTo(fiberCtx->fiber);
 
-        SchedulerEntryPoint(nullptr);
+					// 4. Back from Fiber (Job finished or suspended)
+					EQN_PROFILE_FIBER_ENTER("Scheduler");
+					s_CurrentFiber = s_SchedulerFiber;
 
-        delete s_ThreadFiber;
-    }
+					// Recycle the fiber if it finished
+					if (s_SchedulerFiber->fiberToRecycle)
+					{
+						std::lock_guard<std::mutex> lock(s_FiberPoolLock);
+						s_ActiveFibers--;
+						s_FreeFibers.push_back(s_SchedulerFiber->fiberToRecycle);
+						s_SchedulerFiber->fiberToRecycle = nullptr;
+					}
+				}
+				else
+				{
+					EQN_CORE_ERROR("Fiber pool exhausted!");
+				}
+			}
+		}
+	}
 
-    void WaitForCounter(Counter* counter, u32 targetValue)
-    {
-        if (!counter) return;
+	// This runs inside a Fiber
+	static void FiberEntryPoint(void* args)
+	{
+		FiberContext* ctx = (FiberContext*)args;
 
-        // Simple Fiber-aware wait:
-        // While waiting, run other jobs.
-        // If we are in a Fiber, we could suspend.
-        // But since we don't have a "Waiting List" implementation yet, 
-        // we will just help the scheduler.
-        
-        // Note: This implementation effectively turns WaitForCounter into "HelpWithJobs".
-        // It doesn't strictly "Suspend" the fiber in the sense of putting it aside.
-        // It keeps the current fiber active and runs nested jobs.
-        // This is safe but can overflow the stack if recursion is too deep.
-        // True Fiber Wait requires swapping out the current fiber.
-        
-        while (counter->value.load() > targetValue)
-        {
-            // Try to run a job from the queue
-            Job job;
-            bool found = false;
-            {
-                std::unique_lock<std::mutex> lock(s_QueueLock);
-                if (!s_JobQueue.empty())
-                {
-                    job = s_JobQueue.front();
-                    s_JobQueue.pop_front();
-                    found = true;
-                }
-            }
+		while (true)
+		{
+			// 1. Execute Job
+			Job& job = ctx->currentJob;
 
-            if (found)
-            {
-                // Execute directly on this stack (Nested)
-                // This avoids needing a new fiber for the helper work
-                JobArgs args{ 0, 0, job.data };
-                for (u32 i = job.start; i < job.end; ++i)
-                {
-                    args.jobIndex = i;
-                    job.function(args);
-                }
+			JobArgs jobArgs{ 0, 0, job.data };
+			for (u32 i = job.start; i < job.end; ++i)
+			{
+				jobArgs.jobIndex = i;
+				job.function(jobArgs);
+			}
 
-                if (job.counter) job.counter->value--;
-            }
-            else
-            {
-                // No jobs? Yield.
-                std::this_thread::yield();
-            }
-        }
-    }
+			// 2. Decrement Counter
+			if (job.counter)
+			{
+				job.counter->value.fetch_sub(1);
+			}
+
+			// 3. Mark for recycling (Scheduler will handle it after switch)
+			s_SchedulerFiber->fiberToRecycle = ctx;
+
+			// Switch back to the thread that scheduled us
+			EQN_PROFILE_FIBER_ENTER("Scheduler");
+			Fiber::SwitchTo(s_SchedulerFiber->fiber);
+			EQN_PROFILE_FIBER_ENTER(ctx->debugName);
+		}
+	}
+
+	static void WorkerThreadEntryPoint(u32 threadIndex)
+	{
+		EQN_PROFILE_THREAD(fmt::format("Worker Thread {}", threadIndex).c_str());
+
+		// Convert this thread to a fiber so we can switch FROM it
+		s_SchedulerFiber = new FiberContext();
+		s_SchedulerFiber->fiber = Fiber::ConvertThreadToFiber(nullptr);
+		s_SchedulerFiber->debugName = "Worker Thread";
+		s_SchedulerFiber->publicContext.ThreadIndex = threadIndex;
+		s_CurrentFiber = s_SchedulerFiber;
+
+		SchedulerEntryPoint(nullptr);
+
+		delete s_SchedulerFiber;
+	}
+
+	void WaitForCounter(Counter* counter, u32 targetValue)
+	{
+		if (!counter) return;
+
+		// Simple Fiber-aware wait (Help with jobs)
+		while (counter->value.load() > targetValue)
+		{
+			Job job;
+			bool found = false;
+			{
+				std::unique_lock<std::mutex> lock(s_QueueLock);
+				if (!s_JobQueue.empty())
+				{
+					job = s_JobQueue.front();
+					s_JobQueue.pop_front();
+					found = true;
+				}
+			}
+
+			if (found)
+			{
+				JobArgs args{ 0, 0, job.data };
+				for (u32 i = job.start; i < job.end; ++i)
+				{
+					args.jobIndex = i;
+					job.function(args);
+				}
+
+				if (job.counter) job.counter->value--;
+			}
+			else
+			{
+				std::this_thread::yield();
+			}
+		}
+	}
 }

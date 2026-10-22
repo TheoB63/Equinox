@@ -17,320 +17,323 @@
 
 namespace Equinox
 {
-    ScenePanel::ScenePanel(std::shared_ptr<RenderingSystem> renderingSystem)
-        : m_RenderingSystem(renderingSystem)
-    {
-        EQN_CORE_INFO("Created Scene panel");
+	ScenePanel::ScenePanel(std::shared_ptr<RenderingSystem> renderingSystem)
+		: m_RenderingSystem(renderingSystem)
+	{
+		EQN_CORE_INFO("Created Scene panel");
 
-        m_EditorCamera = EditorCamera(70, 1.77, 0.1, 10000);
-        m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+		m_EditorCamera = EditorCamera(70, 1.77, 0.1, 10000);
+		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
-        EventBus::Subscribe<RenderResizeEvent>(BusType::MainThread, [this](Event& e) { 
-            HandleRenderResize(e);
-        });
-    }
+		EventBus::Subscribe<RenderResizeEvent>(BusType::MainThread, [this](Event& e) {
+			HandleRenderResize(e);
+			});
+	}
 
-    void ScenePanel::OnInit()
-    {
-        m_SelectedEntity = Editor::GetPanel<HierarchyPanel>()->GetSelectedEntity();
-    }
+	void ScenePanel::OnInit()
+	{
+		m_SelectedEntity = Editor::GetPanel<HierarchyPanel>()->GetSelectedEntity();
+	}
 
-    void ScenePanel::OnRender()
-    {
-        // Sync selection from Hierarchy
-        if (auto hierarchy = Editor::GetPanel<HierarchyPanel>())
-            m_SelectedEntity = hierarchy->GetSelectedEntity();
-        
-        ImGui::PushFont(Editor::GetFASolid());
-        std::string scene = ICON_FA_GAMEPAD + std::string("  Scene");
+	void ScenePanel::OnRender()
+	{
+		// Sync selection from Hierarchy
+		if (auto hierarchy = Editor::GetPanel<HierarchyPanel>())
+			m_SelectedEntity = hierarchy->GetSelectedEntity();
 
-        if (ImGui::Begin(scene.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar)) {
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		ImGui::PushFont(Editor::GetFASolid());
+		std::string scene = ICON_FA_GAMEPAD + std::string("  Scene");
 
-            // Viewport sizing
-            const Vec2 newSize = ToGlmVec2(ImGui::GetContentRegionAvail());
-            if (newSize != m_ViewportSize && newSize.x > 0 && newSize.y > 0) {
-                m_ViewportSize = newSize;
+		if (ImGui::Begin(scene.c_str(), nullptr, ImGuiWindowFlags_NoScrollbar)) {
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
-                // Update rendering system and camera
-                EventBus::Enqueue<RenderResizeEvent>(BusType::MainThread, newSize.x, newSize.y);
-            }
+			// Viewport sizing
+			const Vec2 newSize = ToGlmVec2(ImGui::GetContentRegionAvail());
+			if (newSize != m_ViewportSize && newSize.x > 0 && newSize.y > 0) {
+				m_ViewportSize = newSize;
 
-            // Get final output from active rendering technique
-            if (auto texture = m_RenderingSystem->GetSceneColor())
-            {
-                if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
-                {
-                    // Create/Get Descriptor Set for ImGui
-                    // Note: In a real engine, cache this descriptor set and only update if texture changes.
-                    // For now, we create a new one every frame (LEAK WARNING: ImGui_ImplVulkan_AddTexture allocates a set, need to free it?)
-                    // ImGui_ImplVulkan_AddTexture is intended for static textures. For dynamic, use ImGui_ImplVulkan_RegisterTexture if available or manage sets manually.
-                    // Since we are in "Get it running" mode, we will use the raw bindless index if possible, OR just AddTexture.
-                    // Actually, ImGui_ImplVulkan_AddTexture is fine if we don't do it every frame for the SAME texture object.
-                    // But m_SceneColor changes on resize.
-                    // Let's use a static descriptor set and update it.
-                    
-                    static VkDescriptorSet ds = VK_NULL_HANDLE;
-                    static std::shared_ptr<Texture> lastTex = nullptr;
+				// Update rendering system and camera
+				EventBus::Enqueue<RenderResizeEvent>(BusType::MainThread, newSize.x, newSize.y);
+			}
 
-                    if (texture != lastTex)
-                    {
-                        if (ds) ImGui_ImplVulkan_RemoveTexture(ds);
-                        auto vkTex = std::static_pointer_cast<VKTexture>(texture);
-                        ds = ImGui_ImplVulkan_AddTexture(vkTex->GetSampler(), vkTex->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                        lastTex = texture;
-                    }
+			// Get final output from active rendering technique
+			if (auto texture = m_RenderingSystem->GetSceneColor())
+			{
+				if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+				{
+					// Create/Get Descriptor Set for ImGui
+					// Note: In a real engine, cache this descriptor set and only update if texture changes.
+					// For now, we create a new one every frame (LEAK WARNING: ImGui_ImplVulkan_AddTexture allocates a set, need to free it?)
+					// ImGui_ImplVulkan_AddTexture is intended for static textures. For dynamic, use ImGui_ImplVulkan_RegisterTexture if available or manage sets manually.
+					// Since we are in "Get it running" mode, we will use the raw bindless index if possible, OR just AddTexture.
+					// Actually, ImGui_ImplVulkan_AddTexture is fine if we don't do it every frame for the SAME texture object.
+					// But m_SceneColor changes on resize.
+					// Let's use a static descriptor set and update it.
 
-                    ImGui::Image((ImTextureID)ds, ToImVec2(m_ViewportSize), { 0, 0 }, { 1, 1 });
-                }
-                else if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
-                {
-                    // [OP] Dual-backend: in OpenGL the texture id IS the ImGui id
-                    auto glTex = std::static_pointer_cast<GLTexture>(texture);
-                    ImGui::Image((ImTextureID)glTex->GetRendererID(), ToImVec2(m_ViewportSize), { 0, 0 }, { 1, 1 });
-                }
-            }
-            else
-            {
-                ImGui::Text("No Scene Output");
-            }
+					static VkDescriptorSet ds = VK_NULL_HANDLE;
+					static std::shared_ptr<Texture> lastTex = nullptr;
 
-            // Interaction states
-            m_IsFocused = ImGui::IsWindowFocused();
-            m_IsHovered = ImGui::IsWindowHovered();
+					if (texture != lastTex)
+					{
+						if (ds) ImGui_ImplVulkan_RemoveTexture(ds);
+						auto vkTex = std::static_pointer_cast<VKTexture>(texture);
+						ds = ImGui_ImplVulkan_AddTexture(vkTex->GetSampler(), vkTex->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+						lastTex = texture;
+					}
 
-            // Handle gizmos
-            DrawGizmos();
+					ImGui::Image((ImTextureID)ds, ToImVec2(m_ViewportSize), { 0, 0 }, { 1, 1 });
+				}
+				else if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+				{
+					// [OP] Dual-backend: in OpenGL the texture id IS the ImGui id
+					auto glTex = std::static_pointer_cast<GLTexture>(texture);
+					ImGui::Image((ImTextureID)glTex->GetRendererID(), ToImVec2(m_ViewportSize), { 0, 0 }, { 1, 1 });
+				}
+			}
+			else
+			{
+				ImGui::Text("No Scene Output");
+			}
 
-            // Camera Control
-            ImGui::SetNavCursorVisible(true);
-            if (m_IsHovered) {
-                if (ImGui::IsKeyDown(ImGuiKey_F)) {
-                    if (m_SelectedEntity) {
-                        glm::vec3 newFocus = m_SelectedEntity.GetComponent<Transform>().Position;
-                        m_EditorCamera.SetFocalPoint(newFocus);
-                    }
-                }
+			// Interaction states
+			m_IsFocused = ImGui::IsWindowFocused();
+			m_IsHovered = ImGui::IsWindowHovered();
 
-                bool rotate = ImGui::IsMouseDown(1);
-                bool pan = ImGui::IsMouseDown(2);
-                if (rotate || pan) ImGui::SetNavCursorVisible(false);
-                m_EditorCamera.OnUpdate(rotate, pan);
-            }
+			// Handle gizmos
+			DrawGizmos();
 
-            ImGui::PopStyleVar();
-        }
-        ImGui::End();
-        ImGui::PopFont();
-    }
+			// Camera Control
+			ImGui::SetNavCursorVisible(true);
+			if (m_IsHovered) {
+				if (ImGui::IsKeyDown(ImGuiKey_F)) {
+					if (m_SelectedEntity) {
+						glm::vec3 newFocus = m_SelectedEntity.GetComponent<Transform>().Position;
+						m_EditorCamera.SetFocalPoint(newFocus);
+					}
+				}
 
-    /*void ScenePanel::SetViewportCamera(const std::shared_ptr<Camera>& camera) {
-        m_EditorCamera = camera;
-        if (m_EditorCamera) {
-            m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-        }
-    }*/
+				bool rotate = ImGui::IsMouseDown(1);
+				bool pan = ImGui::IsMouseDown(2);
+				if (rotate || pan) ImGui::SetNavCursorVisible(false);
+				m_EditorCamera.OnUpdate(rotate, pan);
+			}
 
-    void ScenePanel::DrawGizmos()
-    {
-        if (!m_SelectedEntity || !m_SelectedEntity.IsValid()) return;
+			ImGui::PopStyleVar();
+		}
+		ImGui::End();
+		ImGui::PopFont();
+	}
 
-        ImGuizmo::SetOrthographic(false);
-        ImGuizmo::SetDrawlist();
+	/*void ScenePanel::SetViewportCamera(const std::shared_ptr<Camera>& camera) {
+		m_EditorCamera = camera;
+		if (m_EditorCamera) {
+			m_EditorCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+		}
+	}*/
 
-        float windowWidth = (float)ImGui::GetWindowWidth();
-        float windowHeight = (float)ImGui::GetWindowHeight();
-        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
+	void ScenePanel::DrawGizmos()
+	{
+		if (!m_SelectedEntity || !m_SelectedEntity.IsValid()) return;
 
-        // Camera
-        const glm::mat4& view = m_EditorCamera.GetViewMatrix();
-        const glm::mat4& proj = m_EditorCamera.GetProjectionMatrix();
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
 
-        // Entity Transform
-        auto& tc = m_SelectedEntity.GetComponent<Transform>();
+		float windowWidth = (float)ImGui::GetWindowWidth();
+		float windowHeight = (float)ImGui::GetWindowHeight();
+		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
 
-        // Get World Matrix for Gizmo
-        glm::mat4 worldMatrix = m_SelectedEntity.GetComponent<WorldTransform>().Matrix;
+		// Camera
+		const glm::mat4& view = m_EditorCamera.GetViewMatrix();
+		const glm::mat4& proj = m_EditorCamera.GetProjectionMatrix();
 
-        // If we are in Local mode, we still need the world matrix for position, but we want to edit in local axes.
-        // ImGuizmo handles this via the MODE parameter.
+		// Entity Transform
+		auto& tc = m_SelectedEntity.GetComponent<Transform>();
 
-        // However, if we edit in World mode, we need to decompose the result back to Local.
-        // If dirty, reconstruct world matrix on the fly to be responsive
-        if (tc.IsDirty)
-        {
-            // We can't easily reconstruct world matrix here without parent info.
-            // Rely on the System to have updated it, OR force a quick calc if needed.
-            // For now, let's trust the system update loop which runs before Render.
-        }
+		// Get World Matrix for Gizmo
+		glm::mat4 worldMatrix = m_SelectedEntity.GetComponent<WorldTransform>().Matrix;
 
-        // Snapping
-        bool snap = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
-        float snapValue = 0.5f; // Snap to 0.5m for translation/scale
-        if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
-            snapValue = 45.0f; // Snap to 45 degrees for rotation
+		// If we are in Local mode, we still need the world matrix for position, but we want to edit in local axes.
+		// ImGuizmo handles this via the MODE parameter.
 
-        float snapValues[3] = { snapValue, snapValue, snapValue };
+		// However, if we edit in World mode, we need to decompose the result back to Local.
+		// If dirty, reconstruct world matrix on the fly to be responsive
+		if (tc.IsDirty)
+		{
+			// We can't easily reconstruct world matrix here without parent info.
+			// Rely on the System to have updated it, OR force a quick calc if needed.
+			// For now, let's trust the system update loop which runs before Render.
+		}
 
-        ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
-            (ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(worldMatrix),
-            nullptr, snap ? snapValues : nullptr);
+		// Snapping
+		bool snap = ImGui::IsKeyDown(ImGuiKey_LeftCtrl);
+		float snapValue = 0.5f; // Snap to 0.5m for translation/scale
+		if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
+			snapValue = 45.0f; // Snap to 45 degrees for rotation
 
-        if (ImGuizmo::IsUsing())
-        {
-            // Convert back to Local Space
-            glm::mat4 localMatrix = worldMatrix;
-            if (m_SelectedEntity.HasParent())
-            {
-                Entity parent = m_SelectedEntity.GetParent();
-                glm::mat4 parentWorld = parent.GetComponent<WorldTransform>().Matrix;
-                localMatrix = glm::inverse(parentWorld) * worldMatrix;
-            }
+		float snapValues[3] = { snapValue, snapValue, snapValue };
 
-            float translation[3], rotation[3], scale[3];
-            ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(localMatrix), translation, rotation, scale);
+		ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
+			(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(worldMatrix),
+			nullptr, snap ? snapValues : nullptr);
 
-            tc.Position = glm::make_vec3(translation);
-            tc.Rotation = glm::make_vec3(rotation);
-            tc.Scale = glm::make_vec3(scale);
-            tc.IsDirty = true;
-        }
+		if (ImGuizmo::IsUsing())
+		{
+			// Convert back to Local Space
+			glm::mat4 localMatrix = worldMatrix;
+			if (m_SelectedEntity.HasParent())
+			{
+				Entity parent = m_SelectedEntity.GetParent();
+				glm::mat4 parentWorld = parent.GetComponent<WorldTransform>().Matrix;
+				localMatrix = glm::inverse(parentWorld) * worldMatrix;
+			}
 
-        // Gizmo Shortcuts
-        if (m_IsFocused && !ImGuizmo::IsUsing())
-        {
-            if (ImGui::IsKeyPressed(ImGuiKey_Q))
-                m_GizmoType = -1;
-            if (ImGui::IsKeyPressed(ImGuiKey_W))
-                m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-            if (ImGui::IsKeyPressed(ImGuiKey_E))
-                m_GizmoType = ImGuizmo::OPERATION::ROTATE;
-            if (ImGui::IsKeyPressed(ImGuiKey_R))
-                m_GizmoType = ImGuizmo::OPERATION::SCALE;
-        }
-    }
+			float translation[3], rotation[3], scale[3];
+			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(localMatrix), translation, rotation, scale);
 
-    void ScenePanel::HandleRenderResize(Event& e)
-    {
-        if (e.IsInCategory(EventCategoryRender)) {
-            auto& resizeEvent = static_cast<RenderResizeEvent&>(e);
-            m_RenderingSystem->Resize(resizeEvent.GetWidth(), resizeEvent.GetHeight());
-            m_EditorCamera.SetViewportSize(resizeEvent.GetWidth(), resizeEvent.GetHeight());
-            m_ViewportSize = { resizeEvent.GetWidth(), resizeEvent.GetHeight() };
-            e.m_Handled = true;
-            EQN_CORE_TRACE("Resized Viewport {0}x{1}", resizeEvent.GetWidth(), resizeEvent.GetHeight());
-        }
-    }
+			tc.Position = glm::make_vec3(translation);
+			tc.Rotation = glm::make_vec3(rotation);
+			tc.Scale = glm::make_vec3(scale);
+			tc.IsDirty = true;
+		}
+
+		// Gizmo Shortcuts
+		if (m_IsFocused && !ImGuizmo::IsUsing())
+		{
+			if (ImGui::IsKeyPressed(ImGuiKey_Q))
+				m_GizmoType = -1;
+			if (ImGui::IsKeyPressed(ImGuiKey_W))
+				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+			if (ImGui::IsKeyPressed(ImGuiKey_E))
+				m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+			if (ImGui::IsKeyPressed(ImGuiKey_R))
+				m_GizmoType = ImGuizmo::OPERATION::SCALE;
+		}
+	}
+
+	void ScenePanel::HandleRenderResize(Event& e)
+	{
+		if (e.IsInCategory(EventCategoryRender)) {
+			auto& resizeEvent = static_cast<RenderResizeEvent&>(e);
+			m_RenderingSystem->Resize(resizeEvent.GetWidth(), resizeEvent.GetHeight());
+			m_EditorCamera.SetViewportSize(resizeEvent.GetWidth(), resizeEvent.GetHeight());
+			m_ViewportSize = { resizeEvent.GetWidth(), resizeEvent.GetHeight() };
+			e.m_Handled = true;
+			EQN_CORE_TRACE("Resized Viewport {0}x{1}", resizeEvent.GetWidth(), resizeEvent.GetHeight());
+		}
+	}
 
 
-    // Editor Camera
-    // ======================================
-    EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
-        : m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip)
-    {
-        glm::vec3 direction = glm::normalize(m_FocalPoint - m_Position);
-        m_Distance = glm::length(m_FocalPoint - m_Position);
+	// Editor Camera
+	// ======================================
+	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
+		: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip)
+	{
+		glm::vec3 direction = glm::normalize(m_FocalPoint - m_Position);
+		m_Distance = glm::length(m_FocalPoint - m_Position);
 
-        m_Yaw = glm::degrees(atan2(direction.z, direction.x));
-        m_Pitch = glm::degrees(asin(direction.y));
+		m_Yaw = glm::degrees(atan2(direction.z, direction.x));
+		m_Pitch = glm::degrees(asin(direction.y));
 
-        UpdateProjection();
-        UpdateView();
-    }
+		UpdateProjection();
+		UpdateView();
+	}
 
-    void EditorCamera::OnUpdate(bool rotate, bool pan) {
-        //if (ImGui::GetIO().WantCaptureMouse) return;
+	void EditorCamera::OnUpdate(bool rotate, bool pan) {
+		//if (ImGui::GetIO().WantCaptureMouse) return;
 
-        float dt = Time::DeltaTime();
-        auto [x, y] = ImGui::GetMousePos();
-        glm::vec2 currentMousePos(x, y);
-        glm::vec2 delta = (currentMousePos - m_LastMousePosition) * 0.002f;
-        m_LastMousePosition = currentMousePos;
+		float dt = Time::DeltaTime();
+		auto [x, y] = ImGui::GetMousePos();
+		glm::vec2 currentMousePos(x, y);
+		glm::vec2 delta = (currentMousePos - m_LastMousePosition) * 0.002f;
+		m_LastMousePosition = currentMousePos;
 
-        bool updated = false;
+		bool updated = false;
 
-        // Rotation (Right Mouse)
-        if (rotate) {
-            m_Yaw += delta.x * m_RotationSpeed * dt;
-            m_Pitch -= delta.y * m_RotationSpeed * dt;
-            m_Pitch = glm::clamp(m_Pitch, -89.0f, 89.0f);
-            m_Position = CalculatePosition();
-            updated = true;
-        }
+		// Rotation (Right Mouse)
+		if (rotate) {
+			m_Yaw += delta.x * m_RotationSpeed * dt;
+			m_Pitch -= delta.y * m_RotationSpeed * dt;
+			m_Pitch = glm::clamp(m_Pitch, -89.0f, 89.0f);
+			m_Position = CalculatePosition();
+			updated = true;
+		}
 
-        // Panning (Middle Mouse)
-        if (pan) {
-            glm::vec3 right = GetRightDirection();
-            glm::vec3 up = GetUpDirection();
-            float speed = m_PanSpeed * m_Distance * dt;
+		// Panning (Middle Mouse)
+		if (pan) {
+			glm::vec3 right = GetRightDirection();
+			glm::vec3 up = GetUpDirection();
+			float speed = m_PanSpeed * m_Distance * dt;
 
-            m_FocalPoint += -right * delta.x * speed;
-            m_FocalPoint += up * delta.y * speed;
-            m_Position = CalculatePosition();
-            updated = true;
-        }
+			m_FocalPoint += -right * delta.x * speed;
+			m_FocalPoint += up * delta.y * speed;
+			m_Position = CalculatePosition();
+			updated = true;
+		}
 
-        // Zoom (Mouse Scroll)
-        float zoomDelta = ImGui::GetIO().MouseWheel;
-        if (zoomDelta != 0.0f) {
-            float adaptiveSpeed = m_ZoomSpeed * m_Distance * dt;
-            m_Distance -= zoomDelta * adaptiveSpeed;
-            m_Distance = glm::max(m_Distance, 0.1f);
-            m_Position = CalculatePosition();
-            updated = true;
-        }
+		// Zoom (Mouse Scroll)
+		float zoomDelta = ImGui::GetIO().MouseWheel;
+		if (zoomDelta != 0.0f) {
+			float adaptiveSpeed = m_ZoomSpeed * m_Distance * dt;
+			m_Distance -= zoomDelta * adaptiveSpeed;
+			m_Distance = glm::max(m_Distance, 0.1f);
+			m_Position = CalculatePosition();
+			updated = true;
+		}
 
-        if (updated) UpdateView();
-    }
+		if (updated) UpdateView();
+	}
 
-    void EditorCamera::SetViewportSize(float width, float height) {
-        m_ViewportWidth = width;
-        m_ViewportHeight = height;
-        m_AspectRatio = width / height;
-        UpdateProjection();
-    }
+	void EditorCamera::SetViewportSize(float width, float height) {
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
+		m_AspectRatio = width / height;
+		UpdateProjection();
+	}
 
-    void EditorCamera::SetFocalPoint(glm::vec3 focalPoint) {
-        m_FocalPoint = focalPoint;
-        CalculatePosition();
-        UpdateView();
-    }
+	void EditorCamera::SetFocalPoint(glm::vec3 focalPoint) {
+		m_FocalPoint = focalPoint;
+		CalculatePosition();
+		UpdateView();
+	}
 
-    glm::vec3 EditorCamera::GetForwardDirection() const {
-        float yawRad = glm::radians(m_Yaw);
-        float pitchRad = glm::radians(m_Pitch);
-        return glm::vec3(
-            cos(yawRad) * cos(pitchRad),
-            sin(pitchRad),
-            sin(yawRad) * cos(pitchRad)
-        );
-    }
+	glm::vec3 EditorCamera::GetForwardDirection() const {
+		float yawRad = glm::radians(m_Yaw);
+		float pitchRad = glm::radians(m_Pitch);
+		return glm::vec3(
+			cos(yawRad) * cos(pitchRad),
+			sin(pitchRad),
+			sin(yawRad) * cos(pitchRad)
+		);
+	}
 
-    glm::vec3 EditorCamera::GetRightDirection() const {
-        float yawRad = glm::radians(m_Yaw);
-        return glm::vec3(-sin(yawRad), 0.0f, cos(yawRad));
-    }
+	glm::vec3 EditorCamera::GetRightDirection() const {
+		float yawRad = glm::radians(m_Yaw);
+		return glm::vec3(-sin(yawRad), 0.0f, cos(yawRad));
+	}
 
-    glm::vec3 EditorCamera::GetUpDirection() const {
-        glm::vec3 forward = GetForwardDirection();
-        glm::vec3 right = GetRightDirection();
-        return glm::normalize(glm::cross(right, forward));
-    }
+	glm::vec3 EditorCamera::GetUpDirection() const {
+		glm::vec3 forward = GetForwardDirection();
+		glm::vec3 right = GetRightDirection();
+		return glm::normalize(glm::cross(right, forward));
+	}
 
-    void EditorCamera::UpdateProjection() {
-        m_ProjectionMatrix = glm::perspective(
-            glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
-    }
+	void EditorCamera::UpdateProjection() {
+		m_ProjectionMatrix = glm::perspective(
+			glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
 
-    void EditorCamera::UpdateView() {
-        m_ViewMatrix = glm::lookAt(m_Position, m_FocalPoint, glm::vec3(0.0f, 1.0f, 0.0f));
-    }
+		// Vulkan Y-flip for Editor Camera too
+		m_ProjectionMatrix[1][1] *= -1.0f;
+	}
 
-    glm::vec3 EditorCamera::CalculatePosition() const {
-        return m_FocalPoint - GetForwardDirection() * m_Distance;
-    }
+	void EditorCamera::UpdateView() {
+		m_ViewMatrix = glm::lookAt(m_Position, m_FocalPoint, glm::vec3(0.0f, 1.0f, 0.0f));
+	}
 
-    glm::quat EditorCamera::GetOrientation() const {
-        return glm::quatLookAt(GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
-    }
+	glm::vec3 EditorCamera::CalculatePosition() const {
+		return m_FocalPoint - GetForwardDirection() * m_Distance;
+	}
+
+	glm::quat EditorCamera::GetOrientation() const {
+		return glm::quatLookAt(GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
+	}
 }

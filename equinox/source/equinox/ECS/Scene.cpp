@@ -24,6 +24,7 @@ namespace Equinox
 		entity.AddComponent<WorldTransform>();
 		m_RootEntities.push_back(entity);
 		EQN_CORE_TRACE("Created entity: {0}", name);
+		IncrementHierarchyVersion();
 		return entity;
 	}
 
@@ -53,6 +54,7 @@ namespace Equinox
 		// Finally destroy the entity itself
 		m_Registry.destroy(entity);
 		EQN_CORE_TRACE("Destroyed entity: {0}", entity.GetName());
+		IncrementHierarchyVersion();
 	}
 
 	Entity Scene::DuplicateEntity(Entity original, bool skipParentAddition)
