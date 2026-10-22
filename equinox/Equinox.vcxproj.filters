@@ -313,6 +313,7 @@
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\rendergraph\RenderResourceCache.h" />
     <ClInclude Include="source\equinox\resources\AssetSerializer.h" />
+    <ClInclude Include="source\equinox\ECS\systems\CameraSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />

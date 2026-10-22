@@ -2,6 +2,7 @@
 #include "equinox/ECS/Systems.h"
 #include "equinox/ECS/systems/TransformSystem.h"
 #include "equinox/ECS/systems/AnimationSystem.h"
+#include "equinox/ECS/systems/CameraSystem.h"
 #include "equinox/ECS/systems/RenderingSystem.h"
 
 namespace Equinox
@@ -12,6 +13,7 @@ namespace Equinox
     void Systems::Init() {
         EQN_CORE_INFO("Initializing Systems...");
         AddSystem<TransformSystem>();
+        AddSystem<CameraSystem>();
         //AddSystem<AnimationSystem>();
         AddSystem<RenderingSystem>();
     }

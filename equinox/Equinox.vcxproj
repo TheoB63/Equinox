@@ -160,6 +160,7 @@
     <ClInclude Include="source\equinox\ECS\System.h" />
     <ClInclude Include="source\equinox\ECS\Systems.h" />
     <ClInclude Include="source\equinox\ECS\systems\AnimationSystem.h" />
+    <ClInclude Include="source\equinox\ECS\systems\CameraSystem.h" />
     <ClInclude Include="source\equinox\ECS\systems\RenderingSystem.h" />
     <ClInclude Include="source\equinox\ECS\systems\TransformSystem.h" />
     <ClInclude Include="source\equinox\core\App.h" />

@@ -421,7 +421,10 @@ namespace Equinox
 			{
 				m_DeferredActions.push_back([this, parent]()
 					{
-						// TODO: Create Light logic
+						auto light = m_Context->CreateEntity("Directional Light");
+						light.AddComponent<DirectionalLight>();
+						light.GetComponent<Transform>().Rotation = Vec3(-45.0f, 0.0f, 0.0f);
+						SetSelectedEntity(light);
 					});
 			}
 			ImGui::EndMenu();
