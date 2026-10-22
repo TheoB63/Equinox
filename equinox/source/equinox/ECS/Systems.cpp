@@ -8,7 +8,7 @@
 namespace Equinox
 {
     std::vector<std::shared_ptr<System>> Systems::s_Systems;
-    std::shared_ptr<entt::registry> Systems::s_Registry;
+    Scene* Systems::s_Scene = nullptr;
 
     void Systems::Init() {
         EQN_CORE_INFO("Initializing Systems...");
@@ -20,13 +20,13 @@ namespace Equinox
 
     void Systems::Shutdown() {
         s_Systems.clear();
-        s_Registry.reset();
+        s_Scene = nullptr;
     }
 
     void Systems::Update() {
-        if (!s_Registry) return;
+        if (!s_Scene) return;
         for (auto& system : s_Systems) {
-            system->Update(*s_Registry);
+            system->Update(s_Scene);
         }
     }
 }

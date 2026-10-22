@@ -21,7 +21,7 @@ namespace Equinox
 
 	void HierarchyPanel::OnInit()
 	{
-		Systems::SetRegistry(m_Context->RegistryPtr());
+		Systems::SetScene(m_Context.get());
 	}
 
 	void HierarchyPanel::OnRender()

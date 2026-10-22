@@ -238,9 +238,10 @@ void main() {
 		m_GlobalUniformBuffer->SetData(&ubo, sizeof(GlobalUniforms));
 	}
 
-	void RenderingSystem::Update(entt::registry& registry)
+	void RenderingSystem::Update(Scene* scene)
 	{
 		EQN_PROFILE_FUNCTION();
+		auto& registry = scene->Registry();
 
 		// Reset Allocator at start of frame
 		m_FrameAllocator->Reset();
