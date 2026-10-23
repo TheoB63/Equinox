@@ -1,200 +1,232 @@
 #include "eqnpch.h"
 #include "VKRendererAPI.h"
 #include "VulkanContext.h"
+#include "VulkanWaitJob.h"
 #include "equinox/core/Log.h"
 #include "equinox/window/Window.h" // For getting native window handle
 #include "equinox/renderer/rendergraph/RenderGraph.h"
+#include "equinox/core/JobSystem.h"
 
 namespace Equinox
 {
-    void VKRendererAPI::Init(void* windowHandle)
-    {
-        EQN_CORE_INFO("Initializing Vulkan Renderer API");
-        
-        // 1. Init Context (Instance, Device, VMA)
-        VulkanContext::Init(windowHandle);
+	void VKRendererAPI::Init(void* windowHandle)
+	{
+		EQN_CORE_INFO("Initializing Vulkan Renderer API");
 
-        // 2. Init Swapchain
-        m_Swapchain = std::make_unique<VulkanSwapchain>(windowHandle);
-        m_Swapchain->Init();
+		// 1. Init Context (Instance, Device, VMA)
+		VulkanContext::Init(windowHandle);
 
-        // 3. Init Command Pool & Sync Objects
-        CreateCommandBuffers();
-        CreateSyncObjects();
-    }
+		// 2. Init Swapchain
+		m_Swapchain = std::make_unique<VulkanSwapchain>(windowHandle);
+		m_Swapchain->Init();
 
-    void VKRendererAPI::Shutdown()
-    {
-        vkDeviceWaitIdle(VulkanContext::Get().GetDevice());
+		// 3. Init Command Pool & Sync Objects
+		CreateCommandBuffers();
+		CreateSyncObjects();
+	}
 
-        VkDevice device = VulkanContext::Get().GetDevice();
+	void VKRendererAPI::Shutdown()
+	{
+		vkDeviceWaitIdle(VulkanContext::Get().GetDevice());
 
-        for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            vkDestroySemaphore(device, m_ImageAvailableSemaphores[i], nullptr);
-            vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);
-            vkDestroyFence(device, m_InFlightFences[i], nullptr);
-        }
+		VkDevice device = VulkanContext::Get().GetDevice();
 
-        vkDestroyCommandPool(device, m_CommandPool, nullptr);
-        m_Swapchain.reset();
-        VulkanContext::Shutdown();
-    }
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			vkDestroySemaphore(device, m_ImageAvailableSemaphores[i], nullptr);
+			vkDestroySemaphore(device, m_RenderFinishedSemaphores[i], nullptr);
+		}
 
-    bool VKRendererAPI::BeginFrame()
-    {
-        EQN_PROFILE_FUNCTION();
+		m_FrameTimeline.Shutdown();
 
-        VkDevice device = VulkanContext::Get().GetDevice();
-        
-        // Update Context Frame Index and Flush Deletions for this frame
-        VulkanContext::Get().SetCurrentFrameIndex(m_CurrentFrame);
-        VulkanContext::Get().GetResourceCache().NewFrame(); // Tick Cache
+		vkDestroyCommandPool(device, m_CommandPool, nullptr);
+		m_Swapchain.reset();
+		VulkanContext::Shutdown();
+	}
 
-        // Wait for previous frame
-        vkWaitForFences(device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
+	bool VKRendererAPI::BeginFrame()
+	{
+		EQN_PROFILE_FUNCTION();
 
-        // Flush deletions AFTER we know the GPU is done with this frame's resources
-        VulkanContext::Get().FlushDeletionQueue();
+		VkDevice device = VulkanContext::Get().GetDevice();
 
-        // Acquire image
-        u32 imageIndex = m_Swapchain->AcquireNextImage(m_ImageAvailableSemaphores[m_CurrentFrame]);
-        
-        if (imageIndex == -1) {
-            // If acquire failed, we can't proceed. 
-            // We might need to recreate swapchain if it's out of date, but usually OnResize handles it.
-            // Just return false to skip this frame.
-            // Consider adding a small sleep here to avoid spinning if we are minimized or in a bad state.
-            return false; 
-        }
+		// Update Context Frame Index and Flush Deletions for this frame
+		VulkanContext::Get().SetCurrentFrameIndex(m_CurrentFrame);
+		VulkanContext::Get().GetResourceCache().NewFrame(); // Tick Cache
 
-        vkResetFences(device, 1, &m_InFlightFences[m_CurrentFrame]);
+		// Wait for previous frame using Poller Job (Non-blocking)
+		// We need to wait until the GPU has finished with the resources of this frame index
+		// from the PREVIOUS cycle.
+		u64 waitValue = m_FrameValues[m_CurrentFrame];
+		if (waitValue > 0)
+		{
+			// If we are on the main thread (which we should be for BeginFrame),
+			// we can use a fiber-aware wait.
+			// We spawn a job that waits for the timeline semaphore, and we wait for that job.
 
-        // Reset Command Buffer
-        vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrame], 0);
+			JobSystem::Counter waitCounter;
+			VulkanWaitJob::Dispatch(m_FrameTimeline, waitValue, &waitCounter);
+			JobSystem::WaitForCounter(&waitCounter, 0);
+		}
 
-        // Begin Recording
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        vkBeginCommandBuffer(m_CommandBuffers[m_CurrentFrame], &beginInfo);
-        
-        return true;
-    }
+		// Flush deletions AFTER we know the GPU is done with this frame's resources
+		VulkanContext::Get().FlushDeletionQueue();
 
-    void VKRendererAPI::EndFrame()
-    {
-        EQN_PROFILE_FUNCTION();
+		// Acquire image
+		u32 imageIndex = m_Swapchain->AcquireNextImage(m_ImageAvailableSemaphores[m_CurrentFrame]);
 
-        VkCommandBuffer cmd = m_CommandBuffers[m_CurrentFrame];
+		if (imageIndex == -1) {
+			return false;
+		}
 
-        // Transition Swapchain Image to Present Layout
-        // The RenderGraph leaves it in COLOR_ATTACHMENT_OPTIMAL (from ImGuiPass)
-        VkImage swapchainImage = m_Swapchain->GetImage(m_Swapchain->GetCurrentFrameIndex());
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        barrier.dstAccessMask = 0;
-        barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = swapchainImage;
-        barrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+		// Reset Command Buffer
+		vkResetCommandBuffer(m_CommandBuffers[m_CurrentFrame], 0);
 
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		// Begin Recording
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		vkBeginCommandBuffer(m_CommandBuffers[m_CurrentFrame], &beginInfo);
 
-        vkEndCommandBuffer(cmd);
+		return true;
+	}
 
-        // Submit
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	void VKRendererAPI::EndFrame()
+	{
+		EQN_PROFILE_FUNCTION();
 
-        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[m_CurrentFrame] };
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
+		VkCommandBuffer cmd = m_CommandBuffers[m_CurrentFrame];
 
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &cmd;
+		// Transition Swapchain Image to Present Layout
+		VkImage swapchainImage = m_Swapchain->GetImage(m_Swapchain->GetCurrentFrameIndex());
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		barrier.dstAccessMask = 0;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = swapchainImage;
+		barrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
-        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[m_CurrentFrame] };
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
+		vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-        // Check for submit failure to avoid desyncing semaphores
-        if (!VulkanContext::Get().Submit(submitInfo, m_InFlightFences[m_CurrentFrame]))
-        {
-            // If submit failed, do not present. Wait for idle to reset state.
-            vkDeviceWaitIdle(VulkanContext::Get().GetDevice());
-            return;
-        }
+		vkEndCommandBuffer(cmd);
 
-        // Present
-        m_Swapchain->Present(m_RenderFinishedSemaphores[m_CurrentFrame]);
+		// Advance Timeline Value
+		m_CurrentFrameValue++;
+		m_FrameValues[m_CurrentFrame] = m_CurrentFrameValue;
 
-        m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-    }
+		// Submit
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    void VKRendererAPI::ExecuteGraph(RG::RenderGraph& graph)
-    {
-        graph.Execute(m_CommandBuffers[m_CurrentFrame]);
-    }
+		VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphores[m_CurrentFrame] };
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
 
-    void VKRendererAPI::OnResize(u32 width, u32 height)
-    {
-        EQN_PROFILE_FUNCTION();
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &cmd;
 
-        if (width == 0 || height == 0) return;
-        m_Swapchain->Recreate(width, height);
-    }
+		VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphores[m_CurrentFrame] };
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
 
-    void VKRendererAPI::CreateCommandBuffers()
-    {
-        auto& ctx = VulkanContext::Get();
+		// Timeline Semaphore Info
+		VkTimelineSemaphoreSubmitInfo timelineInfo{};
+		timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+		timelineInfo.signalSemaphoreValueCount = 1;
+		u64 signalValue = m_CurrentFrameValue;
+		timelineInfo.pSignalSemaphoreValues = &signalValue;
 
-        VkCommandPoolCreateInfo poolInfo{};
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        poolInfo.queueFamilyIndex = ctx.GetGraphicsFamily();
+		// We need to signal the timeline semaphore too
+		// But wait, we can't mix binary and timeline semaphores easily in the same array in standard submit?
+		// Actually we can chain pNext.
+		// But we need to attach the timeline semaphore to the signal list.
+		// Let's add the timeline semaphore to the signal list.
 
-        if (vkCreateCommandPool(ctx.GetDevice(), &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
-            EQN_CORE_CRITICAL("Failed to create command pool!");
-        }
+		std::vector<VkSemaphore> allSignalSemaphores = { m_RenderFinishedSemaphores[m_CurrentFrame], m_FrameTimeline.GetHandle() };
+		std::vector<u64> allSignalValues = { 0, m_CurrentFrameValue }; // 0 is ignored for binary semaphores
 
-        m_CommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-        VkCommandBufferAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = m_CommandPool;
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t)m_CommandBuffers.size();
+		submitInfo.signalSemaphoreCount = 2;
+		submitInfo.pSignalSemaphores = allSignalSemaphores.data();
 
-        if (vkAllocateCommandBuffers(ctx.GetDevice(), &allocInfo, m_CommandBuffers.data()) != VK_SUCCESS) {
-            EQN_CORE_CRITICAL("Failed to allocate command buffers!");
-        }
-    }
+		timelineInfo.signalSemaphoreValueCount = 2;
+		timelineInfo.pSignalSemaphoreValues = allSignalValues.data();
 
-    void VKRendererAPI::CreateSyncObjects()
-    {
-        m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+		submitInfo.pNext = &timelineInfo;
 
-        VkSemaphoreCreateInfo semaphoreInfo{};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		// We don't use fences anymore!
+		if (!VulkanContext::Get().Submit(submitInfo, VK_NULL_HANDLE)) {
+			vkDeviceWaitIdle(VulkanContext::Get().GetDevice());
+			return;
+		}
 
-        VkFenceCreateInfo fenceInfo{};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		// Present
+		m_Swapchain->Present(m_RenderFinishedSemaphores[m_CurrentFrame]);
 
-        VkDevice device = VulkanContext::Get().GetDevice();
+		m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	}
 
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) != VK_SUCCESS ||
-                vkCreateFence(device, &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
-                EQN_CORE_CRITICAL("Failed to create synchronization objects!");
-            }
-        }
-    }
+	void VKRendererAPI::ExecuteGraph(RG::RenderGraph& graph)
+	{
+		graph.Execute(m_CommandBuffers[m_CurrentFrame]);
+	}
+
+	void VKRendererAPI::OnResize(u32 width, u32 height)
+	{
+		EQN_PROFILE_FUNCTION();
+
+		if (width == 0 || height == 0) return;
+		m_Swapchain->Recreate(width, height);
+	}
+
+	void VKRendererAPI::CreateCommandBuffers()
+	{
+		auto& ctx = VulkanContext::Get();
+
+		VkCommandPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		poolInfo.queueFamilyIndex = ctx.GetGraphicsFamily();
+
+		if (vkCreateCommandPool(ctx.GetDevice(), &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
+			EQN_CORE_CRITICAL("Failed to create command pool!");
+		}
+
+		m_CommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = m_CommandPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = (uint32_t)m_CommandBuffers.size();
+
+		if (vkAllocateCommandBuffers(ctx.GetDevice(), &allocInfo, m_CommandBuffers.data()) != VK_SUCCESS) {
+			EQN_CORE_CRITICAL("Failed to allocate command buffers!");
+		}
+	}
+
+	void VKRendererAPI::CreateSyncObjects()
+	{
+		m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+
+		// Initialize Timeline Semaphore
+		m_FrameTimeline.Init(0);
+
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+		VkDevice device = VulkanContext::Get().GetDevice();
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+			if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) != VK_SUCCESS ||
+				vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) != VK_SUCCESS)
+			{
+				EQN_CORE_CRITICAL("Failed to create synchronization objects!");
+			}
+		}
+	}
 }

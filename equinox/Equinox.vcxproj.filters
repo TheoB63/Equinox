@@ -314,6 +314,8 @@
     <ClInclude Include="source\equinox\renderer\rendergraph\RenderResourceCache.h" />
     <ClInclude Include="source\equinox\resources\AssetSerializer.h" />
     <ClInclude Include="source\equinox\ECS\systems\CameraSystem.h" />
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.h" />
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -493,5 +495,7 @@
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\rendergraph\RenderResourceCache.cpp" />
     <ClCompile Include="source\equinox\resources\AssetSerializer.cpp" />
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.cpp" />
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.cpp" />
   </ItemGroup>
 </Project>

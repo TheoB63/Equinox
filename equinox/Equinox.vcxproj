@@ -191,6 +191,8 @@
     <ClInclude Include="source\equinox\events\MouseEvent.h" />
     <ClInclude Include="source\equinox\events\RenderEvent.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.h" />
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Camera.h" />
     <ClInclude Include="source\equinox\renderer\Framebuffer.h" />
@@ -264,6 +266,8 @@
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.cpp" />
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Material.cpp" />
