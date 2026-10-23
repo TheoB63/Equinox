@@ -180,6 +180,12 @@ namespace Equinox
 		EQN_PROFILE_FUNCTION();
 
 		if (width == 0 || height == 0) return;
+
+		// Wait for the device to be idle before resizing
+		// This ensures that no command buffers are using the swapchain images or descriptors
+		// that might be destroyed during recreation.
+		vkDeviceWaitIdle(VulkanContext::Get().GetDevice());
+
 		m_Swapchain->Recreate(width, height);
 	}
 
@@ -214,6 +220,8 @@ namespace Equinox
 		m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 
 		// Initialize Timeline Semaphore
+		// Note: VulkanContext must be initialized before this!
+		// Init() is called in VKRendererAPI::Init() after VulkanContext::Init()
 		m_FrameTimeline.Init(0);
 
 		VkSemaphoreCreateInfo semaphoreInfo{};

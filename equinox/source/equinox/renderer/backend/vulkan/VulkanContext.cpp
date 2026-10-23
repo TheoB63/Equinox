@@ -208,6 +208,9 @@ namespace Equinox
         features12.runtimeDescriptorArray = VK_TRUE;
         features12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
 
+        // Enable Timeline Semaphores (Vulkan 1.2 feature)
+        features12.timelineSemaphore = VK_TRUE;
+
         // Vulkan 1.3 Features (Dynamic Rendering, Synchronization2)
         VkPhysicalDeviceVulkan13Features features13{};
         features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
