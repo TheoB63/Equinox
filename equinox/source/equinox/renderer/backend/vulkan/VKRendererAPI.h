@@ -3,6 +3,7 @@
 #include "equinox/renderer/RendererAPI.h"
 #include "VulkanSwapchain.h"
 #include "TimelineSemaphore.h"
+#include "CommandAllocatorPool.h"
 #include <vulkan/vulkan.h>
 
 namespace Equinox
@@ -23,6 +24,9 @@ namespace Equinox
 		VkCommandBuffer GetCurrentCommandBuffer() { return m_CommandBuffers[m_CurrentFrame]; }
 		u32 GetCurrentFrameIndex() const { return m_CurrentFrame; }
 
+		// Accessor for Parallel Recording
+		CommandAllocatorPool& GetCommandAllocatorPool() { return *m_CommandAllocatorPool; }
+
 	private:
 		void CreateSyncObjects();
 		void CreateCommandBuffers();
@@ -36,11 +40,13 @@ namespace Equinox
 		VkCommandPool m_CommandPool;
 		std::vector<VkCommandBuffer> m_CommandBuffers;
 
+		// Parallel Command Recording
+		std::unique_ptr<CommandAllocatorPool> m_CommandAllocatorPool;
+
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
 
 		// Timeline Semaphore for Frame Synchronization
-		// Replaces VkFence m_InFlightFences
 		TimelineSemaphore m_FrameTimeline;
 		u64 m_FrameValues[MAX_FRAMES_IN_FLIGHT] = { 0 };
 		u64 m_CurrentFrameValue = 0;
