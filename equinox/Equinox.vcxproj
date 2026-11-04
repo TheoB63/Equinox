@@ -152,6 +152,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="source\equinox\core\FrameData.h" />
     <ClInclude Include="source\Equinox.h" />
     <ClInclude Include="source\eqnpch.h" />
     <ClInclude Include="source\equinox\ECS\Components.h" />
@@ -246,6 +247,7 @@
     <ClInclude Include="source\equinox\window\Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\equinox\core\FrameData.cpp" />
     <ClCompile Include="source\eqnpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

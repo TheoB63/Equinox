@@ -317,6 +317,7 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.h" />
+    <ClInclude Include="source\equinox\core\FrameData.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -499,5 +500,6 @@
     <ClCompile Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.cpp" />
+    <ClCompile Include="source\equinox\core\FrameData.cpp" />
   </ItemGroup>
 </Project>
