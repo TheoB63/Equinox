@@ -1,10 +1,14 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/core/FrameData.h"
+
 #include "equinox/window/Window.h"
+
 #include "equinox/events/EventBus.h"
 #include "equinox/events/AppEvent.h"
 #include "equinox/events/FileDropEvent.h"
+
 #include "equinox/ECS/Scene.h"
 
 #include <vector>
@@ -39,6 +43,9 @@ namespace Equinox
 
         std::shared_ptr<Window> m_Window;
         std::shared_ptr<Scene> m_Scene;
+
+        // Frame Pipelining
+        FrameContext m_FrameContext;
 
         bool m_Running = true;
     };
