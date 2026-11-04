@@ -1,0 +1,14 @@
+{
+    "render_mode": 0,
+    "shader": "",
+    "textures": [],
+    "uniforms": {
+        "u_AlbedoColor": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "u_Roughness": 0.5712906718254089
+    }
+}

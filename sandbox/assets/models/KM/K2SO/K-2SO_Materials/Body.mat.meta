@@ -1,0 +1,9 @@
+{
+    "dependencies": [],
+    "type_settings": {
+        "blend_mode": "Opaque",
+        "shader": "Lit"
+    },
+    "uuid": "c412d04a-8ea0-4445-8804-608df4cd1aaf",
+    "version": 1
+}

@@ -318,6 +318,8 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.h" />
     <ClInclude Include="source\equinox\core\FrameData.h" />
+    <ClInclude Include="source\equinox\core\AdaptiveMutex.h" />
+    <ClInclude Include="source\equinox\core\AtomicCounter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
