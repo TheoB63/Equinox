@@ -3,18 +3,25 @@
 
 #include "equinox/window/Window.h"
 #include "equinox/input/Input.h"
+
 #include "equinox/events/Event.h"
 #include "equinox/events/AppEvent.h"
+
 #include "equinox/resources/FileSystem.h"
 #include "equinox/resources/MetaFile.h"
-#include "equinox/editor/Editor.h"
-#include "equinox/editor/panels/ScenePanel.h"
-#include "equinox/ECS/Systems.h"
 #include "equinox/resources/AssetManager.h"
 #include "equinox/resources/AssetDatabase.h"
+
+#include "equinox/editor/Editor.h"
+#include "equinox/editor/panels/ScenePanel.h"
+
+#include "equinox/ECS/Systems.h"
 #include "equinox/ECS/systems/TransformSystem.h"
+
 #include "equinox/core/JobSystem.h"
 #include "equinox/core/Profiler.h"
+#include "equinox/core/IOThread.h"
+
 #include "equinox/renderer/Renderer.h"
 
 namespace Equinox
@@ -23,6 +30,7 @@ namespace Equinox
 	{
 		// Core Systems Init
 		JobSystem::Init();
+		IOThread::Init();
 		m_FrameContext.Init();
 
 		FileSystem::Init();
@@ -184,6 +192,7 @@ namespace Equinox
 		AssetManager::Shutdown();
 		AssetDatabase::Shutdown();
 		m_FrameContext.Shutdown();
+		IOThread::Shutdown();
 		JobSystem::Shutdown();
 	}
 

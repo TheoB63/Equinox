@@ -13,6 +13,9 @@
     <Filter Include="equinox\core">
       <UniqueIdentifier>{46D7B026-323A-40CB-DBBF-7881C7010C4E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\core\memory">
+      <UniqueIdentifier>{0EF80DCC-7A59-EBD9-03C7-318C6F272299}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\editor">
       <UniqueIdentifier>{A463229A-9031-16A0-79C5-86C66532F204}</UniqueIdentifier>
     </Filter>
@@ -77,13 +80,22 @@
     <ClInclude Include="source\equinox\ECS\systems\AnimationSystem.h">
       <Filter>equinox\ECS\systems</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\ECS\systems\CameraSystem.h">
+      <Filter>equinox\ECS\systems</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\ECS\systems\RenderingSystem.h">
       <Filter>equinox\ECS\systems</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\ECS\systems\TransformSystem.h">
       <Filter>equinox\ECS\systems</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\core\AdaptiveMutex.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\core\App.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\core\AtomicCounter.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\EntryPoint.h">
@@ -93,6 +105,12 @@
       <Filter>equinox\core</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\Fiber.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\core\FrameData.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\core\IOThread.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\JobSystem.h">
@@ -115,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="source\equinox\core\UUID.h">
       <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\core\memory\TaggedPageAllocator.h">
+      <Filter>equinox\core\memory</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\editor\Editor.h">
       <Filter>equinox\editor</Filter>
@@ -227,6 +248,12 @@
     <ClInclude Include="source\equinox\renderer\backend\opengl\GLVertexArray.h">
       <Filter>equinox\renderer\backend\opengl</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.h">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
@@ -254,6 +281,9 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanTexture.h">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\null\NullResources.h">
       <Filter>equinox\renderer\null</Filter>
     </ClInclude>
@@ -261,6 +291,9 @@
       <Filter>equinox\renderer\rendergraph</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraphResources.h">
+      <Filter>equinox\renderer\rendergraph</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\rendergraph\RenderResourceCache.h">
       <Filter>equinox\renderer\rendergraph</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\resources\Asset.h">
@@ -273,6 +306,9 @@
       <Filter>equinox\resources</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\resources\AssetManager.h">
+      <Filter>equinox\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\resources\AssetSerializer.h">
       <Filter>equinox\resources</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\resources\FileSystem.h">
@@ -311,15 +347,6 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\rendergraph\RenderResourceCache.h" />
-    <ClInclude Include="source\equinox\resources\AssetSerializer.h" />
-    <ClInclude Include="source\equinox\ECS\systems\CameraSystem.h" />
-    <ClInclude Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.h" />
-    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.h" />
-    <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.h" />
-    <ClInclude Include="source\equinox\core\FrameData.h" />
-    <ClInclude Include="source\equinox\core\AdaptiveMutex.h" />
-    <ClInclude Include="source\equinox\core\AtomicCounter.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -338,6 +365,12 @@
     <ClCompile Include="source\equinox\core\App.cpp">
       <Filter>equinox\core</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\core\FrameData.cpp">
+      <Filter>equinox\core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\core\IOThread.cpp">
+      <Filter>equinox\core</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\core\JobSystem.cpp">
       <Filter>equinox\core</Filter>
     </ClCompile>
@@ -346,6 +379,9 @@
     </ClCompile>
     <ClCompile Include="source\equinox\core\UUID.cpp">
       <Filter>equinox\core</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\core\memory\TaggedPageAllocator.cpp">
+      <Filter>equinox\core\memory</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\editor\Editor.cpp">
       <Filter>equinox\editor</Filter>
@@ -431,6 +467,12 @@
     <ClCompile Include="source\equinox\renderer\backend\opengl\GLVertexArray.cpp">
       <Filter>equinox\renderer\backend\opengl</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.cpp">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
@@ -458,7 +500,13 @@
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanTexture.cpp">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\renderer\rendergraph\RenderGraph.cpp">
+      <Filter>equinox\renderer\rendergraph</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\rendergraph\RenderResourceCache.cpp">
       <Filter>equinox\renderer\rendergraph</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\resources\Asset.cpp">
@@ -468,6 +516,9 @@
       <Filter>equinox\resources</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\resources\AssetManager.cpp">
+      <Filter>equinox\resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\resources\AssetSerializer.cpp">
       <Filter>equinox\resources</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\resources\FileSystem.cpp">
@@ -497,11 +548,5 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\rendergraph\RenderResourceCache.cpp" />
-    <ClCompile Include="source\equinox\resources\AssetSerializer.cpp" />
-    <ClCompile Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.cpp" />
-    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.cpp" />
-    <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.cpp" />
-    <ClCompile Include="source\equinox\core\FrameData.cpp" />
   </ItemGroup>
 </Project>
