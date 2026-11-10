@@ -4,7 +4,9 @@
 #include "VulkanSwapchain.h"
 #include "TimelineSemaphore.h"
 #include "CommandAllocatorPool.h"
+
 #include <vulkan/vulkan.h>
+#include <array>
 
 namespace Equinox
 {
@@ -24,8 +26,8 @@ namespace Equinox
 		VkCommandBuffer GetCurrentCommandBuffer() { return m_CommandBuffers[m_CurrentFrame]; }
 		u32 GetCurrentFrameIndex() const { return m_CurrentFrame; }
 
-		// Accessor for Parallel Recording
-		CommandAllocatorPool& GetCommandAllocatorPool() { return *m_CommandAllocatorPool; }
+		// Accessor for Parallel Recording (returns pool for current frame)
+		CommandAllocatorPool& GetCommandAllocatorPool() { return *m_CommandAllocatorPools[m_CurrentFrame]; }
 
 	private:
 		void CreateSyncObjects();
@@ -40,8 +42,8 @@ namespace Equinox
 		VkCommandPool m_CommandPool;
 		std::vector<VkCommandBuffer> m_CommandBuffers;
 
-		// Parallel Command Recording
-		std::unique_ptr<CommandAllocatorPool> m_CommandAllocatorPool;
+		// Parallel Command Recording (per frame pools)
+		std::array<std::unique_ptr<CommandAllocatorPool>, MAX_FRAMES_IN_FLIGHT> m_CommandAllocatorPools;
 
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;

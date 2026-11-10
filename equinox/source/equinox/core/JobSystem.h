@@ -80,6 +80,11 @@ namespace Equinox::JobSystem
 	void Shutdown();
 	void ResetFrameStats();
 
+	// Set global context pointers for worker threads (called by App/Renderer)
+   // Granular setters to allow independent systems to update their parts
+	void SetGlobalFrameContext(Memory::TaggedPageAllocator* allocator, const FrameParams* params);
+	void SetGlobalCommandPool(CommandAllocatorPool* commandPool);
+
 	// Run a single task
 	// Data must be a pointer to a trivially destructible struct (or nullptr)
 	void Execute(JobFunction function, void* data = nullptr, Counter* counter = nullptr);

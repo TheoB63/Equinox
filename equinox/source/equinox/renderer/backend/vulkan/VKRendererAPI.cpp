@@ -6,6 +6,7 @@
 #include "equinox/window/Window.h" // For getting native window handle
 #include "equinox/renderer/rendergraph/RenderGraph.h"
 #include "equinox/core/JobSystem.h"
+#include "equinox/core/FrameData.h"
 
 namespace Equinox
 {
@@ -24,9 +25,16 @@ namespace Equinox
 		CreateCommandBuffers();
 		CreateSyncObjects();
 
-		// 4. Init Command Allocator Pool for Parallel Recording
-		m_CommandAllocatorPool = std::make_unique<CommandAllocatorPool>(VulkanContext::Get().GetGraphicsFamily());
-		m_CommandAllocatorPool->Init();
+		// 4. Init Command Allocator Pools for Parallel Recording (Per-Frame)
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			m_CommandAllocatorPools[i] = std::make_unique<CommandAllocatorPool>(VulkanContext::Get().GetGraphicsFamily());
+			m_CommandAllocatorPools[i]->Init();
+		}
+
+		// 5. Register Initial Global Command Pool with JobSystem
+		// We start with frame 0
+		JobSystem::SetGlobalCommandPool(m_CommandAllocatorPools[0].get());
 	}
 
 	void VKRendererAPI::Shutdown()
@@ -41,7 +49,11 @@ namespace Equinox
 		}
 
 		m_FrameTimeline.Shutdown();
-		m_CommandAllocatorPool->Shutdown();
+
+		for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			m_CommandAllocatorPools[i]->Shutdown();
+		}
 
 		vkDestroyCommandPool(device, m_CommandPool, nullptr);
 		m_Swapchain.reset();
@@ -76,17 +88,21 @@ namespace Equinox
 		// Flush deletions AFTER we know the GPU is done with this frame's resources
 		VulkanContext::Get().FlushDeletionQueue();
 
-		// Reset Command Allocator Pool for this frame
-		// Note: In a triple-buffered system, we should have a pool PER frame index.
-		// Currently CommandAllocatorPool is global. This is a bug if we reset it while GPU is using it?
-		// Wait, we just waited for the GPU to finish with this frame index.
-		// BUT, if we have multiple frames in flight, we can't reset the GLOBAL pool.
-		// We need a pool per frame index.
-		// TODO: Refactor CommandAllocatorPool to be per-frame or handle reset correctly.
-		// For now, since we wait for the frame, it's safe-ish if we assume only one frame is recording at a time.
-		// But parallel recording means multiple threads record for the CURRENT frame.
-		// So we reset it here.
-		m_CommandAllocatorPool->ResetAll();
+
+		// Reset Command Allocator Pool for THIS frame
+		// Now safe because we waited for this frame index to finish on GPU.
+		m_CommandAllocatorPools[m_CurrentFrame]->ResetAll();
+
+		// Update Global JobSystem Context for Worker Threads
+		// Switch to the pool for the current frame
+		JobSystem::SetGlobalCommandPool(m_CommandAllocatorPools[m_CurrentFrame].get());
+
+		// Update Main Thread's JobContext with the CommandPool
+		auto* ctx = JobSystem::GetCurrentJobContext();
+		if (ctx)
+		{
+			ctx->CommandPool = m_CommandAllocatorPools[m_CurrentFrame].get();
+		}
 
 		// Acquire image
 		u32 imageIndex = m_Swapchain->AcquireNextImage(m_ImageAvailableSemaphores[m_CurrentFrame]);
@@ -158,12 +174,6 @@ namespace Equinox
 		u64 signalValue = m_CurrentFrameValue;
 		timelineInfo.pSignalSemaphoreValues = &signalValue;
 
-		// We need to signal the timeline semaphore too
-		// But wait, we can't mix binary and timeline semaphores easily in the same array in standard submit?
-		// Actually we can chain pNext.
-		// But we need to attach the timeline semaphore to the signal list.
-		// Let's add the timeline semaphore to the signal list.
-
 		std::vector<VkSemaphore> allSignalSemaphores = { m_RenderFinishedSemaphores[m_CurrentFrame], m_FrameTimeline.GetHandle() };
 		std::vector<u64> allSignalValues = { 0, m_CurrentFrameValue }; // 0 is ignored for binary semaphores
 
@@ -189,9 +199,10 @@ namespace Equinox
 
 	void VKRendererAPI::ExecuteGraph(RG::RenderGraph& graph)
 	{
-		// TODO: Implement Parallel Recording here using m_CommandAllocatorPool
-		// For now, we still use the main command buffer linearly.
-		graph.Execute(m_CommandBuffers[m_CurrentFrame]);
+		// Use Parallel Execution
+		// We pass the primary command buffer to record barriers and execute secondary buffers
+		std::vector<VkCommandBuffer> secondaryBuffers;
+		graph.ExecuteParallel(m_CommandBuffers[m_CurrentFrame], secondaryBuffers);
 	}
 
 	void VKRendererAPI::OnResize(u32 width, u32 height)
