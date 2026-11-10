@@ -201,6 +201,7 @@
     <ClInclude Include="source\equinox\renderer\Camera.h" />
     <ClInclude Include="source\equinox\renderer\Framebuffer.h" />
     <ClInclude Include="source\equinox\renderer\Material.h" />
+    <ClInclude Include="source\equinox\renderer\MaterialSystem.h" />
     <ClInclude Include="source\equinox\renderer\Mesh.h" />
     <ClInclude Include="source\equinox\renderer\Model.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
@@ -280,6 +281,7 @@
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Material.cpp" />
+    <ClCompile Include="source\equinox\renderer\MaterialSystem.cpp" />
     <ClCompile Include="source\equinox\renderer\Mesh.cpp" />
     <ClCompile Include="source\equinox\renderer\Model.cpp" />
     <ClCompile Include="source\equinox\renderer\Renderer.cpp" />

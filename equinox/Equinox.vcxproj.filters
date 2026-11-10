@@ -348,6 +348,7 @@
       <Filter>equinox\window</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocator.h" />
+    <ClInclude Include="source\equinox\renderer\MaterialSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -550,5 +551,6 @@
       <Filter>equinox\window</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocator.cpp" />
+    <ClCompile Include="source\equinox\renderer\MaterialSystem.cpp" />
   </ItemGroup>
 </Project>
