@@ -12,6 +12,7 @@
 #include <condition_variable>
 #include <atomic>
 #include <array>
+#include <chrono>
 
 namespace Equinox::JobSystem
 {
@@ -35,6 +36,9 @@ namespace Equinox::JobSystem
 		u32 start;
 		u32 end;
 		JobPriority priority;
+
+		// Debug Info
+		std::chrono::steady_clock::time_point startTime;
 	};
 
 	struct FiberContext
@@ -52,6 +56,7 @@ namespace Equinox::JobSystem
 	// ===================================================================================
 
 	static std::vector<std::thread> s_WorkerThreads;
+	static std::thread s_WatchdogThread;
 	static std::atomic<bool> s_Running = false;
 
 	// Job Queues (Priority Based)
@@ -77,6 +82,25 @@ namespace Equinox::JobSystem
 	static thread_local FiberContext* s_CurrentFiber = nullptr;
 	static thread_local FiberContext* s_SchedulerFiber = nullptr;
 
+	// Active Jobs Tracking (for Watchdog)
+	struct ThreadStatus
+	{
+		std::atomic<bool> isActive;
+		std::atomic<u64> jobStartTime; // Epoch time
+
+		// Explicit constructor to satisfy std::vector requirements
+		ThreadStatus() : isActive(false), jobStartTime(0) {}
+
+		// Copy constructor (needed for vector resize, though we shouldn't copy atomics usually)
+		// Since we only resize once at init, we can implement a dummy copy or move.
+		ThreadStatus(const ThreadStatus& other)
+		{
+			isActive.store(other.isActive.load());
+			jobStartTime.store(other.jobStartTime.load());
+		}
+	};
+	static std::vector<ThreadStatus> s_ThreadStatus;
+
 	// ===================================================================================
 	// Forward Declarations
 	// ===================================================================================
@@ -84,6 +108,7 @@ namespace Equinox::JobSystem
 	static void WorkerThreadEntryPoint(u32 threadIndex);
 	static void FiberEntryPoint(void* args);
 	static void SchedulerEntryPoint(void* args);
+	static void WatchdogEntryPoint();
 
 	// ===================================================================================
 	// Implementation
@@ -98,6 +123,13 @@ namespace Equinox::JobSystem
 			numThreads = std::max(1u, std::thread::hardware_concurrency() - 1);
 
 		EQN_CORE_INFO("Initializing Fiber JobSystem with {0} threads", numThreads);
+
+		// Initialize Thread Status
+		// +1 for the main thread
+		// std::vector resize requires copy/move constructor for elements.
+		// std::atomic is not copyable.
+		// We implemented a custom copy constructor for ThreadStatus to handle this.
+		s_ThreadStatus.resize(numThreads + 1);
 
 		// Create Fiber Pool
 		for (u32 i = 0; i < 128; ++i)
@@ -122,6 +154,9 @@ namespace Equinox::JobSystem
 		{
 			s_WorkerThreads.emplace_back(std::bind(WorkerThreadEntryPoint, i + 1));
 		}
+
+		// Start Watchdog Thread
+		s_WatchdogThread = std::thread(WatchdogEntryPoint);
 	}
 
 	void Shutdown()
@@ -134,6 +169,8 @@ namespace Equinox::JobSystem
 			if (thread.joinable()) thread.join();
 
 		s_WorkerThreads.clear();
+
+		if (s_WatchdogThread.joinable()) s_WatchdogThread.join();
 
 		// Cleanup Fibers
 		for (auto* ctx : s_AllFibers)
@@ -308,12 +345,28 @@ namespace Equinox::JobSystem
 					}
 
 					s_CurrentFiber = fiberCtx;
+
+					// Update Watchdog Status
+					u32 threadIdx = s_SchedulerFiber->publicContext.ThreadIndex;
+					if (threadIdx < s_ThreadStatus.size())
+					{
+						s_ThreadStatus[threadIdx].jobStartTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+							std::chrono::steady_clock::now().time_since_epoch()).count();
+						s_ThreadStatus[threadIdx].isActive = true;
+					}
+
 					EQN_PROFILE_FIBER_ENTER(fiberCtx->debugName);
 					Fiber::SwitchTo(fiberCtx->fiber);
 
 					// 4. Back from Fiber (Job finished or suspended)
 					EQN_PROFILE_FIBER_ENTER("Scheduler");
 					s_CurrentFiber = s_SchedulerFiber;
+
+					// Clear Watchdog Status
+					if (threadIdx < s_ThreadStatus.size())
+					{
+						s_ThreadStatus[threadIdx].isActive = false;
+					}
 
 					// Recycle the fiber if it finished
 					if (s_SchedulerFiber->fiberToRecycle)
@@ -360,6 +413,7 @@ namespace Equinox::JobSystem
 
 			// Switch back to the thread that scheduled us
 			EQN_PROFILE_FIBER_ENTER("Scheduler");
+			EQN_PROFILE_FIBER_LEAVE; // Leave fiber context before switching
 			Fiber::SwitchTo(s_SchedulerFiber->fiber);
 			EQN_PROFILE_FIBER_ENTER(ctx->debugName);
 		}
@@ -421,6 +475,36 @@ namespace Equinox::JobSystem
 			else
 			{
 				std::this_thread::yield();
+			}
+		}
+	}
+
+	static void WatchdogEntryPoint()
+	{
+		EQN_PROFILE_THREAD("Job Watchdog");
+
+		while (s_Running)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+			u64 now = std::chrono::duration_cast<std::chrono::milliseconds>(
+				std::chrono::steady_clock::now().time_since_epoch()).count();
+
+			for (size_t i = 0; i < s_ThreadStatus.size(); ++i)
+			{
+				if (s_ThreadStatus[i].isActive)
+				{
+					u64 start = s_ThreadStatus[i].jobStartTime;
+					if (now - start > 500) // 500ms threshold
+					{
+						// Only warn once per stuck job? 
+						// For now, just log.
+						EQN_CORE_WARN("Watchdog: Thread {0} stuck on job for {1} ms", i, now - start);
+
+						// Note: This might spam if we have long running jobs (e.g. asset loading).
+						// We should probably have a way to mark jobs as "Long Running".
+					}
+				}
 			}
 		}
 	}
