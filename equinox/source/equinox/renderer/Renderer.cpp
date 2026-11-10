@@ -1,5 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/renderer/Renderer.h"
+#include "equinox/renderer/MaterialSystem.h"
 
 namespace Equinox
 {
@@ -9,10 +10,15 @@ namespace Equinox
     {
         s_RendererAPI = RendererAPI::Create(api);
         s_RendererAPI->Init(windowHandle);
+
+        // Init Material System (Global SSBO)
+        MaterialSystem::Init();
     }
 
     void Renderer::Shutdown()
     {
+        MaterialSystem::Shutdown();
+
         if (s_RendererAPI) {
             s_RendererAPI->Shutdown();
             s_RendererAPI.reset();
