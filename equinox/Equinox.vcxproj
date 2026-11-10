@@ -196,7 +196,7 @@
     <ClInclude Include="source\equinox\events\MouseEvent.h" />
     <ClInclude Include="source\equinox\events\RenderEvent.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
-    <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocator.h" />
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\UploadContext.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Camera.h" />
     <ClInclude Include="source\equinox\renderer\Framebuffer.h" />
@@ -218,6 +218,7 @@
     <ClInclude Include="source\equinox\renderer\backend\opengl\GLTexture.h" />
     <ClInclude Include="source\equinox\renderer\backend\opengl\GLTriangleShader.h" />
     <ClInclude Include="source\equinox\renderer\backend\opengl\GLVertexArray.h" />
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocator.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.h" />
@@ -277,7 +278,7 @@
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
-    <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocator.cpp" />
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\UploadContext.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Material.cpp" />
@@ -297,6 +298,7 @@
     <ClCompile Include="source\equinox\renderer\backend\opengl\GLShader.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\opengl\GLTexture.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\opengl\GLVertexArray.cpp" />
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocator.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.cpp" />
