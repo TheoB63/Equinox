@@ -31,24 +31,25 @@ namespace Equinox
 		// Core Systems Init
 		JobSystem::Init();
 		IOThread::Init();
-		m_FrameContext.Init();
+		// m_FrameContext.Init(); // TODO: Re-enable when FrameContext is ready
 
 		FileSystem::Init();
 		AssetDatabase::Init(FileSystem::AssetsPath());
 		AssetManager::Init();
 
 		// Import Phase: Process any stale assets found by AssetDatabase
-		const auto& dirtyAssets = AssetDatabase::GetDirtyAssets();
-		if (!dirtyAssets.empty())
+		const auto& dirtyAssetsRef = AssetDatabase::GetDirtyAssets();
+		if (!dirtyAssetsRef.empty())
 		{
-			EQN_CORE_INFO("Importing {0} assets in parallel...", dirtyAssets.size());
+			std::vector<UUID> assetsToImport = dirtyAssetsRef;
+
+			EQN_CORE_INFO("Importing {0} assets in parallel...", assetsToImport.size());
 
 			JobSystem::Counter importCounter;
-			// Stateless lambda converts to function pointer for JobSystem
-			JobSystem::Dispatch((u32)dirtyAssets.size(), 1, [](JobSystem::JobArgs args) {
-				const auto& assets = AssetDatabase::GetDirtyAssets();
-				AssetManager::Import(assets[args.jobIndex]);
-				}, nullptr, &importCounter);
+			JobSystem::Dispatch((u32)assetsToImport.size(), 1, [](JobSystem::JobArgs args) {
+				std::vector<UUID>* assets = (std::vector<UUID>*)args.data;
+				AssetManager::Import((*assets)[args.jobIndex]);
+				}, &assetsToImport, &importCounter);
 
 			JobSystem::WaitForCounter(&importCounter);
 		}
@@ -95,87 +96,44 @@ namespace Equinox
 	{
 		OnInit();
 
+		// Temporary Loop for Phase 1 Testing
+		// We are not using the full fiber loop yet as FrameContext is incomplete
 		while (m_Running)
 		{
-			EQN_PROFILE_FRAME("MainThread");
-			JobSystem::ResetFrameStats();
-
-			// 1. Start Frame N (Game Logic)
-			m_FrameContext.BeginFrame();
-
-			// Update JobContext for Main Thread
-			// The Main Thread acts as a worker for Game Logic
-			auto* ctx = JobSystem::GetCurrentJobContext();
-			if (ctx)
-			{
-				ctx->Allocator = &m_FrameContext.GetAllocator();
-				ctx->Params = &m_FrameContext.GetCurrentParams();
-				// Update cache tag for new frame
-				ctx->AllocatorCache.CurrentTag = (u32)(m_FrameContext.GetCurrentFrameIndex() % FrameContext::MAX_FRAMES_IN_FLIGHT);
-				// Reset active page if tag changed? 
-				// TaggedPageAllocator::Allocate handles tag changes by getting a new page if needed.
-				// But we should probably clear the active page pointer if the tag changed to avoid mixing pages?
-				// Actually, Allocate checks if page is full. It doesn't check tag.
-				// We must reset ActivePage if we switch tags.
-				// Optimization: Keep ActivePage if it has space and matches tag?
-				// But we recycle pages by tag. If we hold a page from Frame N-3, it might be freed.
-				// So yes, we should reset ActivePage.
-				// Ideally, ThreadCache should manage this.
-				// For now, we just set the tag. The Allocator logic needs to be robust.
-				// Let's assume Allocator::Allocate handles it or we manually reset.
-				// Resetting ActivePage to nullptr is safe.
-				ctx->AllocatorCache.ActivePage = nullptr;
-			}
-
 			Time::Update();
 			m_Window->OnUpdate();
 			EventBus::ProcessEvents(BusType::MainThread);
 
-			// Editor Begin
-			Editor::BeginFrame();
-
-			OnUpdate();
-			AssetManager::Update();
-
-			Editor::Render(); // Submits ImGui commands to ImGui internal buffers
-
-			// Editor End (Generates DrawData for ImGui)
-			Editor::EndFrame();
-
-			// Update and Render additional Platform Windows
-			if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			if (m_Window->IsMinimized())
 			{
-				ImGui::UpdatePlatformWindows();
-				ImGui::RenderPlatformWindowsDefault();
+				std::this_thread::yield();
+				continue;
 			}
 
-			if (!m_Window->IsMinimized())
+			// 1. Begin Vulkan Frame (Acquire Image, Start Recording)
+			if (Renderer::BeginFrame())
 			{
+				// 2. Editor Logic
+				Editor::BeginFrame();
+				OnUpdate();
+				AssetManager::Update();
+				Editor::Render();
+				Editor::EndFrame(); // Records ImGui to CB
+
+				// 3. Update Viewports (ImGui)
+				if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 				{
-					EQN_PROFILE_SCOPE("Systems::Update");
-					Systems::Update<TransformSystem>();
-
-					// 2. Submit Render N-1
-					// RenderingSystem should now consume FrameParams[N-1]
-					// But currently it runs on Main Thread and does immediate recording?
-					// We need to split Logic vs Render.
-					// For now, we keep it as is, but prepare for the split.
-					Systems::Update<RenderingSystem>();
+					ImGui::UpdatePlatformWindows();
+					ImGui::RenderPlatformWindowsDefault();
 				}
+
+				// 4. Game Logic
+				Systems::Update<TransformSystem>();
+				// Systems::Update<RenderingSystem>(); 
+
+				// 5. End Vulkan Frame (Submit, Present)
+				Renderer::EndFrame();
 			}
-
-			// 3. Recycle GPU N-2
-			// This happens inside Renderer::BeginFrame (via PollerJob)
-			// But we need to hook it up to FrameContext::RecycleFrame.
-			// The Renderer knows when a frame finishes.
-			// We need a callback from Renderer to App? Or Renderer calls FrameContext directly?
-			// Ideally, App drives this.
-			// Renderer::GetCompletedFrameIndex()?
-
-			// Temporary: We call RecycleFrame in BeginFrame of next loop based on assumption?
-			// No, we need explicit sync.
-			// Let's leave recycling inside Renderer for now, or move it here later.
-			// Actually, FrameContext::RecycleFrame should be called by the PollerJob callback.
 		}
 
 		OnShutdown();
@@ -187,17 +145,13 @@ namespace Equinox
 		Editor::Shutdown();
 		Systems::Shutdown();
 
-		// Renderer::Shutdown(); // Phase 3
-
 		AssetManager::Shutdown();
 		AssetDatabase::Shutdown();
-		m_FrameContext.Shutdown();
+		// m_FrameContext.Shutdown();
 		IOThread::Shutdown();
 		JobSystem::Shutdown();
 	}
 
-	// [OP] Dual-backend: select the renderer API from the command line.
-	//   EquinoxApp.exe --opengl   (or EquinoxApp.exe --vulkan)
 	WindowSpec App::ParseCommandLineArgs(int argc, char** argv)
 	{
 		WindowSpec spec;

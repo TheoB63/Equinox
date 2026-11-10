@@ -354,6 +354,7 @@
       <Filter>equinox\window</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\UploadContext.h" />
+    <ClInclude Include="source\equinox\core\memory\LinearAllocator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />

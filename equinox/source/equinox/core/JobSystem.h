@@ -1,17 +1,16 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
-#include "equinox/core/memory/TaggedPageAllocator.h"
+#include "equinox/core/AtomicCounter.h"
 
-#include <atomic>
 #include <functional>
-#include <type_traits>
 #include <concepts>
 
 namespace Equinox
 {
 	struct FrameParams;
 	class CommandAllocatorPool;
+	namespace Memory { class TaggedPageAllocator; }
 }
 
 namespace Equinox::JobSystem
@@ -23,14 +22,9 @@ namespace Equinox::JobSystem
 		void* data;
 	};
 
-	// Standard job function signature
 	using JobFunction = void(*)(JobArgs);
 
-	// Synchronization primitive
-	struct Counter
-	{
-		std::atomic<u32> value = 0;
-	};
+	using Counter = AtomicCounter;
 
 	struct Stats
 	{
@@ -42,12 +36,11 @@ namespace Equinox::JobSystem
 	};
 
 	// Fiber Local Storage (FLS)
-	// This struct travels with the Fiber, not the OS Thread.
 	struct JobContext
 	{
 		// Memory
 		Memory::TaggedPageAllocator* Allocator = nullptr;
-		Memory::TaggedPageAllocator::ThreadCache AllocatorCache; // Per-fiber cache for lock-free alloc
+		// Memory::TaggedPageAllocator::ThreadCache AllocatorCache; // Per-fiber cache for lock-free alloc
 
 		// Frame Data
 		const FrameParams* Params = nullptr; // Read-only params for the current job's frame context
@@ -62,16 +55,6 @@ namespace Equinox::JobSystem
 	};
 
 	// ===================================================================================
-	// Concepts (Safety)
-	// ===================================================================================
-
-	// Enforce that job data is trivially destructible.
-	// Because jobs run on fibers and their memory is often allocated from a LinearAllocator
-	// that does NOT run destructors. Passing a std::vector or std::string here would leak memory.
-	template<typename T>
-	concept JobPayload = std::is_trivially_destructible_v<T>;
-
-	// ===================================================================================
 	// API
 	// ===================================================================================
 
@@ -80,34 +63,33 @@ namespace Equinox::JobSystem
 	void Shutdown();
 	void ResetFrameStats();
 
-	// Set global context pointers for worker threads (called by App/Renderer)
-   // Granular setters to allow independent systems to update their parts
-	void SetGlobalFrameContext(Memory::TaggedPageAllocator* allocator, const FrameParams* params);
-	void SetGlobalCommandPool(CommandAllocatorPool* commandPool);
+	// Main Thread Loop (OS-Aware)
+	void ExecuteMainThreadLoop();
 
 	// Run a single task
-	// Data must be a pointer to a trivially destructible struct (or nullptr)
 	void Execute(JobFunction function, void* data = nullptr, Counter* counter = nullptr);
 
 	// Run multiple tasks (data parallelism)
 	void Dispatch(u32 jobCount, u32 groupSize, JobFunction function, void* data = nullptr, Counter* counter = nullptr);
 
-	// Helper wrapper to enforce concepts on the data pointer
-	template<typename T>
-		requires JobPayload<T>
-	void ExecuteSafe(JobFunction function, T* data, Counter* counter = nullptr)
-	{
-		Execute(function, (void*)data, counter);
-	}
-
 	// Fiber-aware wait
+	// If targetValue == 0, waits until counter == 0.
 	void WaitForCounter(Counter* counter, u32 targetValue = 0);
+
+	// Yield the current fiber to the scheduler.
+	void YieldFiber();
 
 	// Returns true if the counter has not reached the target value
 	bool IsBusy(const Counter* counter);
 
 	Stats GetStats();
 
+	// Returns the index of the current worker thread (0 to N-1)
+	u32 GetWorkerThreadId();
+
 	// Access the current Fiber's context
 	JobContext* GetCurrentJobContext();
+
+	// Set the global command pool for the current thread (used by Renderer)
+	void SetGlobalCommandPool(CommandAllocatorPool* pool);
 }

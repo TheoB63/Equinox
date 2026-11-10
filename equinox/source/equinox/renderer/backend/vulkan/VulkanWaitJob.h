@@ -1,15 +1,11 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/core/JobSystem.h"
 
 namespace Equinox
 {
     class TimelineSemaphore;
-}
-
-namespace Equinox::JobSystem
-{
-    struct Counter;
 }
 
 namespace Equinox
