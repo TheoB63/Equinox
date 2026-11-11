@@ -355,6 +355,8 @@
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\UploadContext.h" />
     <ClInclude Include="source\equinox\core\memory\LinearAllocator.h" />
+    <ClInclude Include="source\equinox\core\Timer.h" />
+    <ClInclude Include="source\equinox\core\JobSystemTests.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />

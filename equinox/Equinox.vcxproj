@@ -154,7 +154,9 @@
   <ItemGroup>
     <ClInclude Include="source\Equinox.h" />
     <ClInclude Include="source\eqnpch.h" />
+    <ClInclude Include="source\equinox\core\JobSystemTests.h" />
     <ClInclude Include="source\equinox\core\memory\LinearAllocator.h" />
+    <ClInclude Include="source\equinox\core\Timer.h" />
     <ClInclude Include="source\equinox\ECS\Components.h" />
     <ClInclude Include="source\equinox\ECS\Entity.h" />
     <ClInclude Include="source\equinox\ECS\Scene.h" />

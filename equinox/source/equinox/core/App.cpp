@@ -19,6 +19,7 @@
 #include "equinox/ECS/systems/TransformSystem.h"
 
 #include "equinox/core/JobSystem.h"
+#include "equinox/core/JobSystemTests.h"
 #include "equinox/core/Profiler.h"
 #include "equinox/core/IOThread.h"
 
@@ -32,6 +33,9 @@ namespace Equinox
 		JobSystem::Init();
 		IOThread::Init();
 		// m_FrameContext.Init(); // TODO: Re-enable when FrameContext is ready
+
+		// Run Job System Verification Tests
+		JobSystem::Tests::RunAll();
 
 		FileSystem::Init();
 		AssetDatabase::Init(FileSystem::AssetsPath());
