@@ -8,6 +8,7 @@
 #include "CommandAllocatorPool.h"
 
 #include <functional>
+#include <span>
 
 namespace Equinox
 {
@@ -19,19 +20,21 @@ namespace Equinox
 
 	struct RenderPassJob
 	{
-		RenderPassInfo PassInfo;
+		// Flattened Pass Info for easier access
+		std::span<AttachmentInfo> ColorAttachments;
+		AttachmentInfo DepthAttachment;
+		bool HasDepth = false;
+
 		std::function<void(VkCommandBuffer)> RecordFunction;
 
 		// Output: The recorded command buffer
-		VkCommandBuffer OutputCommandBuffer = VK_NULL_HANDLE;
+		VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
 
 		// Pointer to the FrameContext to push the result to
 		FrameContext* TargetFrame = nullptr;
 
-		static void Execute(JobSystem::JobArgs args)
+		static void Execute(RenderPassJob* job)
 		{
-			RenderPassJob* job = (RenderPassJob*)args.data;
-
 			// 1. Acquire Command Buffer
 			auto* ctx = JobSystem::GetCurrentJobContext();
 			if (!ctx->CommandPool) return;
@@ -43,11 +46,11 @@ namespace Equinox
 
 			CommandAllocator* allocator = (CommandAllocator*)ctx->CurrentCommandAllocator;
 			VkCommandBuffer cmd = allocator->GetBuffer(VK_COMMAND_BUFFER_LEVEL_SECONDARY);
-			job->OutputCommandBuffer = cmd;
+			job->CommandBuffer = cmd;
 
 			// 2. Setup Inheritance for Dynamic Rendering
 			std::vector<VkFormat> colorFormats;
-			for (const auto& att : job->PassInfo.ColorAttachments)
+			for (const auto& att : job->ColorAttachments)
 			{
 				colorFormats.push_back(att.Format);
 			}
@@ -59,14 +62,9 @@ namespace Equinox
 			renderingInheritanceInfo.colorAttachmentCount = (u32)colorFormats.size();
 			renderingInheritanceInfo.pColorAttachmentFormats = colorFormats.data();
 
-			if (job->PassInfo.DepthAttachment)
+			if (job->HasDepth)
 			{
-				renderingInheritanceInfo.depthAttachmentFormat = job->PassInfo.DepthAttachment->Format;
-			}
-
-			if (job->PassInfo.StencilAttachment)
-			{
-				renderingInheritanceInfo.stencilAttachmentFormat = job->PassInfo.StencilAttachment->Format;
+				renderingInheritanceInfo.depthAttachmentFormat = job->DepthAttachment.Format;
 			}
 
 			renderingInheritanceInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
