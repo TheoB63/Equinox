@@ -576,4 +576,12 @@
       <Filter>equinox\window</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="source\equinox\renderer\backend\vulkan\DynamicRendering.h‎">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </None>
+    <None Include="source\equinox\renderer\backend\vulkan\RenderPassJob.h‎">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </None>
+  </ItemGroup>
 </Project>

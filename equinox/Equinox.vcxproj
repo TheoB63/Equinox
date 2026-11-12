@@ -331,6 +331,10 @@
     <ClCompile Include="source\equinox\window\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="source\equinox\renderer\backend\vulkan\DynamicRendering.h‎" />
+    <None Include="source\equinox\renderer\backend\vulkan\RenderPassJob.h‎" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="extern\assimp.vcxproj">
       <Project>{724885F2-5EEA-AFC8-47A5-C31C33E63619}</Project>
     </ProjectReference>

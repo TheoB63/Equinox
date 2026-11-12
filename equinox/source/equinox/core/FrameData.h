@@ -6,6 +6,8 @@
 
 #include <vector>
 #include <array>
+#include <mutex>
+#include <vulkan/vulkan.h>
 
 namespace Equinox
 {
@@ -44,9 +46,9 @@ namespace Equinox
 		Memory::LinearAllocator RenderMemory;   // For temporary command arrays/barriers
 		CommandAllocatorPool* CmdPool = nullptr;  // Thread-local command pools for this frame
 
-		// List of command buffers recorded for this frame
-		// std::vector<VkCommandBuffer> CommandBuffers; 
-		// std::mutex CommandBufferMutex;
+		// List of command buffers recorded for this frame (Secondary Buffers)
+		std::vector<VkCommandBuffer> CommandBuffers;
+		std::mutex CommandBufferMutex;
 
 		FrameContext() :
 			LogicMemory(10 * 1024 * 1024), // 10MB per frame for logic
@@ -60,7 +62,9 @@ namespace Equinox
 			GameReady.WaitingListHead = nullptr;
 			LogicMemory.Reset();
 			RenderMemory.Reset();
-			// CommandBuffers.clear();
+
+			std::lock_guard<std::mutex> lock(CommandBufferMutex);
+			CommandBuffers.clear();
 		}
 	};
 
