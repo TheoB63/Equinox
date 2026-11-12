@@ -1,6 +1,8 @@
 #pragma once
 
 #include "equinox/renderer/rendergraph/RenderGraphResources.h"
+#include "equinox/renderer/backend/vulkan/DynamicRendering.h"
+
 #include "equinox/core/Memory.h"
 #include "equinox/core/JobSystem.h"
 
@@ -25,14 +27,20 @@ namespace Equinox::RG
     {
     public:
         RenderPassBuilder(RenderGraph& graph, u32 passIndex)
-            : m_Graph(graph), m_PassIndex(passIndex) {}
+            : m_Graph(graph), m_PassIndex(passIndex)
+        {
+        }
 
         ResourceHandle Read(ResourceHandle resource);
         ResourceHandle ReadTransfer(ResourceHandle resource); // New: For Blit/Copy source
-        
+
         // Standard Write (Render Target)
-        ResourceHandle Write(ResourceHandle resource);
-        
+        // Optionally specify load/store ops and clear value
+        ResourceHandle Write(ResourceHandle resource,
+                             VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                             VkAttachmentStoreOp storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                             VkClearValue clearValue = {});
+
         // Transfer Write (Clear/Copy)
         ResourceHandle WriteTransfer(ResourceHandle resource);
 
@@ -51,7 +59,7 @@ namespace Equinox::RG
     {
     public:
         VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-        
+
         // Access to physical resources (void* = VkImage/VkBuffer)
         // The executor must set this callback
         std::function<void*(ResourceHandle)> GetResource;
@@ -64,16 +72,29 @@ namespace Equinox::RG
     class RenderGraph
     {
     public:
+        struct PassAttachment
+        {
+            ResourceHandle handle;
+            VkAttachmentLoadOp loadOp;
+            VkAttachmentStoreOp storeOp;
+            VkClearValue clearValue;
+        };
+
         struct PassNode
         {
             std::string name;
             std::function<void(RenderPassContext&)> execute;
-            
+
             std::vector<ResourceHandle> reads;
             std::vector<ResourceState> readStates; // Track desired state for reads
 
             std::vector<ResourceHandle> writes;
-            std::vector<ResourceState> writeStates; 
+            std::vector<ResourceState> writeStates;
+
+            // Metadata for Dynamic Rendering
+            std::vector<PassAttachment> colorAttachments;
+            PassAttachment depthAttachment;
+            bool hasDepth = false;
 
             std::vector<Barrier> preBarriers;
         };
@@ -83,10 +104,10 @@ namespace Equinox::RG
             TextureDesc desc;
             u32 version = 0;
             bool isTransient = true;
-            
+
             ResourceState initialState = ResourceState::Undefined;
             ResourceState currentState = ResourceState::Undefined;
-            
+
             // Runtime data (filled by Executor)
             VkImage image = VK_NULL_HANDLE;
             VkImageView view = VK_NULL_HANDLE;
@@ -98,7 +119,7 @@ namespace Equinox::RG
         RenderGraph(LinearAllocator& allocator);
         ~RenderGraph() = default;
 
-        template<typename Data, typename SetupFunc, typename ExecuteFunc>
+        template <typename Data, typename SetupFunc, typename ExecuteFunc>
         void AddPass(const std::string& name, SetupFunc&& setup, ExecuteFunc&& execute)
         {
             // 1. Allocate Pass Data
@@ -115,13 +136,14 @@ namespace Equinox::RG
             setup(*data, builder);
 
             // 4. Set Execute Function
-            node.execute = [execute, data](RenderPassContext& ctx) {
+            node.execute = [execute, data](RenderPassContext& ctx)
+            {
                 execute(*data, ctx);
             };
         }
 
         void Compile();
-        
+
         // Execute using a single command buffer (Legacy/Serial)
         void Execute(VkCommandBuffer cmd);
 
@@ -131,12 +153,18 @@ namespace Equinox::RG
 
         // Internal API for Builder
         ResourceHandle RegisterResource(const TextureDesc& desc);
-        
+
         // Import an existing resource (e.g. Swapchain Image)
         ResourceHandle ImportResource(const TextureDesc& desc, void* image, void* view, ResourceState initialState);
 
         void RegisterRead(u32 passIndex, ResourceHandle handle, ResourceState state);
         ResourceHandle RegisterWrite(u32 passIndex, ResourceHandle handle, ResourceState state);
+
+        // New: Register attachment details
+        void RegisterColorAttachment(u32 passIndex, ResourceHandle handle, VkAttachmentLoadOp loadOp,
+                                     VkAttachmentStoreOp storeOp, VkClearValue clearValue);
+        void RegisterDepthAttachment(u32 passIndex, ResourceHandle handle, VkAttachmentLoadOp loadOp,
+                                     VkAttachmentStoreOp storeOp, VkClearValue clearValue);
 
         // Accessors for the Backend Executor
         const std::vector<PassNode>& GetPasses() const { return m_Passes; }
