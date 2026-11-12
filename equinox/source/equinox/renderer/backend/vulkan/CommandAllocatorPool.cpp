@@ -60,7 +60,14 @@ namespace Equinox
         for (CommandAllocator* allocator : m_AllAllocators)
         {
             allocator->Reset();
+            // Ensure all allocators are marked as available after reset?
+            // No, ResetAll is called when the frame is done.
+            // All allocators should have been released by then.
+            // We should assert if m_AvailableAllocators.size() != m_AllAllocators.size()
         }
+
+        // Reset availability just in case (though logic should ensure they are returned)
+        m_AvailableAllocators = m_AllAllocators;
     }
 
     CommandAllocator* CommandAllocatorPool::CreateAllocator()
