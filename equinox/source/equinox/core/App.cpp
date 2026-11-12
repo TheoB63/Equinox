@@ -49,7 +49,9 @@ namespace Equinox
 
 			EQN_CORE_INFO("Importing {0} assets in parallel...", assetsToImport.size());
 
-			JobSystem::Counter importCounter;
+			// Explicitly initialize counter to avoid uninitialized memory issues
+			JobSystem::Counter importCounter(0);
+
 			JobSystem::Dispatch((u32)assetsToImport.size(), 1, [](JobSystem::JobArgs args) {
 				std::vector<UUID>* assets = (std::vector<UUID>*)args.data;
 				AssetManager::Import((*assets)[args.jobIndex]);
