@@ -116,6 +116,9 @@
     <ClInclude Include="source\equinox\core\JobSystem.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\core\JobSystemTests.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\core\Log.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
@@ -131,8 +134,14 @@
     <ClInclude Include="source\equinox\core\Time.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\core\Timer.h">
+      <Filter>equinox\core</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\core\UUID.h">
       <Filter>equinox\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\core\memory\LinearAllocator.h">
+      <Filter>equinox\core\memory</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\core\memory\TaggedPageAllocator.h">
       <Filter>equinox\core\memory</Filter>
@@ -260,6 +269,9 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.h">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\UploadContext.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.h">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
@@ -353,10 +365,6 @@
     <ClInclude Include="source\equinox\window\Window.h">
       <Filter>equinox\window</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\backend\vulkan\UploadContext.h" />
-    <ClInclude Include="source\equinox\core\memory\LinearAllocator.h" />
-    <ClInclude Include="source\equinox\core\Timer.h" />
-    <ClInclude Include="source\equinox\core\JobSystemTests.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -489,6 +497,9 @@
     <ClCompile Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.cpp">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\UploadContext.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.cpp">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
@@ -564,6 +575,5 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\backend\vulkan\UploadContext.cpp" />
   </ItemGroup>
 </Project>

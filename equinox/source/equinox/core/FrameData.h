@@ -3,7 +3,9 @@
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/AtomicCounter.h"
 #include "equinox/core/memory/LinearAllocator.h" 
+
 #include <vector>
+#include <array>
 
 namespace Equinox
 {
@@ -60,5 +62,47 @@ namespace Equinox
 			RenderMemory.Reset();
 			// CommandBuffers.clear();
 		}
+	};
+
+	// Container for the ring buffer
+	class FrameData
+	{
+	public:
+		void Init()
+		{
+			m_FrameIndex = 0;
+			for (auto& f : m_Frames) f.Reset();
+		}
+
+		void Shutdown()
+		{
+			// Cleanup if needed
+		}
+
+		FrameContext& GetFrame(u64 index)
+		{
+			return m_Frames[index % FrameContext::MAX_FRAMES_IN_FLIGHT];
+		}
+
+		FrameContext& GetCurrentFrame()
+		{
+			return GetFrame(m_FrameIndex);
+		}
+
+		FrameContext& GetPreviousFrame()
+		{
+			return GetFrame(m_FrameIndex - 1);
+		}
+
+		u64 GetCurrentFrameIndex() const { return m_FrameIndex; }
+
+		void Advance()
+		{
+			m_FrameIndex++;
+		}
+
+	private:
+		std::array<FrameContext, FrameContext::MAX_FRAMES_IN_FLIGHT> m_Frames;
+		u64 m_FrameIndex = 0;
 	};
 }

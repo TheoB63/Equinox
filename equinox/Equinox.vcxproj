@@ -154,9 +154,6 @@
   <ItemGroup>
     <ClInclude Include="source\Equinox.h" />
     <ClInclude Include="source\eqnpch.h" />
-    <ClInclude Include="source\equinox\core\JobSystemTests.h" />
-    <ClInclude Include="source\equinox\core\memory\LinearAllocator.h" />
-    <ClInclude Include="source\equinox\core\Timer.h" />
     <ClInclude Include="source\equinox\ECS\Components.h" />
     <ClInclude Include="source\equinox\ECS\Entity.h" />
     <ClInclude Include="source\equinox\ECS\Scene.h" />
@@ -175,12 +172,15 @@
     <ClInclude Include="source\equinox\core\FrameData.h" />
     <ClInclude Include="source\equinox\core\IOThread.h" />
     <ClInclude Include="source\equinox\core\JobSystem.h" />
+    <ClInclude Include="source\equinox\core\JobSystemTests.h" />
     <ClInclude Include="source\equinox\core\Log.h" />
     <ClInclude Include="source\equinox\core\Math.h" />
     <ClInclude Include="source\equinox\core\Memory.h" />
     <ClInclude Include="source\equinox\core\Profiler.h" />
     <ClInclude Include="source\equinox\core\Time.h" />
+    <ClInclude Include="source\equinox\core\Timer.h" />
     <ClInclude Include="source\equinox\core\UUID.h" />
+    <ClInclude Include="source\equinox\core\memory\LinearAllocator.h" />
     <ClInclude Include="source\equinox\core\memory\TaggedPageAllocator.h" />
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\editor\UI.h" />
@@ -199,7 +199,6 @@
     <ClInclude Include="source\equinox\events\MouseEvent.h" />
     <ClInclude Include="source\equinox\events\RenderEvent.h" />
     <ClInclude Include="source\equinox\input\Input.h" />
-    <ClInclude Include="source\equinox\renderer\backend\vulkan\UploadContext.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\Camera.h" />
     <ClInclude Include="source\equinox\renderer\Framebuffer.h" />
@@ -224,6 +223,7 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocator.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.h" />
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\UploadContext.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanAllocator.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanBuffer.h" />
@@ -281,7 +281,6 @@
     <ClCompile Include="source\equinox\editor\panels\ResourcePanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\input\Input.cpp" />
-    <ClCompile Include="source\equinox\renderer\backend\vulkan\UploadContext.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Framebuffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Material.cpp" />
@@ -304,6 +303,7 @@
     <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocator.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.cpp" />
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\UploadContext.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanAllocator.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanBuffer.cpp" />

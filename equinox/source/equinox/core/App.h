@@ -45,7 +45,7 @@ namespace Equinox
         std::shared_ptr<Scene> m_Scene;
 
         // Frame Pipelining
-        FrameContext m_FrameContext;
+        FrameData m_FrameData;
 
         bool m_Running = true;
     };
