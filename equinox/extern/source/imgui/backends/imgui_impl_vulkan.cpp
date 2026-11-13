@@ -250,7 +250,7 @@ struct ImGui_ImplVulkan_ViewportData
     bool                                    SwapChainSuboptimal;    // Flag when VK_SUBOPTIMAL_KHR was returned.
 
     ImGui_ImplVulkan_ViewportData() { WindowOwned = SwapChainNeedRebuild = SwapChainSuboptimal = false; memset(&RenderBuffers, 0, sizeof(RenderBuffers)); }
-    ~ImGui_ImplVulkan_ViewportData() { }
+    ~ImGui_ImplVulkan_ViewportData() {}
 };
 
 // Vulkan data
@@ -657,7 +657,7 @@ void ImGui_ImplVulkan_RenderDrawData(ImDrawData* draw_data, VkCommandBuffer comm
     // If you use VK_DYNAMIC_STATE_VIEWPORT or VK_DYNAMIC_STATE_SCISSOR you are responsible for setting the values before rendering.
     // In theory we should aim to backup/restore those values but I am not sure this is possible.
     // We perform a call to vkCmdSetScissor() to set back a full viewport which is likely to fix things for 99% users but technically this is not perfect. (See github #4644)
-    VkRect2D scissor = { { 0, 0 }, { (uint32_t)fb_width, (uint32_t)fb_height } };
+    VkRect2D scissor = { { 0, 0 },{ (uint32_t)fb_width, (uint32_t)fb_height } };
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 }
 
@@ -873,8 +873,8 @@ void ImGui_ImplVulkan_DestroyFontsTexture()
         io.Fonts->SetTexID(0);
     }
     if (backend_tex->ImageView) { vkDestroyImageView(v->Device, backend_tex->ImageView, v->Allocator); backend_tex->ImageView = VK_NULL_HANDLE; }
-    if (backend_tex->Image)     { vkDestroyImage(v->Device, backend_tex->Image, v->Allocator); backend_tex->Image = VK_NULL_HANDLE; }
-    if (backend_tex->Memory)    { vkFreeMemory(v->Device, backend_tex->Memory, v->Allocator); backend_tex->Memory = VK_NULL_HANDLE; }
+    if (backend_tex->Image) { vkDestroyImage(v->Device, backend_tex->Image, v->Allocator); backend_tex->Image = VK_NULL_HANDLE; }
+    if (backend_tex->Memory) { vkFreeMemory(v->Device, backend_tex->Memory, v->Allocator); backend_tex->Memory = VK_NULL_HANDLE; }
 }
 
 static void ImGui_ImplVulkan_CreateShaderModules(VkDevice device, const VkAllocationCallbacks* allocator)
@@ -1099,16 +1099,16 @@ void    ImGui_ImplVulkan_DestroyDeviceObjects()
     ImGui_ImplVulkanH_DestroyAllViewportsRenderBuffers(v->Device, v->Allocator);
     ImGui_ImplVulkan_DestroyFontsTexture();
 
-    if (bd->TexCommandBuffer)     { vkFreeCommandBuffers(v->Device, bd->TexCommandPool, 1, &bd->TexCommandBuffer); bd->TexCommandBuffer = VK_NULL_HANDLE; }
-    if (bd->TexCommandPool)       { vkDestroyCommandPool(v->Device, bd->TexCommandPool, v->Allocator); bd->TexCommandPool = VK_NULL_HANDLE; }
-    if (bd->TexSampler)           { vkDestroySampler(v->Device, bd->TexSampler, v->Allocator); bd->TexSampler = VK_NULL_HANDLE; }
-    if (bd->ShaderModuleVert)     { vkDestroyShaderModule(v->Device, bd->ShaderModuleVert, v->Allocator); bd->ShaderModuleVert = VK_NULL_HANDLE; }
-    if (bd->ShaderModuleFrag)     { vkDestroyShaderModule(v->Device, bd->ShaderModuleFrag, v->Allocator); bd->ShaderModuleFrag = VK_NULL_HANDLE; }
-    if (bd->DescriptorSetLayout)  { vkDestroyDescriptorSetLayout(v->Device, bd->DescriptorSetLayout, v->Allocator); bd->DescriptorSetLayout = VK_NULL_HANDLE; }
-    if (bd->PipelineLayout)       { vkDestroyPipelineLayout(v->Device, bd->PipelineLayout, v->Allocator); bd->PipelineLayout = VK_NULL_HANDLE; }
-    if (bd->Pipeline)             { vkDestroyPipeline(v->Device, bd->Pipeline, v->Allocator); bd->Pipeline = VK_NULL_HANDLE; }
+    if (bd->TexCommandBuffer) { vkFreeCommandBuffers(v->Device, bd->TexCommandPool, 1, &bd->TexCommandBuffer); bd->TexCommandBuffer = VK_NULL_HANDLE; }
+    if (bd->TexCommandPool) { vkDestroyCommandPool(v->Device, bd->TexCommandPool, v->Allocator); bd->TexCommandPool = VK_NULL_HANDLE; }
+    if (bd->TexSampler) { vkDestroySampler(v->Device, bd->TexSampler, v->Allocator); bd->TexSampler = VK_NULL_HANDLE; }
+    if (bd->ShaderModuleVert) { vkDestroyShaderModule(v->Device, bd->ShaderModuleVert, v->Allocator); bd->ShaderModuleVert = VK_NULL_HANDLE; }
+    if (bd->ShaderModuleFrag) { vkDestroyShaderModule(v->Device, bd->ShaderModuleFrag, v->Allocator); bd->ShaderModuleFrag = VK_NULL_HANDLE; }
+    if (bd->DescriptorSetLayout) { vkDestroyDescriptorSetLayout(v->Device, bd->DescriptorSetLayout, v->Allocator); bd->DescriptorSetLayout = VK_NULL_HANDLE; }
+    if (bd->PipelineLayout) { vkDestroyPipelineLayout(v->Device, bd->PipelineLayout, v->Allocator); bd->PipelineLayout = VK_NULL_HANDLE; }
+    if (bd->Pipeline) { vkDestroyPipeline(v->Device, bd->Pipeline, v->Allocator); bd->Pipeline = VK_NULL_HANDLE; }
     if (bd->PipelineForViewports) { vkDestroyPipeline(v->Device, bd->PipelineForViewports, v->Allocator); bd->PipelineForViewports = VK_NULL_HANDLE; }
-    if (bd->DescriptorPool)       { vkDestroyDescriptorPool(v->Device, bd->DescriptorPool, v->Allocator); bd->DescriptorPool = VK_NULL_HANDLE; }
+    if (bd->DescriptorPool) { vkDestroyDescriptorPool(v->Device, bd->DescriptorPool, v->Allocator); bd->DescriptorPool = VK_NULL_HANDLE; }
 }
 
 #ifdef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
@@ -1135,7 +1135,7 @@ bool    ImGui_ImplVulkan_LoadFunctions(PFN_vkVoidFunction(*loader_func)(const ch
 #undef IMGUI_VULKAN_FUNC_LOAD
 
 #ifdef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
-    ImGui_ImplVulkan_LoadDynamicRenderingFunctions(loader_func, user_data);
+        ImGui_ImplVulkan_LoadDynamicRenderingFunctions(loader_func, user_data);
 #endif
 #else
     IM_UNUSED(loader_func);

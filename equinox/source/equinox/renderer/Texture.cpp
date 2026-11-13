@@ -3,7 +3,7 @@
 #include "equinox/renderer/backend/vulkan/VulkanTexture.h"
 #include "equinox/renderer/backend/opengl/GLTexture.h"
 #include "equinox/renderer/Renderer.h"
-#include "equinox/renderer/RendererAPI.h"
+#include "equinox/renderer/RenderBackend.h"
 
 namespace Equinox
 {

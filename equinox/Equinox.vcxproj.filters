@@ -89,9 +89,6 @@
     <ClInclude Include="source\equinox\ECS\systems\TransformSystem.h">
       <Filter>equinox\ECS\systems</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\core\AdaptiveMutex.h">
-      <Filter>equinox\core</Filter>
-    </ClInclude>
     <ClInclude Include="source\equinox\core\App.h">
       <Filter>equinox\core</Filter>
     </ClInclude>
@@ -362,6 +359,9 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\DynamicRendering.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\RenderPassJob.h" />
     <ClInclude Include="source\equinox\renderer\RenderBackend.h" />
+    <ClInclude Include="source\equinox\core\MPMCQueue.h" />
+    <ClInclude Include="source\equinox\core\SpinLock.h" />
+    <ClInclude Include="source\equinox\core\WorkStealingDeque.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />

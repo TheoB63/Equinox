@@ -154,6 +154,9 @@
   <ItemGroup>
     <ClInclude Include="source\Equinox.h" />
     <ClInclude Include="source\eqnpch.h" />
+    <ClInclude Include="source\equinox\core\MPMCQueue.h" />
+    <ClInclude Include="source\equinox\core\SpinLock.h" />
+    <ClInclude Include="source\equinox\core\WorkStealingDeque.h" />
     <ClInclude Include="source\equinox\ECS\Components.h" />
     <ClInclude Include="source\equinox\ECS\Entity.h" />
     <ClInclude Include="source\equinox\ECS\Scene.h" />
@@ -163,7 +166,6 @@
     <ClInclude Include="source\equinox\ECS\systems\CameraSystem.h" />
     <ClInclude Include="source\equinox\ECS\systems\RenderingSystem.h" />
     <ClInclude Include="source\equinox\ECS\systems\TransformSystem.h" />
-    <ClInclude Include="source\equinox\core\AdaptiveMutex.h" />
     <ClInclude Include="source\equinox\core\App.h" />
     <ClInclude Include="source\equinox\core\AtomicCounter.h" />
     <ClInclude Include="source\equinox\core\EntryPoint.h" />
