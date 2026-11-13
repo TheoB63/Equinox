@@ -17,6 +17,7 @@
 
 #include "equinox/ECS/Systems.h"
 #include "equinox/ECS/systems/TransformSystem.h"
+#include "equinox/ECS/systems/RenderingSystem.h"
 
 #include "equinox/core/JobSystem.h"
 #include "equinox/core/JobSystemTests.h"
@@ -68,7 +69,7 @@ namespace Equinox
 		// [OP] Dual-backend: initialize the requested renderer API
 		// (the window was already created for this API: GL context or
 		// context-less for Vulkan).
-		Renderer::Init(m_Window->GetNativeWindow(), ws.rendererAPI);
+		Renderer::Init(m_Window->GetNativeWindow());
 
 		// Scene & Systems
 		m_Scene = std::make_shared<Scene>();
@@ -117,32 +118,31 @@ namespace Equinox
 			}
 
 			// 1. Begin Vulkan Frame (Acquire Image, Start Recording)
-			if (Renderer::BeginFrame())
+			Renderer::BeginFrame();
+
+			// 2. Editor Logic
+			Editor::BeginFrame();
+			OnUpdate();
+			AssetManager::Update();
+			Editor::Render();
+			Editor::EndFrame(); // Records ImGui to CB
+
+			// 3. Update Viewports (ImGui)
+			if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 			{
-				// 2. Editor Logic
-				Editor::BeginFrame();
-				OnUpdate();
-				AssetManager::Update();
-				Editor::Render();
-				Editor::EndFrame(); // Records ImGui to CB
-
-				// 3. Update Viewports (ImGui)
-				if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-				{
-					ImGui::UpdatePlatformWindows();
-					ImGui::RenderPlatformWindowsDefault();
-				}
-
-				// 4. Game Logic
-				Systems::Update<TransformSystem>();
-				// Systems::Update<RenderingSystem>(); 
-
-				// 5. End Vulkan Frame (Submit, Present)
-				Renderer::EndFrame();
-
-				// Advence Frame Data
-				m_FrameData.Advance();
+				ImGui::UpdatePlatformWindows();
+				ImGui::RenderPlatformWindowsDefault();
 			}
+
+			// 4. Game Logic
+			Systems::Update<TransformSystem>();
+			Systems::Update<RenderingSystem>();
+
+			// 5. End Vulkan Frame (Submit, Present)
+			Renderer::EndFrame();
+
+			// Advence Frame Data
+			m_FrameData.Advance();
 		}
 
 		OnShutdown();
@@ -164,7 +164,7 @@ namespace Equinox
 	WindowSpec App::ParseCommandLineArgs(int argc, char** argv)
 	{
 		WindowSpec spec;
-		spec.rendererAPI = RendererAPI::API::Vulkan; // Equinox's default API
+		spec.rendererAPI = RenderBackend::API::Vulkan; // Equinox's default API
 
 		if (argc < 2)
 		{
@@ -179,12 +179,12 @@ namespace Equinox
 			std::string arg = argv[i];
 			if (arg == "--opengl")
 			{
-				spec.rendererAPI = RendererAPI::API::OpenGL;
+				spec.rendererAPI = RenderBackend::API::OpenGL;
 				break;
 			}
 			else if (arg == "--vulkan")
 			{
-				spec.rendererAPI = RendererAPI::API::Vulkan;
+				spec.rendererAPI = RenderBackend::API::Vulkan;
 				break;
 			}
 			else
@@ -203,9 +203,9 @@ namespace Equinox
 		// [OP] Dual-backend: show the active renderer API in the title
 		switch (ws.rendererAPI)
 		{
-		case RendererAPI::API::OpenGL: title += " [OpenGL]";
+		case RenderBackend::API::OpenGL: title += " [OpenGL]";
 			break;
-		case RendererAPI::API::Vulkan: title += " [Vulkan]";
+		case RenderBackend::API::Vulkan: title += " [Vulkan]";
 			break;
 		default: title += " [Unknown API]";
 			break;

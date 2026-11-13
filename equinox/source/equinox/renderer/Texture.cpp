@@ -9,12 +9,12 @@ namespace Equinox
 {
     std::shared_ptr<Texture> Texture::Create(const fs::path& path)
     {
-        switch (Renderer::GetAPI()) {
-            case RendererAPI::API::Vulkan: return std::make_shared<VKTexture>(path);
+        switch (Renderer::GetBackend()->GetAPI()) {
+            case RenderBackend::API::Vulkan: return std::make_shared<VKTexture>(path);
             // [OP] Dual-backend: OpenGL texture implementation
-            case RendererAPI::API::OpenGL: return std::make_shared<GLTexture>(path);
+            case RenderBackend::API::OpenGL: return std::make_shared<GLTexture>(path);
             default:
-                EQN_CORE_ASSERT(false, "Unknown renderer API!");
+                EQN_CORE_ASSERT(false, "Unknown RenderBackend!");
                 return nullptr;
         }
     }
@@ -26,12 +26,12 @@ namespace Equinox
             return nullptr;
         }
 
-        switch (Renderer::GetAPI()) {
-            case RendererAPI::API::Vulkan: return std::make_shared<VKTexture>(width, height, format, data);
+        switch (Renderer::GetBackend()->GetAPI()) {
+            case RenderBackend::API::Vulkan: return std::make_shared<VKTexture>(width, height, format, data);
             // [OP] Dual-backend: OpenGL texture implementation
-            case RendererAPI::API::OpenGL: return std::make_shared<GLTexture>(width, height, format, data);
+            case RenderBackend::API::OpenGL: return std::make_shared<GLTexture>(width, height, format, data);
             default:
-                EQN_CORE_ASSERT(false, "Unknown renderer API!");
+                EQN_CORE_ASSERT(false, "Unknown RenderBackend!");
                 return nullptr;
         }
     }

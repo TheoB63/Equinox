@@ -17,165 +17,170 @@ struct VmaAllocation_T;
 
 namespace Equinox::RG
 {
-    class RenderGraph;
+	class RenderGraph;
 
-    // ===================================================================================
-    // Pass Builder
-    // ===================================================================================
+	// ===================================================================================
+	// Pass Builder
+	// ===================================================================================
 
-    class RenderPassBuilder
-    {
-    public:
-        RenderPassBuilder(RenderGraph& graph, u32 passIndex)
-            : m_Graph(graph), m_PassIndex(passIndex)
-        {
-        }
+	class RenderPassBuilder
+	{
+	public:
+		RenderPassBuilder(RenderGraph& graph, u32 passIndex)
+			: m_Graph(graph), m_PassIndex(passIndex)
+		{
+		}
 
-        ResourceHandle Read(ResourceHandle resource);
-        ResourceHandle ReadTransfer(ResourceHandle resource); // New: For Blit/Copy source
+		ResourceHandle Read(ResourceHandle resource);
+		ResourceHandle ReadTransfer(ResourceHandle resource); // New: For Blit/Copy source
 
-        // Standard Write (Render Target)
-        // Optionally specify load/store ops and clear value
-        ResourceHandle Write(ResourceHandle resource,
-                             VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-                             VkAttachmentStoreOp storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-                             VkClearValue clearValue = {});
+		// Standard Write (Colot Target)
+		ResourceHandle Write(ResourceHandle resource,
+			VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+			VkAttachmentStoreOp storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+			VkClearValue clearValue = {});
 
-        // Transfer Write (Clear/Copy)
-        ResourceHandle WriteTransfer(ResourceHandle resource);
+		// Depth Write (Depth Target)
+		ResourceHandle WriteDepth(ResourceHandle resource,
+			VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+			VkAttachmentStoreOp storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+			VkClearValue clearValue = {});
 
-        ResourceHandle CreateTexture(const TextureDesc& desc);
+		// Transfer Write (Clear/Copy)
+		ResourceHandle WriteTransfer(ResourceHandle resource);
 
-    private:
-        RenderGraph& m_Graph;
-        u32 m_PassIndex;
-    };
+		ResourceHandle CreateTexture(const TextureDesc& desc);
 
-    // ===================================================================================
-    // Pass Execution Context
-    // ===================================================================================
+	private:
+		RenderGraph& m_Graph;
+		u32 m_PassIndex;
+	};
 
-    class RenderPassContext
-    {
-    public:
-        VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+	// ===================================================================================
+	// Pass Execution Context
+	// ===================================================================================
 
-        // Access to physical resources (void* = VkImage/VkBuffer)
-        // The executor must set this callback
-        std::function<void*(ResourceHandle)> GetResource;
-    };
+	class RenderPassContext
+	{
+	public:
+		VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 
-    // ===================================================================================
-    // Render Graph
-    // ===================================================================================
+		// Access to physical resources (void* = VkImage/VkBuffer)
+		// The executor must set this callback
+		std::function<void* (ResourceHandle)> GetResource;
+	};
 
-    class RenderGraph
-    {
-    public:
-        struct PassAttachment
-        {
-            ResourceHandle handle;
-            VkAttachmentLoadOp loadOp;
-            VkAttachmentStoreOp storeOp;
-            VkClearValue clearValue;
-        };
+	// ===================================================================================
+	// Render Graph
+	// ===================================================================================
 
-        struct PassNode
-        {
-            std::string name;
-            std::function<void(RenderPassContext&)> execute;
+	class RenderGraph
+	{
+	public:
+		struct PassAttachment
+		{
+			ResourceHandle handle;
+			VkAttachmentLoadOp loadOp;
+			VkAttachmentStoreOp storeOp;
+			VkClearValue clearValue;
+		};
 
-            std::vector<ResourceHandle> reads;
-            std::vector<ResourceState> readStates; // Track desired state for reads
+		struct PassNode
+		{
+			std::string name;
+			std::function<void(RenderPassContext&)> execute;
 
-            std::vector<ResourceHandle> writes;
-            std::vector<ResourceState> writeStates;
+			std::vector<ResourceHandle> reads;
+			std::vector<ResourceState> readStates; // Track desired state for reads
 
-            // Metadata for Dynamic Rendering
-            std::vector<PassAttachment> colorAttachments;
-            PassAttachment depthAttachment;
-            bool hasDepth = false;
+			std::vector<ResourceHandle> writes;
+			std::vector<ResourceState> writeStates;
 
-            std::vector<Barrier> preBarriers;
-        };
+			// Metadata for Dynamic Rendering
+			std::vector<PassAttachment> colorAttachments;
+			PassAttachment depthAttachment;
+			bool hasDepth = false;
 
-        struct ResourceNode
-        {
-            TextureDesc desc;
-            u32 version = 0;
-            bool isTransient = true;
+			std::vector<Barrier> preBarriers;
+		};
 
-            ResourceState initialState = ResourceState::Undefined;
-            ResourceState currentState = ResourceState::Undefined;
+		struct ResourceNode
+		{
+			TextureDesc desc;
+			u32 version = 0;
+			bool isTransient = true;
 
-            // Runtime data (filled by Executor)
-            VkImage image = VK_NULL_HANDLE;
-            VkImageView view = VK_NULL_HANDLE;
-            VmaAllocation_T* allocation = nullptr;
-            bool external = false; // If true, we don't destroy it (e.g. Swapchain Image)
-        };
+			ResourceState initialState = ResourceState::Undefined;
+			ResourceState currentState = ResourceState::Undefined;
 
-    public:
-        RenderGraph(LinearAllocator& allocator);
-        ~RenderGraph() = default;
+			// Runtime data (filled by Executor)
+			VkImage image = VK_NULL_HANDLE;
+			VkImageView view = VK_NULL_HANDLE;
+			VmaAllocation_T* allocation = nullptr;
+			bool external = false; // If true, we don't destroy it (e.g. Swapchain Image)
+		};
 
-        template <typename Data, typename SetupFunc, typename ExecuteFunc>
-        void AddPass(const std::string& name, SetupFunc&& setup, ExecuteFunc&& execute)
-        {
-            // 1. Allocate Pass Data
-            Data* data = m_Allocator.New<Data>();
+	public:
+		RenderGraph(LinearAllocator& allocator);
+		~RenderGraph() = default;
 
-            // 2. Create Pass Node immediately so Builder can access it
-            u32 passIndex = (u32)m_Passes.size();
-            m_Passes.emplace_back();
-            PassNode& node = m_Passes.back();
-            node.name = name;
+		template <typename Data, typename SetupFunc, typename ExecuteFunc>
+		void AddPass(const std::string& name, SetupFunc&& setup, ExecuteFunc&& execute)
+		{
+			// 1. Allocate Pass Data
+			Data* data = m_Allocator.New<Data>();
 
-            // 3. Run Setup (Populates reads/writes in node)
-            RenderPassBuilder builder(*this, passIndex);
-            setup(*data, builder);
+			// 2. Create Pass Node immediately so Builder can access it
+			u32 passIndex = (u32)m_Passes.size();
+			m_Passes.emplace_back();
+			PassNode& node = m_Passes.back();
+			node.name = name;
 
-            // 4. Set Execute Function
-            node.execute = [execute, data](RenderPassContext& ctx)
-            {
-                execute(*data, ctx);
-            };
-        }
+			// 3. Run Setup (Populates reads/writes in node)
+			RenderPassBuilder builder(*this, passIndex);
+			setup(*data, builder);
 
-        void Compile();
+			// 4. Set Execute Function
+			node.execute = [execute, data](RenderPassContext& ctx)
+				{
+					execute(*data, ctx);
+				};
+		}
 
-        // Execute using a single command buffer (Legacy/Serial)
-        void Execute(VkCommandBuffer cmd);
+		void Compile();
 
-        // Execute using parallel jobs (New)
-        // Records barriers into primaryCmd, and fills outCommandBuffers with secondary buffers
-        void ExecuteParallel(VkCommandBuffer primaryCmd, std::vector<VkCommandBuffer>& outCommandBuffers);
+		// Execute using a single command buffer (Legacy/Serial)
+		void Execute(VkCommandBuffer cmd);
 
-        // Internal API for Builder
-        ResourceHandle RegisterResource(const TextureDesc& desc);
+		// Execute using parallel jobs (New)
+		// Records barriers into primaryCmd, and fills outCommandBuffers with secondary buffers
+		void ExecuteParallel(VkCommandBuffer primaryCmd, std::vector<VkCommandBuffer>& outCommandBuffers);
 
-        // Import an existing resource (e.g. Swapchain Image)
-        ResourceHandle ImportResource(const TextureDesc& desc, void* image, void* view, ResourceState initialState);
+		// Internal API for Builder
+		ResourceHandle RegisterResource(const TextureDesc& desc);
 
-        void RegisterRead(u32 passIndex, ResourceHandle handle, ResourceState state);
-        ResourceHandle RegisterWrite(u32 passIndex, ResourceHandle handle, ResourceState state);
+		// Import an existing resource (e.g. Swapchain Image)
+		ResourceHandle ImportResource(const TextureDesc& desc, void* image, void* view, ResourceState initialState);
 
-        // New: Register attachment details
-        void RegisterColorAttachment(u32 passIndex, ResourceHandle handle, VkAttachmentLoadOp loadOp,
-                                     VkAttachmentStoreOp storeOp, VkClearValue clearValue);
-        void RegisterDepthAttachment(u32 passIndex, ResourceHandle handle, VkAttachmentLoadOp loadOp,
-                                     VkAttachmentStoreOp storeOp, VkClearValue clearValue);
+		void RegisterRead(u32 passIndex, ResourceHandle handle, ResourceState state);
+		ResourceHandle RegisterWrite(u32 passIndex, ResourceHandle handle, ResourceState state);
 
-        // Accessors for the Backend Executor
-        const std::vector<PassNode>& GetPasses() const { return m_Passes; }
-        std::vector<ResourceNode>& GetResources() { return m_Resources; }
+		// New: Register attachment details
+		void RegisterColorAttachment(u32 passIndex, ResourceHandle handle, VkAttachmentLoadOp loadOp,
+			VkAttachmentStoreOp storeOp, VkClearValue clearValue);
+		void RegisterDepthAttachment(u32 passIndex, ResourceHandle handle, VkAttachmentLoadOp loadOp,
+			VkAttachmentStoreOp storeOp, VkClearValue clearValue);
 
-    private:
-        LinearAllocator& m_Allocator;
-        std::vector<PassNode> m_Passes;
-        std::vector<ResourceNode> m_Resources;
+		// Accessors for the Backend Executor
+		const std::vector<PassNode>& GetPasses() const { return m_Passes; }
+		std::vector<ResourceNode>& GetResources() { return m_Resources; }
 
-        void AllocatePhysicalResources();
-        void CleanupPhysicalResources();
-    };
+	private:
+		LinearAllocator& m_Allocator;
+		std::vector<PassNode> m_Passes;
+		std::vector<ResourceNode> m_Resources;
+
+		void AllocatePhysicalResources();
+		void CleanupPhysicalResources();
+	};
 }

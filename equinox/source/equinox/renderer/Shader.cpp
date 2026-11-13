@@ -1,6 +1,7 @@
 #include "eqnpch.h"
 #include "equinox/renderer/Shader.h"
 #include "equinox/renderer/Renderer.h"
+#include "equinox/renderer/RenderBackend.h"
 #include "equinox/renderer/backend/opengl/GLShader.h"
 #include "equinox/renderer/backend/vulkan/VulkanShader.h"
 
@@ -8,17 +9,17 @@ namespace Equinox
 {
     std::shared_ptr<Shader> Shader::Create(const fs::path& filePath)
     {
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetBackend()->GetAPI())
         {
-            case RendererAPI::API::Vulkan:
+            case RenderBackend::API::Vulkan:
                 return std::make_shared<VulkanShader>(filePath);
 
             // [OP] Dual-backend: OpenGL shader (GLSL program, see GLShader)
-            case RendererAPI::API::OpenGL:
+            case RenderBackend::API::OpenGL:
                 return std::make_shared<GLShader>(filePath);
 
             default:
-                EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
+                EQN_CORE_ASSERT(false, "Unknown RenderBackend!");
                 return nullptr;
         }
     }

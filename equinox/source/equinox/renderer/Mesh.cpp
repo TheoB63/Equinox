@@ -2,7 +2,7 @@
 
 #include "equinox/renderer/Mesh.h"
 #include "equinox/renderer/Renderer.h"
-#include "equinox/renderer/RendererAPI.h"
+#include "equinox/renderer/RenderBackend.h"
 
 namespace Equinox
 {

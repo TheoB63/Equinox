@@ -10,7 +10,7 @@
 #include <equinox/renderer/Renderer.h>
 #include <equinox/renderer/Buffer.h>
 #include <equinox/renderer/Shader.h>
-#include <equinox/renderer/backend/vulkan/VKRendererAPI.h>
+#include <equinox/renderer/backend/vulkan/VulkanBackend.h>
 #include <memory>
 
 // TEST VULKAN

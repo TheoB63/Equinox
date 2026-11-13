@@ -10,12 +10,12 @@ namespace Equinox
 {
     std::unique_ptr<VertexArray> VertexArray::Create()
     {
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetBackend()->GetAPI())
         {
-        case RendererAPI::API::OpenGL:
+        case RenderBackend::API::OpenGL:
             return std::make_unique<GLVertexArray>();
 
-        case RendererAPI::API::Vulkan:
+        case RenderBackend::API::Vulkan:
             return std::make_unique<NullVertexArray>();
 
         default:

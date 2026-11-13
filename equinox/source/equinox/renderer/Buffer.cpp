@@ -1,7 +1,7 @@
 #include "eqnpch.h"
 #include "equinox/renderer/Buffer.h"
 #include "equinox/renderer/Renderer.h"
-
+#include "equinox/renderer/RenderBackend.h"
 #include "equinox/renderer/backend/vulkan/VulkanBuffer.h"
 #include "equinox/renderer/backend/opengl/GLBuffer.h"
 
@@ -123,58 +123,58 @@ namespace Equinox
     // Vertex Buffer
     std::shared_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size)
     {
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetBackend()->GetAPI())
         {
-            case RendererAPI::API::None:
-                EQN_CORE_ASSERT(false, "RendererAPI::None is not supported!");
+        case RenderBackend::API::None:
+            EQN_CORE_ASSERT(false, "RenderBackend::API::None is not supported!");
                 return nullptr;
 
-            case RendererAPI::API::Vulkan:
+            case RenderBackend::API::Vulkan:
                 return std::make_shared<VKVertexBuffer>(size);
 
             // [OP] Dual-backend: OpenGL vertex buffer
-            case RendererAPI::API::OpenGL:
+            case RenderBackend::API::OpenGL:
                 return std::make_shared<GLVertexBuffer>(size);
         }
 
-        EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
+        EQN_CORE_ASSERT(false, "Unknown RenderBackend!");
         return nullptr;
     }
 
     std::shared_ptr<VertexBuffer> VertexBuffer::Create(const void* data, uint32_t size)
     {
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetBackend()->GetAPI())
         {
-            case RendererAPI::API::None:
-                EQN_CORE_ASSERT(false, "RendererAPI::None is not supported!");
+        case RenderBackend::API::None:
+            EQN_CORE_ASSERT(false, "RenderBackend::API::None is not supported!");
                 return nullptr;
 
-            case RendererAPI::API::Vulkan:
+            case RenderBackend::API::Vulkan:
                 return std::make_shared<VKVertexBuffer>(data, size);
 
             // [OP] Dual-backend: OpenGL vertex buffer
-            case RendererAPI::API::OpenGL:
+            case RenderBackend::API::OpenGL:
                 return std::make_shared<GLVertexBuffer>(data, size);
         }
 
-        EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
+        EQN_CORE_ASSERT(false, "Unknown RenderBackend!");
         return nullptr;
     }
 
     // Index Buffer
     std::shared_ptr<IndexBuffer> IndexBuffer::Create(const uint32_t* indices, uint32_t count)
     {
-        switch (Renderer::GetAPI())
+        switch (Renderer::GetBackend()->GetAPI())
         {
-            case RendererAPI::API::Vulkan:
+            case RenderBackend::API::Vulkan:
                 return std::make_shared<VKIndexBuffer>(indices, count);
 
             // [OP] Dual-backend: OpenGL index buffer
-            case RendererAPI::API::OpenGL:
+            case RenderBackend::API::OpenGL:
                 return std::make_shared<GLIndexBuffer>(indices, count);
 
             default:
-                EQN_CORE_ASSERT(false, "Unknown RendererAPI!");
+                EQN_CORE_ASSERT(false, "Unknown RenderBackend!");
                 return nullptr;
         }
     }

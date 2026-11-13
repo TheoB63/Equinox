@@ -60,7 +60,7 @@ namespace Equinox
 			// Get final output from active rendering technique
 			if (auto texture = m_RenderingSystem->GetSceneColor())
 			{
-				if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+				if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
 				{
 					// Create/Get Descriptor Set for ImGui
 					static VkDescriptorSet ds = VK_NULL_HANDLE;
@@ -87,7 +87,7 @@ namespace Equinox
 
 					ImGui::Image((ImTextureID)ds, ToImVec2(m_ViewportSize), { 0, 0 }, { 1, 1 });
 				}
-				else if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+				else if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::OpenGL)
 				{
 					// [OP] Dual-backend: in OpenGL the texture id IS the ImGui id
 					auto glTex = std::static_pointer_cast<GLTexture>(texture);

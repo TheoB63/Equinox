@@ -1,7 +1,7 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/ProjectPanel.h"
 #include "equinox/editor/panels/InspectorPanel.h"
-#include "equinox/renderer/RendererAPI.h"
+#include "equinox/renderer/RenderBackend.h"
 #include "equinox/resources/AssetDatabase.h"
 #include "equinox/resources/AssetManager.h"
 #include "equinox/resources/MetaFile.h"

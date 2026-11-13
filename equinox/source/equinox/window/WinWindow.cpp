@@ -49,7 +49,7 @@ namespace Equinox
         // Set hints BEFORE creating the window
         // [OP] Dual-backend: the OpenGL backend needs a current GL context;
         // the Vulkan backend keeps the context-less window (GLFW_NO_API).
-        if (spec.rendererAPI == RendererAPI::API::OpenGL)
+        if (spec.rendererAPI == RenderBackend::API::OpenGL)
         {
             glfwWindowHint(GLFW_SAMPLES, 4);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -74,7 +74,7 @@ namespace Equinox
         }
 
         // [OP] Dual-backend: make the GL context current for this thread
-        if (spec.rendererAPI == RendererAPI::API::OpenGL)
+        if (spec.rendererAPI == RenderBackend::API::OpenGL)
         {
             glfwMakeContextCurrent(m_GLFWwindow);
             glfwSwapInterval(spec.VSync ? 1 : 0);

@@ -39,12 +39,7 @@ namespace Equinox
 			auto* ctx = JobSystem::GetCurrentJobContext();
 			if (!ctx->CommandPool) return;
 
-			if (!ctx->CurrentCommandAllocator)
-			{
-				ctx->CurrentCommandAllocator = ctx->CommandPool->Acquire();
-			}
-
-			CommandAllocator* allocator = (CommandAllocator*)ctx->CurrentCommandAllocator;
+			CommandAllocator* allocator = ctx->CommandPool->Acquire();
 			VkCommandBuffer cmd = allocator->GetBuffer(VK_COMMAND_BUFFER_LEVEL_SECONDARY);
 			job->CommandBuffer = cmd;
 
@@ -96,6 +91,9 @@ namespace Equinox
 				std::lock_guard<std::mutex> lock(job->TargetFrame->CommandBufferMutex);
 				job->TargetFrame->CommandBuffers.push_back(cmd);
 			}
+
+			// 7. Release Allocator back to pool
+			ctx->CommandPool->Release(allocator);
 		}
 	};
 }

@@ -221,9 +221,6 @@
     <ClInclude Include="source\equinox\renderer\Renderer.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\RendererAPI.h">
-      <Filter>equinox\renderer</Filter>
-    </ClInclude>
     <ClInclude Include="source\equinox\renderer\Shader.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
@@ -243,9 +240,6 @@
       <Filter>equinox\renderer\backend\opengl</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\opengl\GLMesh.h">
-      <Filter>equinox\renderer\backend\opengl</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\backend\opengl\GLRendererAPI.h">
       <Filter>equinox\renderer\backend\opengl</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\opengl\GLShader.h">
@@ -272,7 +266,7 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\UploadContext.h">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.h">
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanBackend.h">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanAllocator.h">
@@ -367,6 +361,7 @@
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\DynamicRendering.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\RenderPassJob.h" />
+    <ClInclude Include="source\equinox\renderer\RenderBackend.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -454,9 +449,6 @@
     <ClCompile Include="source\equinox\renderer\Renderer.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\RendererAPI.cpp">
-      <Filter>equinox\renderer</Filter>
-    </ClCompile>
     <ClCompile Include="source\equinox\renderer\Shader.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
@@ -476,9 +468,6 @@
       <Filter>equinox\renderer\backend\opengl</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\opengl\GLMesh.cpp">
-      <Filter>equinox\renderer\backend\opengl</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\backend\opengl\GLRendererAPI.cpp">
       <Filter>equinox\renderer\backend\opengl</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\opengl\GLShader.cpp">
@@ -502,7 +491,7 @@
     <ClCompile Include="source\equinox\renderer\backend\vulkan\UploadContext.cpp">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\backend\vulkan\VKRendererAPI.cpp">
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanBackend.cpp">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\vulkan\VulkanAllocator.cpp">
@@ -577,5 +566,6 @@
     <ClCompile Include="source\equinox\window\Window.cpp">
       <Filter>equinox\window</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\RenderBackend.cpp" />
   </ItemGroup>
 </Project>

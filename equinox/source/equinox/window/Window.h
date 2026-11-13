@@ -1,7 +1,7 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
-#include "equinox/renderer/RendererAPI.h"
+#include "equinox/renderer/RenderBackend.h"
 
 #include <functional>
 #include <memory>
@@ -20,7 +20,7 @@ namespace Equinox
         // OpenGL windows get a GL context (GLFW default client API + 4.6
         // core profile); Vulkan windows stay context-less (GLFW_NO_API).
         // Default: Vulkan (Equinox's main API).
-        RendererAPI::API rendererAPI = RendererAPI::API::Vulkan;
+        RenderBackend::API rendererAPI = RenderBackend::API::Vulkan;
     };
 
     class Window

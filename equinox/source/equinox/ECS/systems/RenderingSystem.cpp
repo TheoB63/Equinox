@@ -6,7 +6,7 @@
 #include "equinox/core/Profiler.h"
 #include "equinox/ECS/Components.h"
 #include "equinox/renderer/Renderer.h"
-#include "equinox/renderer/backend/vulkan/VKRendererAPI.h"
+#include "equinox/renderer/backend/vulkan/VulkanBackend.h"
 #include "equinox/renderer/backend/vulkan/VulkanContext.h"
 #include "equinox/renderer/backend/vulkan/VulkanTexture.h"
 #include "equinox/renderer/backend/vulkan/VulkanBuffer.h"
@@ -16,9 +16,6 @@
 #include "equinox/renderer/Buffer.h"
 #include "equinox/resources/FileSystem.h"
 #include "equinox/renderer/ShaderCompiler.h"
-#include "equinox/renderer/backend/opengl/GLRendererAPI.h"
-#include "equinox/renderer/backend/opengl/GLTexture.h"
-#include "equinox/renderer/backend/opengl/GLTriangleShader.h"
 
 #include <fstream>
 #include <backends/imgui_impl_vulkan.h>
@@ -32,7 +29,7 @@ namespace Equinox
 		// Initialize Frame Allocator (1MB should be enough for command lists for now)
 		m_FrameAllocator = std::make_unique<LinearAllocator>(1 * Memory::MB);
 
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
 		{
 			// Create Scene Color Texture
 			m_SceneColor = Texture::Create(viewportWidth, viewportHeight, TextureFormat::RGBA8);
@@ -151,21 +148,9 @@ void main() {
 
 			m_TrianglePipeline = std::make_unique<VKPipeline>(config, vertSpv, fragSpv, layouts);
 		}
-		else if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		else if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::OpenGL)
 		{
-			// [OP] Dual-backend: OpenGL mirror of the Vulkan PoC
-			//
-			//  Vulkan : SceneColor = VKTexture + VKPipeline(triangle SPIR-V)
-			//  OpenGL : SceneColor = GLTexture + GL framebuffer + GLSL program
-			//
-			// The scene is rendered to the SceneColor target (offscreen) on
-			// both backends; the ImGui UI is rendered on the backbuffer.
-
-			m_SceneColor = Texture::Create(viewportWidth, viewportHeight, TextureFormat::RGBA8);
-			CreateGLSceneFramebuffer(viewportWidth, viewportHeight);
-
-			// GL mirror of equinox/assets/shaders/triangle.{vert,frag}
-			m_TriangleGLShader = std::make_unique<GLShader>(GLTriangleShader::Vertex, GLTriangleShader::Fragment);
+			// OpenGL is deprecated, we will just render the scene to the SceneColor target and then render ImGui on top of it.
 		}
 	}
 
@@ -249,11 +234,8 @@ void main() {
 		// -----------------------------------------------------------------
 		// Render Graph Test (Proof of Concept)
 		// -----------------------------------------------------------------
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
 		{
-			if (!Renderer::BeginFrame())
-				return;
-
 			UpdateGlobalUniforms();
 
 			RG::RenderGraph rg(*m_FrameAllocator);
@@ -263,79 +245,12 @@ void main() {
 
 			rg.Compile();
 			Renderer::ExecuteGraph(rg);
-			Renderer::EndFrame();
 
 			return;
 		}
-		else if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		else if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::OpenGL)
 		{
-			if (!Renderer::BeginFrame())
-				return;
-
-			// -------------------------------------------------------------
-			// [OP] Dual-backend: OpenGL mirror of the Vulkan RenderGraph
-			// passes (same semantics, GL calls instead of Vulkan commands):
-			//
-			//   GeometryPass -> scene rendered into the SceneColor target
-			//   ImGuiPass    -> ImGui drawdata rendered on the backbuffer
-			// -------------------------------------------------------------
-
-			auto* glRenderer = static_cast<GLRendererAPI*>(Renderer::GetRendererAPI());
-			// [OP] Detached ImGui platform windows (App::Run) may have switched
-			// the current GL context: make sure the main window's context is current.
-			glfwMakeContextCurrent(glRenderer->GetWindow());
-
-			u32 w = m_SceneColor->GetWidth();
-			u32 h = m_SceneColor->GetHeight();
-
-			// --- GeometryPass (scene -> SceneColor) ----------------------
-			glBindFramebuffer(GL_FRAMEBUFFER, m_SceneFBO);
-			glViewport(0, 0, (int)w, (int)h);
-			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			m_TriangleGLShader->Bind();
-
-			// Draw the entities (same entity list as the Vulkan pass; the
-			// PoC shader ignores the model matrix on both backends)
-			auto view = registry.view<Transform, MeshRenderer>();
-			for (auto [entity, transform, meshRenderer] : view.each())
-			{
-				auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID);
-				if (!model) continue;
-
-				auto mesh = model->GetMesh(meshRenderer.MeshIndex);
-				if (!mesh) continue;
-
-				// Wrap the mesh in a GLMesh (VAO), cached per mesh
-				auto it = m_GLMeshes.find(mesh.get());
-				if (it == m_GLMeshes.end())
-				{
-					it = m_GLMeshes.emplace(mesh.get(),
-						std::make_shared<GLMesh>(mesh->GetVertexBuffer(), mesh->GetIndexBuffer())).first;
-				}
-
-				it->second->Bind();
-				it->second->Draw();
-			}
-
-			m_TriangleGLShader->Unbind();
-
-			// --- ImGuiPass (backbuffer) -----------------------------------
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-			int fbW = 0, fbH = 0;
-			glfwGetFramebufferSize(glRenderer->GetWindow(), &fbW, &fbH);
-			glViewport(0, 0, fbW, fbH);
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			// Drawdata was generated by Editor::EndFrame (CPU) - submit it
-			// now, on top of the scene
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-			Renderer::EndFrame(); // present (swap buffers)
-			return;
+			// OpenGL is deprecated, we will just render the scene to the SceneColor target and then render ImGui on top of it.
 		}
 	}
 
@@ -357,11 +272,6 @@ void main() {
 				desc.height = m_SceneColor->GetHeight();
 				desc.format = RG::TextureFormat::RGBA8_Unorm;
 
-				// We create a new transient resource for the scene color
-				// The m_SceneColor member is just a placeholder for size/format now
-				// Actually, we want to output to a texture that we can display in ImGui
-				// For now, let's use a transient one and assume ImGui pass consumes it
-
 				data.outputTex = builder.CreateTexture(desc);
 
 				RG::TextureDesc depthDesc;
@@ -372,8 +282,7 @@ void main() {
 
 				data.depthTex = builder.CreateTexture(depthDesc);
 
-				// Declare writes (Render Targets)
-				data.depthTex = builder.Write(data.depthTex);
+				data.depthTex = builder.Write(data.depthTex); // Use WriteDepth
 
 				data.outputTex = builder.Write(data.outputTex);
 
@@ -382,9 +291,6 @@ void main() {
 			[this, &registry](GeometryPassData& data, RG::RenderPassContext& ctx)
 			{
 				VkCommandBuffer cmd = ctx.commandBuffer;
-				// We don't need to do BeginRendering here anymore!
-				// The RenderGraph Executor handles it via Dynamic Rendering inheritance.
-				// We just bind pipeline and draw.
 
 				m_TrianglePipeline->Bind(cmd);
 
@@ -393,7 +299,6 @@ void main() {
 				VkDescriptorSet bindlessSet = VulkanContext::Get().GetBindlessSet().GetSet();
 				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline->GetLayout(), 1, 1, &bindlessSet, 0, nullptr);
 
-				// Viewport/Scissor are dynamic state
 				RG::RenderGraph::ResourceNode* res = (RG::RenderGraph::ResourceNode*)ctx.GetResource(data.outputTex);
 
 				VkViewport viewport{};
@@ -422,9 +327,8 @@ void main() {
 
 					ObjectPushConstants pc{};
 					pc.modelMatrix = worldTransform.Matrix;
-					pc.albedoMapIndex = 0; // Default to 0 (white texture usually)
+					pc.albedoMapIndex = 0;
 
-					// Get Material
 					if (meshRenderer.MaterialUUID.IsValid())
 					{
 						auto material = AssetManager::GetAsset<Material>(meshRenderer.MaterialUUID);
@@ -461,15 +365,30 @@ void main() {
 		rg.AddPass<ImGuiPassData>("ImGuiPass",
 			[&](ImGuiPassData& data, RG::RenderPassBuilder& builder)
 			{
-				auto* vkRenderer = static_cast<VKRendererAPI*>(Renderer::GetRendererAPI());
+				auto* vkRenderer = static_cast<VulkanBackend*>(Renderer::GetBackend());
 				VkImage swapchainImage = vkRenderer->GetSwapchain().GetImage(vkRenderer->GetSwapchain().GetCurrentFrameIndex());
 				VkImageView swapchainView = vkRenderer->GetSwapchain().GetImageView(vkRenderer->GetSwapchain().GetCurrentFrameIndex());
+				VkFormat swapchainFormat = vkRenderer->GetSwapchain().GetImageFormat(); // Get actual format
 
 				RG::TextureDesc desc;
 				desc.name = "Backbuffer";
 				desc.width = vkRenderer->GetSwapchain().GetExtent().width;
 				desc.height = vkRenderer->GetSwapchain().GetExtent().height;
-				desc.format = RG::TextureFormat::RGBA8_Unorm;
+
+				// Map Vulkan format to TextureFormat
+				// This is a bit hacky, we should probably store VkFormat in TextureDesc if we want full flexibility
+				// But for now, let's assume RGBA8_Unorm maps to whatever the swapchain is if we handle it in RenderGraph
+				// OR we add a new format enum for Swapchain?
+				// Let's stick to RGBA8_Unorm but ensure RenderGraph knows how to handle it.
+				// Actually, RenderGraph uses TextureFormat to determine VkFormat.
+				// If we pass RGBA8_Unorm, RenderGraph uses VK_FORMAT_R8G8B8A8_UNORM.
+				// But Swapchain is B8G8R8A8_UNORM.
+				// So we need to tell RenderGraph the correct format.
+				// We need to add BGRA8 to TextureFormat.
+
+				// For now, I will assume RenderGraph has been updated to handle this or I will update RenderGraphResources.h
+				// Let's update RenderGraphResources.h to include BGRA8_Unorm.
+				desc.format = RG::TextureFormat::BGRA8_Unorm;
 
 				data.backbuffer = rg.ImportResource(desc,
 					(void*)swapchainImage,
@@ -486,20 +405,8 @@ void main() {
 			[&](ImGuiPassData& data, RG::RenderPassContext& ctx)
 			{
 				VkCommandBuffer cmd = ctx.commandBuffer;
-				
-				// ImGui Pass is also a Render Pass, so we don't need BeginRendering
-				// BUT ImGui_ImplVulkan_RenderDrawData expects to be inside a render pass.
-				// Since we are using dynamic rendering inheritance, it should work if ImGui is configured correctly.
-				// Note: ImGui_ImplVulkan_InitInfo needs check_vk_result etc.
-				// And we need to ensure ImGui knows we are using dynamic rendering.
 
-				// For now, just draw.
 				ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
-
-				// Note: We need to update the ScenePanel with the texture ID from the graph
-				// This is tricky because the texture ID changes every frame (transient).
-				// We need a way to pass the descriptor set to ImGui.
-				// For this test, we skip displaying the scene texture in the panel and just render the UI.
 			}
 		);
 	}
@@ -508,13 +415,12 @@ void main() {
 	{
 		if (m_SceneColor && width > 0 && height > 0)
 		{
-			// Recreate texture
 			m_SceneColor = Texture::Create(width, height, TextureFormat::RGBA8);
 		}
 
 		// [OP] Dual-backend: recreate the OpenGL scene framebuffer with the
 		// new color attachment + depth size
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL && m_SceneColor && width > 0 && height > 0)
+		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::OpenGL && m_SceneColor && width > 0 && height > 0)
 		{
 			RecreateGLSceneFramebuffer(width, height);
 		}
@@ -526,18 +432,7 @@ void main() {
 
 	void RenderingSystem::CreateGLSceneFramebuffer(u32 width, u32 height)
 	{
-		auto glTex = std::static_pointer_cast<GLTexture>(m_SceneColor);
-
-		glGenFramebuffers(1, &m_SceneFBO);
-		glGenRenderbuffers(1, &m_SceneDepthRBO);
-
-		glBindRenderbuffer(GL_RENDERBUFFER, m_SceneDepthRBO);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, (GLsizei)width, (GLsizei)height);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, m_SceneFBO);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glTex->GetRendererID(), 0);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_SceneDepthRBO);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// OpenGL is deprecated, but we will create a framebuffer for the scene rendering to a texture, which will then be used in ImGui.
 	}
 
 	void RenderingSystem::DestroyGLSceneFramebuffer()

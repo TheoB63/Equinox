@@ -4,7 +4,7 @@
 #include "equinox/resources/AssetDatabase.h"
 #include "equinox/resources/AssetManager.h"
 #include "equinox/renderer/Renderer.h"
-#include "equinox/renderer/RendererAPI.h"
+#include "equinox/renderer/RenderBackend.h"
 #include "equinox/renderer/backend/vulkan/VulkanTexture.h"
 #include "equinox/renderer/backend/vulkan/VulkanContext.h"
 #include "equinox/utils/EquinoxIcons.h"
@@ -273,7 +273,7 @@ namespace Equinox::UI
 	{
 		if (!texture) return 0;
 
-		if (Renderer::GetAPI() == RendererAPI::API::Vulkan)
+		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
 		{
 			// Simple cache for ImGui Descriptors
 			// Key: Texture Pointer (void*), Value: { DescriptorSet, WeakPtr }
