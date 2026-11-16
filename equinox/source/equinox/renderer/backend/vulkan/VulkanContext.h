@@ -1,6 +1,8 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+#include "equinox/core/FrameData.h"
+
 #include "equinox/renderer/backend/vulkan/VulkanDescriptors.h"
 #include "equinox/renderer/rendergraph/RenderResourceCache.h"
 
@@ -87,7 +89,8 @@ namespace Equinox
 		{
 			std::deque<std::function<void()>> deletors;
 		};
-		static constexpr u32 MAX_FRAMES_IN_FLIGHT = 2;
+
+		// Uses global MAX_FRAMES_IN_FLIGHT from FrameData.h
 		DeletionQueue m_DeletionQueues[MAX_FRAMES_IN_FLIGHT];
 		u32 m_CurrentFrameIndex = 0;
 	};
