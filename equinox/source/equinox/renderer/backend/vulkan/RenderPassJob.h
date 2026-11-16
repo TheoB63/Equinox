@@ -2,7 +2,6 @@
 
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/core/JobSystem.h"
-#include "equinox/core/FrameData.h"
 
 #include "DynamicRendering.h"
 #include "CommandAllocatorPool.h"
@@ -15,12 +14,13 @@ namespace Equinox
 	// ===================================================================================
 	// Render Pass Job
 	// ===================================================================================
-	// A job that records commands into a secondary command buffer.
-	// It uses Dynamic Rendering to avoid VkRenderPass objects.
+	// Records commands into a secondary command buffer on a worker thread.
+	// Used by RenderGraph::Execute() — the executor collects the CommandBuffer
+	// after WaitForCounter, so no TargetFrame push is needed.
 
 	struct RenderPassJob
 	{
-		// Flattened Pass Info for easier access
+		// Attachment metadata for inheritance info
 		std::span<AttachmentInfo> ColorAttachments;
 		AttachmentInfo DepthAttachment;
 		bool HasDepth = false;
@@ -30,12 +30,9 @@ namespace Equinox
 		// Output: The recorded command buffer
 		VkCommandBuffer CommandBuffer = VK_NULL_HANDLE;
 
-		// Pointer to the FrameContext to push the result to
-		FrameContext* TargetFrame = nullptr;
-
 		static void Execute(RenderPassJob* job)
 		{
-			// 1. Acquire Command Buffer
+			// 1. Acquire Command Buffer from per-thread pool
 			auto* ctx = JobSystem::GetCurrentJobContext();
 			if (!ctx->CommandPool) return;
 
@@ -52,7 +49,6 @@ namespace Equinox
 
 			VkCommandBufferInheritanceRenderingInfo renderingInheritanceInfo{};
 			renderingInheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
-			renderingInheritanceInfo.flags = 0;
 			renderingInheritanceInfo.viewMask = 0;
 			renderingInheritanceInfo.colorAttachmentCount = (u32)colorFormats.size();
 			renderingInheritanceInfo.pColorAttachmentFormats = colorFormats.data();
@@ -85,13 +81,7 @@ namespace Equinox
 			// 5. End Recording
 			vkEndCommandBuffer(cmd);
 
-			// 6. Push to FrameContext (Thread-Safe via SpinLock)
-			if (job->TargetFrame)
-			{
-				job->TargetFrame->AddCommandBuffer(cmd);
-			}
-
-			// 7. Release Allocator back to pool
+			// 6. Release Allocator back to pool
 			ctx->CommandPool->Release(allocator);
 		}
 	};
