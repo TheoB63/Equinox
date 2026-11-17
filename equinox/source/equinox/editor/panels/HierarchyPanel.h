@@ -2,8 +2,8 @@
 
 #include "equinox/editor/Editor.h"
 #include "equinox/core/UUID.h"
-#include "equinox/ECS/Entity.h"
-#include "equinox/ECS/Scene.h"
+#include "equinox/scene/Entity.h"
+#include "equinox/scene/Scene.h"
 
 #include <functional>
 

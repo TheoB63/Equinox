@@ -1,11 +1,15 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/editor/panels/InspectorPanel.h"
-#include "equinox/ECS/Components.h"
-#include "equinox/ECS/Systems.h"
+
+#include "equinox/scene/Components.h"
+#include "equinox/scene/Systems.h"
+
 #include "equinox/utils/EquinoxIcons.h"
+
 #include "equinox/resources/AssetManager.h"
 #include "equinox/resources/AssetDatabase.h"
+
 #include "equinox/renderer/Model.h"
 
 #include <imgui.h>
@@ -13,6 +17,8 @@
 
 namespace Equinox
 {
+	using namespace Component;
+
 	HierarchyPanel::HierarchyPanel()
 	{
 		EQN_CORE_INFO("Created Hierarchy panel");

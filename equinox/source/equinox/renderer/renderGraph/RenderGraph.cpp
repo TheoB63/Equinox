@@ -57,7 +57,7 @@ namespace Equinox::RG
 	// RenderGraph — Construction & Registration
 	// ===================================================================================
 
-	RenderGraph::RenderGraph(LinearAllocator& allocator)
+	RenderGraph::RenderGraph(Memory::LinearAllocator& allocator)
 		: m_Allocator(allocator)
 	{
 		m_Passes.reserve(64);

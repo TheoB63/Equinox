@@ -1,13 +1,14 @@
 #include "eqnpch.h"
 #include "ProfilerPanel.h"
 
-#include "equinox/core/JobSystem.h"
+#include "equinox/jobs/JobSystem.h"
+
 #include "equinox/core/Time.h"
 
 #include "equinox/renderer/backend/vulkan/VulkanAllocator.h"
 
-#include "equinox/ECS/Systems.h"
-#include "equinox/ECS/systems/RenderingSystem.h"
+#include "equinox/scene/Systems.h"
+#include "equinox/scene/systems/RenderingSystem.h"
 
 #include "equinox/resources/AssetManager.h"
 

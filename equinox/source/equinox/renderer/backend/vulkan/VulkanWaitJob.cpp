@@ -1,8 +1,11 @@
 #include "eqnpch.h"
 #include "VulkanWaitJob.h"
 #include "TimelineSemaphore.h"
-#include "equinox/core/JobSystem.h"
+
+#include "equinox/jobs/JobSystem.h"
+
 #include "equinox/core/Log.h"
+
 #include <thread>
 
 namespace Equinox

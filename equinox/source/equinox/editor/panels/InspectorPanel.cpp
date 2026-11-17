@@ -3,7 +3,7 @@
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/editor/UI.h"
 
-#include "equinox/ECS/Components.h"
+#include "equinox/scene/Components.h"
 
 #include "equinox/resources/AssetDatabase.h"
 #include "equinox/resources/AssetManager.h"
@@ -18,6 +18,8 @@
 
 namespace Equinox
 {
+	using namespace Component;
+
 	InspectorPanel::InspectorPanel()
 	{
 		EQN_CORE_INFO("Created Inspector panel");

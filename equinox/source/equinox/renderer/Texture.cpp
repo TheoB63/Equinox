@@ -1,7 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/renderer/Texture.h"
 #include "equinox/renderer/backend/vulkan/VulkanTexture.h"
-#include "equinox/renderer/backend/opengl/GLTexture.h"
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/RenderBackend.h"
 
@@ -11,8 +10,6 @@ namespace Equinox
     {
         switch (Renderer::GetBackend()->GetAPI()) {
             case RenderBackend::API::Vulkan: return std::make_shared<VKTexture>(path);
-            // [OP] Dual-backend: OpenGL texture implementation
-            case RenderBackend::API::OpenGL: return std::make_shared<GLTexture>(path);
             default:
                 EQN_CORE_ASSERT(false, "Unknown RenderBackend!");
                 return nullptr;
@@ -28,8 +25,6 @@ namespace Equinox
 
         switch (Renderer::GetBackend()->GetAPI()) {
             case RenderBackend::API::Vulkan: return std::make_shared<VKTexture>(width, height, format, data);
-            // [OP] Dual-backend: OpenGL texture implementation
-            case RenderBackend::API::OpenGL: return std::make_shared<GLTexture>(width, height, format, data);
             default:
                 EQN_CORE_ASSERT(false, "Unknown RenderBackend!");
                 return nullptr;

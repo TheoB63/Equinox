@@ -2,7 +2,7 @@
 
 #include "equinox/editor/Editor.h"
 #include "equinox/core/UUID.h"
-#include "equinox/ECS/Entity.h"
+#include "equinox/scene/Entity.h"
 
 namespace Equinox
 {

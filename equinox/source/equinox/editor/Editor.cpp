@@ -1,10 +1,10 @@
 #include "eqnpch.h"
 #include "equinox/editor/Editor.h"
 
-#include "equinox/window/WinWindow.h"
+#include "equinox/platform/WinWindow.h"
 
-#include "equinox/ECS/Systems.h"
-#include "equinox/ECS/systems/RenderingSystem.h"
+#include "equinox/scene/Systems.h"
+#include "equinox/scene/systems/RenderingSystem.h"
 
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/RenderBackend.h"
@@ -106,15 +106,6 @@ namespace Equinox
 			// Upload Fonts
 			ImGui_ImplVulkan_CreateFontsTexture();
 		}
-		else if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::OpenGL)
-		{
-			// [OP] Dual-backend: ImGui OpenGL3 backend (GLSL 460 core,
-			// matching the window context requested in WinWindow)
-			EQN_CORE_TRACE(" - Initialized ImGui GLFW/OpenGL3 backend");
-			ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)window->GetNativeWindow(), true);
-			ImGui_ImplOpenGL3_Init("#version 460");
-			ImGui_ImplOpenGL3_CreateFontsTexture();
-		}
 
 		auto rs = Systems::GetSystem<RenderingSystem>();
 
@@ -143,14 +134,6 @@ namespace Equinox
 			ImGui_ImplGlfw_Shutdown();
 			ImGui::DestroyContext();
 		}
-		else if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::OpenGL)
-		{
-			// [OP] Dual-backend: shutdown the ImGui OpenGL3 backend
-			ImGui_ImplOpenGL3_DestroyFontsTexture();
-			ImGui_ImplOpenGL3_Shutdown();
-			ImGui_ImplGlfw_Shutdown();
-			ImGui::DestroyContext();
-		}
 
 		s_Context = nullptr;
 		EQN_CORE_INFO("Editor system shutdown completed");
@@ -161,13 +144,6 @@ namespace Equinox
 		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
 		{
 			ImGui_ImplVulkan_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-		}
-		else if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::OpenGL)
-		{
-			// [OP] Dual-backend: OpenGL ImGui frame (input + NewFrame)
-			ImGui_ImplOpenGL3_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
 		}
@@ -189,14 +165,6 @@ namespace Equinox
 			// NOTE: We removed the immediate rendering here because it's now handled by RenderingSystem::AddImGuiPass
 			// inside the RenderGraph execution.
 			// So Editor::EndFrame just finalizes the ImGui frame data.
-		}
-		else if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::OpenGL)
-		{
-			// [OP] Dual-backend: generate the drawdata now; the actual GPU
-			// submission (ImGui_ImplOpenGL3_RenderDrawData) happens in the
-			// OpenGL pass of RenderingSystem, after the scene is drawn so
-			// the UI ends up on top.
-			ImGui::Render();
 		}
 	}
 

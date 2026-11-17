@@ -3,8 +3,9 @@
 #include "equinox/renderer/rendergraph/RenderGraphResources.h"
 #include "equinox/renderer/backend/vulkan/DynamicRendering.h"
 
-#include "equinox/core/Memory.h"
-#include "equinox/core/JobSystem.h"
+#include "equinox/memory/Memory.h"
+
+#include "equinox/jobs/JobSystem.h"
 
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -135,7 +136,7 @@ namespace Equinox::RG
 		};
 
 	public:
-		RenderGraph(LinearAllocator& allocator);
+		RenderGraph(Memory::LinearAllocator& allocator);
 		~RenderGraph() = default;
 
 		template <typename Data, typename SetupFunc, typename ExecuteFunc>
@@ -187,7 +188,7 @@ namespace Equinox::RG
 		std::vector<ResourceNode>& GetResources() { return m_Resources; }
 
 	private:
-		LinearAllocator& m_Allocator;
+		Memory::LinearAllocator& m_Allocator;
 		std::vector<PassNode> m_Passes;
 		std::vector<ResourceNode> m_Resources;
 

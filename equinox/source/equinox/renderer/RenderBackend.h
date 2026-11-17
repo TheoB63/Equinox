@@ -11,7 +11,6 @@ namespace Equinox
         enum class API
         {
             None = 0,
-            OpenGL,
             Vulkan
         };
 

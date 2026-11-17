@@ -1,16 +1,21 @@
 #include "eqnpch.h"
+
 #include "equinox/editor/panels/ScenePanel.h"
 #include "equinox/editor/panels/RenderPanel.h"
 #include "equinox/editor/panels/HierarchyPanel.h"
-#include "equinox/ECS/Components.h"
+
+#include "equinox/scene/Components.h"
+
 #include "equinox/renderer/Renderer.h"
-#include "equinox/renderer/Framebuffer.h"
-#include "equinox/events/RenderEvent.h"
+
+#include "equinox/platform/RenderEvent.h"
+
 #include "equinox/utils/ImGuiUtils.h"
 #include "equinox/utils/EquinoxIcons.h"
+
 #include "equinox/renderer/backend/vulkan/VulkanTexture.h"
 #include "equinox/renderer/backend/vulkan/VulkanContext.h"
-#include "equinox/renderer/backend/opengl/GLTexture.h"
+
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -18,6 +23,8 @@
 
 namespace Equinox
 {
+	using namespace Component;
+
 	ScenePanel::ScenePanel(std::shared_ptr<RenderingSystem> renderingSystem)
 		: m_RenderingSystem(renderingSystem)
 	{
@@ -86,12 +93,6 @@ namespace Equinox
 					}
 
 					ImGui::Image((ImTextureID)ds, ToImVec2(m_ViewportSize), { 0, 0 }, { 1, 1 });
-				}
-				else if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::OpenGL)
-				{
-					// [OP] Dual-backend: in OpenGL the texture id IS the ImGui id
-					auto glTex = std::static_pointer_cast<GLTexture>(texture);
-					ImGui::Image((ImTextureID)glTex->GetRendererID(), ToImVec2(m_ViewportSize), { 0, 0 }, { 1, 1 });
 				}
 			}
 			else

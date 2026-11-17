@@ -2,8 +2,8 @@
 
 #include "equinox/core/EquinoxTypes.h"
 #include "equinox/resources/Asset.h"
-#include "equinox/utils/ImageUtils.h"
 
+#include <stb/stb_image.h>
 #include <memory>
 
 namespace Equinox

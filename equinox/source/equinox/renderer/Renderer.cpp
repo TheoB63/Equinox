@@ -5,7 +5,7 @@
 #include "equinox/renderer/backend/vulkan/CommandAllocatorPool.h"
 #include "equinox/renderer/backend/vulkan/VulkanBackend.h"
 
-#include "equinox/core/JobSystem.h"
+#include "equinox/jobs/JobSystem.h"
 
 namespace Equinox
 {

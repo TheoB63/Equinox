@@ -1,8 +1,10 @@
 #pragma once
 
-#include "equinox/core/EquinoxTypes.h"
-#include "equinox/core/SpinLock.h"
 #include "CommandAllocator.h"
+
+#include "equinox/core/EquinoxTypes.h"
+
+#include "equinox/jobs/SpinLock.h"
 
 #include <vulkan/vulkan.h>
 #include <vector>

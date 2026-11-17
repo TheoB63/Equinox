@@ -1,10 +1,11 @@
 #pragma once
 
-#include "equinox/core/EquinoxTypes.h"
-#include "equinox/core/JobSystem.h"
-
 #include "DynamicRendering.h"
 #include "CommandAllocatorPool.h"
+
+#include "equinox/core/EquinoxTypes.h"
+
+#include "equinox/jobs/JobSystem.h"
 
 #include <functional>
 #include <span>

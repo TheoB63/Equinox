@@ -7,9 +7,7 @@
 #include "equinox/core/Time.h"
 #include "equinox/core/UUID.h"
 
-#include "equinox/utils/ImageUtils.h"
-
-#include "equinox/input/Input.h"
+#include "equinox/platform/Input.h"
 #include "equinox/editor/Editor.h"
 
 #include "equinox/resources/FileSystem.h"

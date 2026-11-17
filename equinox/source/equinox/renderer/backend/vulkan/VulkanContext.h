@@ -1,8 +1,8 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
-#include "equinox/core/FrameData.h"
 
+#include "equinox/renderer/FrameData.h"
 #include "equinox/renderer/backend/vulkan/VulkanDescriptors.h"
 #include "equinox/renderer/rendergraph/RenderResourceCache.h"
 

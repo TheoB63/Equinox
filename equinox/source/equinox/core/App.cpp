@@ -1,11 +1,10 @@
 #include "eqnpch.h"
 #include "equinox/core/App.h"
 
-#include "equinox/window/Window.h"
-#include "equinox/input/Input.h"
-
-#include "equinox/events/Event.h"
-#include "equinox/events/AppEvent.h"
+#include "equinox/platform/Window.h"
+#include "equinox/platform/Input.h"
+#include "equinox/platform/Event.h"
+#include "equinox/platform/AppEvent.h"
 
 #include "equinox/resources/FileSystem.h"
 #include "equinox/resources/MetaFile.h"
@@ -15,14 +14,15 @@
 #include "equinox/editor/Editor.h"
 #include "equinox/editor/panels/ScenePanel.h"
 
-#include "equinox/ECS/Systems.h"
-#include "equinox/ECS/systems/TransformSystem.h"
-#include "equinox/ECS/systems/RenderingSystem.h"
+#include "equinox/scene/Systems.h"
+#include "equinox/scene/systems/TransformSystem.h"
+#include "equinox/scene/systems/RenderingSystem.h"
 
-#include "equinox/core/JobSystem.h"
-#include "equinox/core/JobSystemTests.h"
 #include "equinox/core/Profiler.h"
-#include "equinox/core/IOThread.h"
+
+#include "equinox/jobs/JobSystem.h"
+#include "equinox/jobs/JobSystemTests.h"
+#include "equinox/jobs/IOThread.h"
 
 #include "equinox/renderer/Renderer.h"
 
@@ -216,12 +216,7 @@ namespace Equinox
 		for (int i = 1; i < argc; ++i)
 		{
 			std::string arg = argv[i];
-			if (arg == "--opengl")
-			{
-				spec.rendererAPI = RenderBackend::API::OpenGL;
-				break;
-			}
-			else if (arg == "--vulkan")
+			if (arg == "--vulkan")
 			{
 				spec.rendererAPI = RenderBackend::API::Vulkan;
 				break;
@@ -242,8 +237,6 @@ namespace Equinox
 		// [OP] Dual-backend: show the active renderer API in the title
 		switch (ws.rendererAPI)
 		{
-		case RenderBackend::API::OpenGL: title += " [OpenGL]";
-			break;
 		case RenderBackend::API::Vulkan: title += " [Vulkan]";
 			break;
 		default: title += " [Unknown API]";

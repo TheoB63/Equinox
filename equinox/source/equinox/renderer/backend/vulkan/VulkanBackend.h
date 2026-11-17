@@ -1,5 +1,7 @@
+#pragma once
+
 #include "equinox/renderer/RenderBackend.h"
-#include "equinox/core/FrameData.h"
+#include "equinox/renderer/FrameData.h"
 
 #include "VulkanSwapchain.h"
 #include "TimelineSemaphore.h"

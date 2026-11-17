@@ -1,8 +1,9 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
+
 #include "equinox/renderer/RenderBackend.h"
-#include "equinox/core/FrameData.h"
+#include "equinox/renderer/FrameData.h"
 
 #include <memory>
 

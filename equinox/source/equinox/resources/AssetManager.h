@@ -1,10 +1,12 @@
 #pragma once
 
 #include "equinox/core/UUID.h"
+#include "equinox/core/Time.h"
+
 #include "equinox/resources/Asset.h"
 #include "equinox/resources/AssetImporter.h"
-#include "equinox/core/JobSystem.h"
-#include "equinox/core/Time.h"
+
+#include "equinox/jobs/JobSystem.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -15,66 +17,66 @@
 
 namespace Equinox
 {
-    class AssetManager
-    {
-    public:
-        static void Init();
-        static void Shutdown();
-        
-        // Main Thread: Process upload queue (CPU -> GPU)
-        static void Update(); 
+	class AssetManager
+	{
+	public:
+		static void Init();
+		static void Shutdown();
 
-        // Thread-safe retrieval. Returns nullptr or placeholder if not loaded.
-        template<typename T>
-        static std::shared_ptr<T> GetAsset(UUID handle)
-        {
-            std::lock_guard<std::mutex> lock(s_AssetMutex);
-            auto it = s_Assets.find(handle);
-            if (it != s_Assets.end()) 
-            {
-                it->second->LastAccessedTime = Time::GetTime();
-                return std::static_pointer_cast<T>(it->second);
-            }
-            return nullptr;
-        }
+		// Main Thread: Process upload queue (CPU -> GPU)
+		static void Update();
 
-        // Triggers background loading via JobSystem
-        static void LoadAsync(UUID handle);
+		// Thread-safe retrieval. Returns nullptr or placeholder if not loaded.
+		template<typename T>
+		static std::shared_ptr<T> GetAsset(UUID handle)
+		{
+			std::lock_guard<std::mutex> lock(s_AssetMutex);
+			auto it = s_Assets.find(handle);
+			if (it != s_Assets.end())
+			{
+				it->second->LastAccessedTime = Time::GetTime();
+				return std::static_pointer_cast<T>(it->second);
+			}
+			return nullptr;
+		}
 
-        // Blocking load (Main Thread). Used by Editor for immediate instantiation.
-        static std::shared_ptr<Asset> LoadImmediate(UUID handle);
+		// Triggers background loading via JobSystem
+		static void LoadAsync(UUID handle);
 
-        // Forces regeneration of the artifact from source (Blocking)
-        static void Import(UUID handle);
+		// Blocking load (Main Thread). Used by Editor for immediate instantiation.
+		static std::shared_ptr<Asset> LoadImmediate(UUID handle);
 
-        // Check status
-        static bool IsLoaded(UUID handle);
-        static bool IsLoading(UUID handle);
+		// Forces regeneration of the artifact from source (Blocking)
+		static void Import(UUID handle);
 
-        // Unloads assets that are only referenced by the AssetManager
-        static void Trim();
+		// Check status
+		static bool IsLoaded(UUID handle);
+		static bool IsLoading(UUID handle);
 
-    private:
-        struct LoadRequest {
-            UUID Handle;
-            std::filesystem::path Path;
-            AssetType Type;
-        };
+		// Unloads assets that are only referenced by the AssetManager
+		static void Trim();
 
-        struct PendingUpload {
-            UUID Handle;
-            std::unique_ptr<AssetData> Data;
-            AssetType Type;
-        };
+	private:
+		struct LoadRequest {
+			UUID Handle;
+			std::filesystem::path Path;
+			AssetType Type;
+		};
 
-        static void LoadJob(JobSystem::JobArgs args);
+		struct PendingUpload {
+			UUID Handle;
+			std::unique_ptr<AssetData> Data;
+			AssetType Type;
+		};
 
-        static std::unordered_map<UUID, std::shared_ptr<Asset>, UUIDHash> s_Assets;
-        static std::unordered_set<UUID, UUIDHash> s_LoadingAssets;
-        static std::unordered_map<AssetType, std::unique_ptr<AssetImporter>> s_Importers;
-        
-        static std::mutex s_AssetMutex;
-        static std::mutex s_UploadMutex;
-        static std::vector<PendingUpload> s_UploadQueue;
-    };
+		static void LoadJob(JobSystem::JobArgs args);
+
+		static std::unordered_map<UUID, std::shared_ptr<Asset>, UUIDHash> s_Assets;
+		static std::unordered_set<UUID, UUIDHash> s_LoadingAssets;
+		static std::unordered_map<AssetType, std::unique_ptr<AssetImporter>> s_Importers;
+
+		static std::mutex s_AssetMutex;
+		static std::mutex s_UploadMutex;
+		static std::vector<PendingUpload> s_UploadQueue;
+	};
 }

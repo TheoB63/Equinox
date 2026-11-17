@@ -1,7 +1,7 @@
 #pragma once
 
 #include "equinox/core/EquinoxTypes.h"
-#include "equinox/window/Window.h"
+#include "equinox/platform/Window.h"
 
 #include <memory>
 #include <imgui.h>
