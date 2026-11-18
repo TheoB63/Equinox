@@ -43,7 +43,7 @@ namespace Equinox
 		m_GPUData.color = Get<glm::vec4>("u_Color", glm::vec4(1.0f));
 		m_GPUData.metalness = Get<float>("u_Metalness", 0.0f);
 		m_GPUData.roughness = Get<float>("u_Roughness", 0.5f);
-		m_GPUData.alphaCutoff = m_AlphaCutoff;
+		m_GPUData.alphaCutoff = (m_RenderMode == RenderMode::Cutout) ? m_AlphaCutoff : 0.0f;
 
 		// Flags, each bit indicates a valid texture is bound for that feature
 		m_GPUData.flags = 0;

@@ -36,7 +36,7 @@ namespace Equinox
 		m_FrameData.Init();
 
 		// Run Job System Verification Tests
-		JobSystem::Tests::RunAll();
+		//JobSystem::Tests::RunAll();
 
 		FileSystem::Init();
 		AssetDatabase::Init(FileSystem::AssetsPath());

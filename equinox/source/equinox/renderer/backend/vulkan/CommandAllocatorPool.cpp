@@ -27,6 +27,7 @@ namespace Equinox
 		for (CommandAllocator* allocator : m_AllAllocators)
 		{
 			vkDestroyCommandPool(m_Device, allocator->GetPool(), nullptr);
+			delete allocator;
 		}
 
 		m_AllAllocators.clear();
