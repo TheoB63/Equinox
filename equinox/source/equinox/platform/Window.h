@@ -28,6 +28,7 @@ namespace Equinox
 	public:
 		virtual ~Window() = default;
 
+		virtual void Shutdown() {}
 		virtual void OnUpdate() = 0;
 
 		virtual void SetVSync(bool enabled) = 0;

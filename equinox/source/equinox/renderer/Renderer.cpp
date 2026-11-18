@@ -4,6 +4,7 @@
 #include "equinox/renderer/rendergraph/RenderGraph.h"
 #include "equinox/renderer/backend/vulkan/CommandAllocatorPool.h"
 #include "equinox/renderer/backend/vulkan/VulkanBackend.h"
+#include "equinox/renderer/backend/vulkan/VulkanContext.h"
 
 #include "equinox/jobs/JobSystem.h"
 
@@ -28,6 +29,16 @@ namespace Equinox
 			s_Backend->Shutdown();
 			s_Backend.reset();
 		}
+	}
+
+	void Renderer::WaitForGPU()
+	{
+		vkDeviceWaitIdle(VulkanContext::Get().GetDevice());
+	}
+
+	void Renderer::FlushDeletionQueues()
+	{
+		VulkanContext::Get().FlushAllDeletionQueues();
 	}
 
 	void Renderer::SetFrameData(FrameData* frameData)

@@ -6,6 +6,7 @@
 #include "equinox/platform/Event.h"
 #include "equinox/platform/EventBus.h"
 
+#include <vulkan/vulkan.h>
 #include <ImGuizmo.h>
 
 namespace Equinox
@@ -68,6 +69,7 @@ namespace Equinox
 	{
 	public:
 		ScenePanel(std::shared_ptr<RenderingSystem> renderingSystem);
+		~ScenePanel() override;
 
 		void OnInit() override;
 		void OnRender() override;
@@ -90,6 +92,10 @@ namespace Equinox
 		Vec2 m_ViewportSize = { 0.0f, 0.0f };
 		bool m_IsFocused = false;
 		bool m_IsHovered = false;
+
+		// Scene viewport texture tracking (must not be static — leaks on shutdown)
+		VkDescriptorSet m_SceneDS = VK_NULL_HANDLE;
+		std::shared_ptr<Texture> m_LastSceneTex = nullptr;
 
 		// Gizmo state
 		Entity m_SelectedEntity;

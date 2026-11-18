@@ -22,6 +22,7 @@
 #include "equinox/editor/panels/ScenePanel.h"
 #include "equinox/editor/panels/RenderPanel.h"
 #include "equinox/editor/panels/ProfilerPanel.h"
+#include "equinox/editor/UI.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
@@ -32,6 +33,7 @@ namespace Equinox
 {
 	void Editor::Init(Window* window)
 	{
+		s_Window = window;
 		EQN_CORE_INFO("Initializing Equinox Editor");
 		IMGUI_CHECKVERSION();
 		EQN_CORE_TRACE(" - Initialized ImGui context for OpenGL");
@@ -84,6 +86,7 @@ namespace Equinox
 			pool_info.poolSizeCount = 1;
 			pool_info.pPoolSizes = pool_sizes;
 			vkCreateDescriptorPool(ctx.GetDevice(), &pool_info, nullptr, &init_info.DescriptorPool);
+			s_ImGuiPool = init_info.DescriptorPool;
 
 			init_info.Subpass = 0;
 			init_info.MinImageCount = 2;
@@ -127,15 +130,43 @@ namespace Equinox
 	{
 		EQN_CORE_TRACE("Cleaning up {} panels", s_Panels.size());
 		s_Panels.clear();
+		UI::ClearTextureCache();
 
-		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan) 
+		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
 		{
+			// Clear GLFW callbacks that forward to ImGui BEFORE destroying
+			// the backend. We installed these manually (install_callbacks=false),
+			// so ImGui_ImplGlfw_Shutdown won't remove them. Without this,
+			// Win32 focus messages during Vulkan teardown dispatch into freed
+			// ImGui backend data.
+			if (s_Window)
+			{
+				GLFWwindow* win = (GLFWwindow*)s_Window->GetNativeWindow();
+				if (win)
+				{
+					glfwSetWindowFocusCallback(win, nullptr);
+					glfwSetCursorEnterCallback(win, nullptr);
+					glfwSetKeyCallback(win, nullptr);
+					glfwSetMouseButtonCallback(win, nullptr);
+					glfwSetScrollCallback(win, nullptr);
+					glfwSetCursorPosCallback(win, nullptr);
+					glfwSetCharCallback(win, nullptr);
+				}
+			}
+
 			ImGui_ImplVulkan_Shutdown();
 			ImGui_ImplGlfw_Shutdown();
 			ImGui::DestroyContext();
+
+			if (s_ImGuiPool != VK_NULL_HANDLE)
+			{
+				vkDestroyDescriptorPool(VulkanContext::Get().GetDevice(), s_ImGuiPool, nullptr);
+				s_ImGuiPool = VK_NULL_HANDLE;
+			}
 		}
 
 		s_Context = nullptr;
+		s_Window = nullptr;
 		EQN_CORE_INFO("Editor system shutdown completed");
 	}
 

@@ -33,8 +33,27 @@ namespace Equinox
 		m_EditorCamera = EditorCamera(70, 1.77, 0.1, 10000);
 		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
-		EventBus::Subscribe<RenderResizeEvent>(BusType::MainThread, [this](Event& e) {
-			HandleRenderResize(e);
+		EventBus::Subscribe<RenderResizeEvent>(BusType::MainThread, [this](Event& e)
+			{
+				HandleRenderResize(e);
+			});
+	}
+
+	ScenePanel::~ScenePanel()
+	{
+		if (m_SceneDS)
+		{
+			ImGui_ImplVulkan_RemoveTexture(m_SceneDS);
+			m_SceneDS = VK_NULL_HANDLE;
+		}
+		m_LastSceneTex.reset();
+
+		m_EditorCamera = EditorCamera(70, 1.77, 0.1, 10000);
+		m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+		EventBus::Subscribe<RenderResizeEvent>(BusType::MainThread, [this](Event& e)
+			{
+				HandleRenderResize(e);
 			});
 	}
 
@@ -69,30 +88,23 @@ namespace Equinox
 			{
 				if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
 				{
-					// Create/Get Descriptor Set for ImGui
-					static VkDescriptorSet ds = VK_NULL_HANDLE;
-					static std::shared_ptr<Texture> lastTex = nullptr;
-
-					if (texture != lastTex)
+					if (texture != m_LastSceneTex)
 					{
-						if (ds)
+						if (m_SceneDS)
 						{
-							// IMPORTANT: We cannot free the descriptor set immediately if it's being used by a command buffer in flight.
-							// ImGui_ImplVulkan_RemoveTexture calls vkFreeDescriptorSets.
-							// We must defer this deletion until the GPU is done with the frame that used it.
-
-							VkDescriptorSet oldSet = ds;
-							VulkanContext::Get().PushDeletion([oldSet]() {
-								ImGui_ImplVulkan_RemoveTexture(oldSet);
+							VkDescriptorSet oldSet = m_SceneDS;
+							VulkanContext::Get().PushDeletion([oldSet]()
+								{
+									ImGui_ImplVulkan_RemoveTexture(oldSet);
 								});
 						}
 
 						auto vkTex = std::static_pointer_cast<VKTexture>(texture);
-						ds = ImGui_ImplVulkan_AddTexture(vkTex->GetSampler(), vkTex->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-						lastTex = texture;
+						m_SceneDS = ImGui_ImplVulkan_AddTexture(vkTex->GetSampler(), vkTex->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+						m_LastSceneTex = texture;
 					}
 
-					ImGui::Image((ImTextureID)ds, ToImVec2(m_ViewportSize), { 0, 0 }, { 1, 1 });
+					ImGui::Image((ImTextureID)m_SceneDS, ToImVec2(m_ViewportSize), { 0, 0 }, { 1, 1 });
 				}
 			}
 			else

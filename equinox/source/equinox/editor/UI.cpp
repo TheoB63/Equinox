@@ -269,16 +269,15 @@ namespace Equinox::UI
 		return changed;
 	}
 
+	// File-scope so ClearTextureCache() can access it
+	static std::unordered_map<void*, std::pair<VkDescriptorSet, std::weak_ptr<Texture>>> s_TextureCache;
+
 	ImTextureID GetTextureID(const std::shared_ptr<Texture>& texture)
 	{
 		if (!texture) return 0;
 
 		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
 		{
-			// Simple cache for ImGui Descriptors
-			// Key: Texture Pointer (void*), Value: { DescriptorSet, WeakPtr }
-			static std::unordered_map<void*, std::pair<VkDescriptorSet, std::weak_ptr<Texture>>> s_TextureCache;
-
 			// Cleanup stale entries
 			for (auto it = s_TextureCache.begin(); it != s_TextureCache.end(); )
 			{
@@ -310,5 +309,14 @@ namespace Equinox::UI
 		}
 
 		return (ImTextureID)(uintptr_t)texture->GetRendererID();
+	}
+
+	void ClearTextureCache()
+	{
+		for (auto& [key, entry] : s_TextureCache)
+		{
+			ImGui_ImplVulkan_RemoveTexture(entry.first);
+		}
+		s_TextureCache.clear();
 	}
 }
