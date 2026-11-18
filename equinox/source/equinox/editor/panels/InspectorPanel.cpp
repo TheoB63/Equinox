@@ -8,6 +8,8 @@
 #include "equinox/resources/AssetDatabase.h"
 #include "equinox/resources/AssetManager.h"
 #include "equinox/resources/FileSystem.h"
+#include "equinox/resources/AssetSerializer.h"
+#include "equinox/resources/importers/MaterialImporter.h"
 
 #include "equinox/renderer/Model.h"
 #include "equinox/renderer/Material.h"
@@ -247,6 +249,11 @@ namespace Equinox
 				UI::BeginProperties();
 				UI::PropertyColor("Color", dirLight.Color);
 				UI::Property("Intensity", dirLight.Intensity, 0.1f, 0.0f, 1000.0f);
+				UI::Property("Cast Shadows", dirLight.CastShadows);
+				if (dirLight.CastShadows)
+				{
+					UI::Property("Shadow Bias", dirLight.ShadowBias, 0.0001f, 0.0f, 0.05f);
+				}
 				UI::EndProperties();
 			});
 
@@ -295,6 +302,16 @@ namespace Equinox
 				if (!m_SelectedEntity.HasComponent<PointLight>() && ImGui::MenuItem("Point Light"))
 				{
 					m_SelectedEntity.AddOrReplaceComponent<PointLight>();
+					ImGui::CloseCurrentPopup();
+				}
+				if (!m_SelectedEntity.HasComponent<MeshRenderer>() && ImGui::MenuItem("Mesh Renderer"))
+				{
+					m_SelectedEntity.AddOrReplaceComponent<MeshRenderer>();
+					ImGui::CloseCurrentPopup();
+				}
+				if (!m_SelectedEntity.HasComponent<Animation>() && ImGui::MenuItem("Animation"))
+				{
+					m_SelectedEntity.AddOrReplaceComponent<Animation>();
 					ImGui::CloseCurrentPopup();
 				}
 				// Add more components here as needed
@@ -558,13 +575,31 @@ namespace Equinox
 
 	void InspectorPanel::DrawMaterial(Material& material)
 	{
-		// Material header with name and type
+		// Material header with name, dirty indicator, and Save button
 		if (ImGui::BeginChild("##Header", { 0, 30 }))
 		{
 			ImGui::Dummy({ 0, 4 });
 			ImGui::Dummy({ 4, 0 });
 			ImGui::SameLine();
-			ImGui::TextColored({ 0.2f, 0.9f, 0.4f, 1.0f }, "%s (Material)", material.GetName().c_str());
+			if (material.IsDirty())
+				ImGui::TextColored({ 0.2f, 0.9f, 0.4f, 1.0f }, "%s* (Material)", material.GetName().c_str());
+			else
+				ImGui::TextColored({ 0.2f, 0.9f, 0.4f, 1.0f }, "%s (Material)", material.GetName().c_str());
+
+			if (material.IsDirty()) 
+			{
+				ImGui::SameLine();
+				if (ImGui::SmallButton("Save")) 
+				{
+					nlohmann::json json;
+					material.Serialize(json);
+					MaterialAssetData data;
+					data.JsonData = json;
+					auto path = AssetDatabase::GetArtifactPath(material.Handle);
+					AssetSerializer::SerializeMaterial(path, data);
+					material.ClearDirty();
+				}
+			}
 		}
 		ImGui::EndChild();
 		ImGui::Dummy({ 0, 8 });
@@ -580,8 +615,11 @@ namespace Equinox
 				for (const auto& [name, s] : ShaderLibrary::GetAll())
 				{
 					bool selected = (s == material.GetShader());
-					if (ImGui::Selectable(name.c_str(), selected))
+					if (ImGui::Selectable(name.c_str(), selected)) 
+					{
 						material.SetShader(s->Handle);
+						material.MarkDirty();
+					}
 					if (selected) ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();
@@ -590,6 +628,20 @@ namespace Equinox
 		else
 		{
 			ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Missing Shader");
+		}
+
+		ImGui::Dummy({ 0, 4 });
+
+		// Albedo color picker (hard-coded until SPIRV-Cross reflection is available)
+		{
+			UI::BeginProperties();
+			glm::vec4 color = material.GetColor();
+			if (UI::PropertyColor("Albedo Color", color)) 
+			{
+				material.SetColor(color);
+				material.MarkDirty();
+			}
+			UI::EndProperties();
 		}
 
 		ImGui::Dummy({ 0, 4 });
@@ -644,7 +696,7 @@ namespace Equinox
 		if (ImGui::Combo("##RenderMode", &modeIndex, renderModes, IM_ARRAYSIZE(renderModes)))
 		{
 			material.SetRenderMode(static_cast<Material::RenderMode>(modeIndex));
-			//AssetRegistry::SetDirty(material.GetUUID());
+			material.MarkDirty();
 		}
 
 		if (material.GetRenderMode() == Material::RenderMode::Cutout)
@@ -656,7 +708,7 @@ namespace Equinox
 			if (ImGui::SliderFloat("##Alpha Cutoff", &cutoff, 0.0f, 1.0f))
 			{
 				material.SetAlphaCutoff(cutoff);
-				//AssetRegistry::SetDirty(material.GetUUID());
+				material.MarkDirty();
 			}
 		}
 
@@ -674,7 +726,7 @@ namespace Equinox
 			if (ImGui::Combo("##Blend Src", &srcFactor, blendFactors, IM_ARRAYSIZE(blendFactors)))
 			{
 				material.SetBlendSrc(static_cast<Material::BlendFactor>(srcFactor));
-				//AssetRegistry::SetDirty(material.GetUUID());
+				material.MarkDirty();
 			}
 
 			ImGui::Text("Blend Dst  ");
@@ -683,7 +735,7 @@ namespace Equinox
 			if (ImGui::Combo("##Blend Dst", &dstFactor, blendFactors, IM_ARRAYSIZE(blendFactors)))
 			{
 				material.SetBlendDst(static_cast<Material::BlendFactor>(dstFactor));
-				//AssetRegistry::SetDirty(material.GetUUID());
+				material.MarkDirty();
 			}
 		}
 

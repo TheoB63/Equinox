@@ -406,6 +406,8 @@ namespace Equinox
 				lights.dirLight.direction = glm::normalize(-glm::vec3(wt.Matrix[2]));
 				lights.dirLight.color = dl.Color;
 				lights.dirLight.intensity = dl.Intensity;
+				m_CachedCastShadows = dl.CastShadows;
+				m_CachedShadowBias = dl.ShadowBias;
 				foundDir = true;
 			}
 		}
@@ -465,6 +467,7 @@ namespace Equinox
 		ubo.cameraPos = camera.GetPosition();
 		ubo.time = Time::GetTime();
 		ubo.lightSpaceMatrix = m_CachedLightSpaceMatrix;
+		ubo.shadowBias = m_CachedCastShadows ? m_CachedShadowBias : -1.0f; // negative = shadows disabled
 
 		m_GlobalUniformBuffer->SetData(&ubo, sizeof(GlobalUniforms));
 	}
