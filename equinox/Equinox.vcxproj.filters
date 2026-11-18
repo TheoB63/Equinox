@@ -338,6 +338,7 @@
     <ClInclude Include="source\equinox\utils\ImGuiUtils.h">
       <Filter>equinox\utils</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\ShaderLibrary.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -521,5 +522,6 @@
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp">
       <Filter>equinox\utils</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\renderer\ShaderLibrary.cpp" />
   </ItemGroup>
 </Project>

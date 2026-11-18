@@ -25,6 +25,7 @@
 #include "equinox/jobs/IOThread.h"
 
 #include "equinox/renderer/Renderer.h"
+#include "equinox/renderer/ShaderLibrary.h"
 
 namespace Equinox
 {
@@ -70,6 +71,7 @@ namespace Equinox
 		// context-less for Vulkan).
 		Renderer::Init(m_Window->GetNativeWindow());
 		Renderer::SetFrameData(&m_FrameData);
+		ShaderLibrary::Init();
 
 		// Scene & Systems
 		m_Scene = std::make_shared<Scene>();
@@ -194,6 +196,7 @@ namespace Equinox
 
 		AssetManager::Shutdown();
 		AssetDatabase::Shutdown();
+		ShaderLibrary::Shutdown();
 		Renderer::Shutdown();
 		m_FrameData.Shutdown();
 		IOThread::Shutdown();

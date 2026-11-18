@@ -31,7 +31,8 @@ namespace Equinox
 
 	void VulkanAllocator::Shutdown()
 	{
-		if (s_Data && s_Data->allocator) {
+		if (s_Data && s_Data->allocator) 
+		{
 			vmaDestroyAllocator(s_Data->allocator);
 			delete s_Data;
 			s_Data = nullptr;
