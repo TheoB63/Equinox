@@ -1,4 +1,4 @@
-#include "eqnpch.h"
+﻿#include "eqnpch.h"
 #include "equinox/editor/Editor.h"
 #include "equinox/editor/panels/ScenePanel.h"
 
@@ -10,6 +10,7 @@
 #include "equinox/scene/Components.h"
 
 #include "equinox/renderer/Renderer.h"
+#include "equinox/renderer/MaterialSystem.h"
 #include "equinox/renderer/backend/vulkan/VulkanBackend.h"
 #include "equinox/renderer/backend/vulkan/VulkanContext.h"
 #include "equinox/renderer/backend/vulkan/VulkanTexture.h"
@@ -22,7 +23,6 @@
 #include "equinox/resources/AssetManager.h"
 #include "equinox/resources/FileSystem.h"
 
-#include <fstream>
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <imgui.h>
@@ -43,124 +43,111 @@ namespace Equinox
 
 			InitGlobalUniforms();
 
-			// Compile Shaders
-			fs::path vertSrc = FileSystem::AssetsPath() / "shaders/triangle.vert";
-			fs::path fragSrc = FileSystem::AssetsPath() / "shaders/triangle.frag";
+			// Compile PBR shaders
+			fs::path vertSrc = FileSystem::AssetsPath() / "shaders/pbr.vert";
+			fs::path fragSrc = FileSystem::AssetsPath() / "shaders/pbr.frag";
 
-			// Ensure default shaders exist
-			if (!fs::exists(vertSrc.parent_path())) fs::create_directories(vertSrc.parent_path());
+			m_PBRVertSpv = ShaderCompiler::Compile(vertSrc);
+			m_PBRFragSpv = ShaderCompiler::Compile(fragSrc);
 
-			if (!fs::exists(vertSrc)) {
-				std::ofstream out(vertSrc);
-				out << R"(#version 450
-layout(location = 0) in vec3 a_Position;
-layout(location = 1) in vec3 a_Normal;
-layout(location = 2) in vec2 a_TexCoord0;
-layout(location = 3) in vec2 a_TexCoord1;
-layout(location = 4) in vec3 a_Tangent;
-
-layout(location = 0) out vec3 v_Normal;
-layout(location = 1) out vec2 v_TexCoord;
-
-layout(set = 0, binding = 0) uniform GlobalUniforms {
-    mat4 viewProjection;
-    mat4 view;
-    mat4 projection;
-    vec3 cameraPos;
-    float time;
-} ubo;
-
-layout(push_constant) uniform PushConstants {
-    mat4 modelMatrix;
-    uint albedoMapIndex;
-} pc;
-
-void main() {
-    v_Normal = mat3(transpose(inverse(pc.modelMatrix))) * a_Normal;
-    v_TexCoord = a_TexCoord0;
-    gl_Position = ubo.viewProjection * pc.modelMatrix * vec4(a_Position, 1.0);
-})";
+			if (m_PBRVertSpv.empty() || m_PBRFragSpv.empty())
+			{
+				EQN_CORE_ERROR("Failed to compile PBR shaders!");
+				return;
 			}
 
-			if (!fs::exists(fragSrc)) {
-				std::ofstream out(fragSrc);
-				out << R"(#version 450
-#extension GL_EXT_nonuniform_qualifier : enable
-
-layout(location = 0) in vec3 v_Normal;
-layout(location = 1) in vec2 v_TexCoord;
-
-layout(location = 0) out vec4 outColor;
-
-layout(set = 0, binding = 0) uniform GlobalUniforms {
-    mat4 viewProjection;
-    mat4 view;
-    mat4 projection;
-    vec3 cameraPos;
-    float time;
-} ubo;
-
-layout(set = 1, binding = 0) uniform sampler2D globalTextures[];
-
-layout(push_constant) uniform PushConstants {
-    mat4 modelMatrix;
-    uint albedoMapIndex;
-} pc;
-
-void main() {
-    vec3 lightDir = normalize(vec3(1.0, 1.0, 1.0));
-    float diff = max(dot(normalize(v_Normal), lightDir), 0.1);
-    
-    // Bindless lookup
-    vec4 albedo = texture(globalTextures[nonuniformEXT(pc.albedoMapIndex)], v_TexCoord);
-    
-    outColor = vec4(albedo.rgb * diff, albedo.a);
-})";
-			}
-
-			std::vector<u32> vertSpv = ShaderCompiler::Compile(vertSrc);
-			std::vector<u32> fragSpv = ShaderCompiler::Compile(fragSrc);
-
-			PipelineConfig config;
-			config.colorFormats = { VK_FORMAT_R8G8B8A8_UNORM }; // SceneColor format
-			config.depthFormat = VK_FORMAT_D32_SFLOAT;
-			config.depthTest = true;
-			config.depthWrite = true;
-			config.cullMode = VK_CULL_MODE_BACK_BIT;
-			config.frontFace = VK_FRONT_FACE_CLOCKWISE; // Fix winding order due to Y-flip
-
-			// Define Vertex Layout (Matches Model::ProcessMeshData)
-			BufferLayout vertexLayout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float3, "a_Normal" },
-				{ ShaderDataType::Float2, "a_TexCoord0" },
-				{ ShaderDataType::Float2, "a_TexCoord1" },
-				{ ShaderDataType::Float3, "a_Tangent" }
-			};
-			config.bindingDescriptions = vertexLayout.GetBindingDescriptions();
-			config.attributeDescriptions = vertexLayout.GetAttributeDescriptions();
-
-			// Push Constants
-			VkPushConstantRange pushConstantRange{};
-			pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-			pushConstantRange.offset = 0;
-			pushConstantRange.size = sizeof(ObjectPushConstants);
-			config.pushConstantRanges = { pushConstantRange };
-
-			// Layouts: Set 0 = Global Uniforms, Set 1 = Bindless
-			std::vector<VkDescriptorSetLayout> layouts = {
-				m_GlobalSetLayout,
-				VulkanContext::Get().GetBindlessSet().GetLayout()
-			};
-
-			m_TrianglePipeline = std::make_unique<VKPipeline>(config, vertSpv, fragSpv, layouts);
+			CreatePipelines();
 		}
 	}
 
 	RenderingSystem::~RenderingSystem()
 	{
-		// Allocator cleans itself up
-		if (m_GlobalSetLayout) vkDestroyDescriptorSetLayout(VulkanContext::Get().GetDevice(), m_GlobalSetLayout, nullptr);
+		if (m_GlobalSetLayout)
+			vkDestroyDescriptorSetLayout(VulkanContext::Get().GetDevice(), m_GlobalSetLayout, nullptr);
+	}
+
+	void RenderingSystem::CreatePipelines()
+	{
+		// Vertex layout (matches Model::ProcessMeshData)
+		BufferLayout vertexLayout =
+		{
+			{ ShaderDataType::Float3, "a_Position"  },
+			{ ShaderDataType::Float3, "a_Normal"    },
+			{ ShaderDataType::Float2, "a_TexCoord0" },
+			{ ShaderDataType::Float2, "a_TexCoord1" },
+			{ ShaderDataType::Float3, "a_Tangent"   }
+		};
+
+		auto bindingDescs = vertexLayout.GetBindingDescriptions();
+		auto attribDescs = vertexLayout.GetAttributeDescriptions();
+
+		// Push constants
+		VkPushConstantRange pushConstantRange{};
+		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+		pushConstantRange.offset = 0;
+		pushConstantRange.size = sizeof(ObjectPushConstants);
+
+		// Descriptor set layouts: Set 0 = Global UBO, Set 1 = Bindless, Set 2 = Material SSBO
+		std::vector<VkDescriptorSetLayout> layouts =
+		{
+			m_GlobalSetLayout,
+			VulkanContext::Get().GetBindlessSet().GetLayout(),
+			MaterialSystem::GetDescriptorSetLayout()
+		};
+
+		// Shared base config
+		PipelineConfig baseConfig;
+		baseConfig.colorFormats = { VK_FORMAT_R8G8B8A8_UNORM };
+		baseConfig.depthFormat = VK_FORMAT_D32_SFLOAT;
+		baseConfig.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+		baseConfig.bindingDescriptions = bindingDescs;
+		baseConfig.attributeDescriptions = attribDescs;
+		baseConfig.pushConstantRanges = { pushConstantRange };
+
+		// Opaque pipeline
+		{
+			PipelineConfig config = baseConfig;
+			config.depthTest = true;
+			config.depthWrite = true;
+			config.blendEnabled = false;
+			config.cullMode = VK_CULL_MODE_BACK_BIT;
+
+			m_Pipelines[Material::RenderMode::Opaque] =
+				std::make_unique<VKPipeline>(config, m_PBRVertSpv, m_PBRFragSpv, layouts);
+		}
+
+		// Cutout pipeline (two-sided for foliage/hair)
+		{
+			PipelineConfig config = baseConfig;
+			config.depthTest = true;
+			config.depthWrite = true;
+			config.blendEnabled = false;
+			config.cullMode = VK_CULL_MODE_NONE;
+			m_Pipelines[Material::RenderMode::Cutout] =
+				std::make_unique<VKPipeline>(config, m_PBRVertSpv, m_PBRFragSpv, layouts);
+		}
+
+		// Transparent pipeline
+		{
+			PipelineConfig config = baseConfig;
+			config.depthTest = true;
+			config.depthWrite = false;
+			config.blendEnabled = true;
+			config.cullMode = VK_CULL_MODE_NONE;
+			m_Pipelines[Material::RenderMode::Transparent] =
+				std::make_unique<VKPipeline>(config, m_PBRVertSpv, m_PBRFragSpv, layouts);
+		}
+	}
+
+	u32 RenderingSystem::EnsureMaterialRegistered(Material* material)
+	{
+		auto it = m_MaterialSlotMap.find(material->Handle);
+		if (it != m_MaterialSlotMap.end())
+			return it->second;
+
+		u32 slot = MaterialSystem::RegisterMaterial(material);
+		m_MaterialSlotMap[material->Handle] = slot;
+		return slot;
 	}
 
 	void RenderingSystem::InitGlobalUniforms()
@@ -215,6 +202,7 @@ void main() {
 		GlobalUniforms ubo{};
 		ubo.view = camera.GetViewMatrix();
 		ubo.projection = camera.GetProjectionMatrix();
+		ubo.projection[1][1] *= -1.0f;  // Vulkan Y-flip (shader only, not ImGuizmo)
 		ubo.viewProjection = ubo.projection * ubo.view;
 		ubo.cameraPos = camera.GetPosition();
 		ubo.time = Time::GetTime();
@@ -230,12 +218,22 @@ void main() {
 		// Reset Allocator at start of frame
 		m_FrameAllocator->Reset();
 
-		// -----------------------------------------------------------------
-		// Render Graph Test (Proof of Concept)
-		// -----------------------------------------------------------------
 		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
 		{
 			UpdateGlobalUniforms();
+
+			// Register materials for all visible entities
+			auto matView = registry.view<WorldTransform, MeshRenderer>();
+			for (auto [entity, wt, mr] : matView.each())
+			{
+				if (!mr.MaterialUUID.IsValid()) continue;
+				auto material = AssetManager::GetAsset<Material>(mr.MaterialUUID);
+				if (material)
+					EnsureMaterialRegistered(material.get());
+			}
+
+			// Upload dirty materials to GPU (buffer is persistently mapped)
+			MaterialSystem::Update(VK_NULL_HANDLE);
 
 			RG::RenderGraph rg(*m_FrameAllocator);
 
@@ -267,7 +265,11 @@ void main() {
 				desc.height = m_SceneColor->GetHeight();
 				desc.format = RG::TextureFormat::RGBA8_Unorm;
 
-				data.outputTex = builder.CreateTexture(desc);
+				auto vkTex = std::static_pointer_cast<VKTexture>(m_SceneColor);
+				data.outputTex = rg.ImportResource(desc,
+					(void*)vkTex->GetImage(),
+					(void*)vkTex->GetImageView(),
+					RG::ResourceState::ShaderResource);
 
 				RG::TextureDesc depthDesc;
 				depthDesc.name = "SceneDepth";
@@ -277,7 +279,10 @@ void main() {
 
 				data.depthTex = builder.CreateTexture(depthDesc);
 
-				data.depthTex = builder.Write(data.depthTex); // Use WriteDepth
+				VkClearValue depthClear{};
+				depthClear.depthStencil = { 1.0f, 0 };
+				data.depthTex = builder.WriteDepth(data.depthTex,
+					VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, depthClear);
 
 				data.outputTex = builder.Write(data.outputTex);
 
@@ -287,13 +292,19 @@ void main() {
 			{
 				VkCommandBuffer cmd = ctx.commandBuffer;
 
-				m_TrianglePipeline->Bind(cmd);
+				// Get a pipeline layout (all variants share the same layout)
+				auto& opaquePipeline = m_Pipelines[Material::RenderMode::Opaque];
+				if (!opaquePipeline) return;
+				VkPipelineLayout pipelineLayout = opaquePipeline->GetLayout();
 
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline->GetLayout(), 0, 1, &m_GlobalDescriptorSet, 0, nullptr);
-
+				// Bind descriptor sets: Set 0 = Global UBO, Set 1 = Bindless, Set 2 = Material SSBO
 				VkDescriptorSet bindlessSet = VulkanContext::Get().GetBindlessSet().GetSet();
-				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_TrianglePipeline->GetLayout(), 1, 1, &bindlessSet, 0, nullptr);
+				VkDescriptorSet materialSet = MaterialSystem::GetDescriptorSet();
+				VkDescriptorSet sets[] = { m_GlobalDescriptorSet, bindlessSet, materialSet };
+				vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+					pipelineLayout, 0, 3, sets, 0, nullptr);
 
+				// Set viewport/scissor
 				RG::RenderGraph::ResourceNode* res = (RG::RenderGraph::ResourceNode*)ctx.GetResource(data.outputTex);
 
 				VkViewport viewport{};
@@ -306,45 +317,92 @@ void main() {
 				scissor.extent = { res->desc.width, res->desc.height };
 				vkCmdSetScissor(cmd, 0, 1, &scissor);
 
+				// Collect draw commands per render mode
+				struct DrawCommand
+				{
+					glm::mat4 modelMatrix;
+					u32 materialSlot;
+					std::shared_ptr<Model> model;
+					u32 meshIndex;
+				};
+
+				std::vector<DrawCommand> opaqueDraws;
+				std::vector<DrawCommand> cutoutDraws;
+				std::vector<DrawCommand> transparentDraws;
+
 				auto view = registry.view<WorldTransform, MeshRenderer>();
 				for (auto [entity, worldTransform, meshRenderer] : view.each())
 				{
 					auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID);
 					if (!model) continue;
+					if (!model->GetMesh(meshRenderer.MeshIndex)) continue;
 
-					auto mesh = model->GetMesh(meshRenderer.MeshIndex);
-					if (!mesh) continue;
+					DrawCommand dc;
+					dc.modelMatrix = worldTransform.Matrix;
+					dc.materialSlot = 0;
+					dc.model = model;
+					dc.meshIndex = meshRenderer.MeshIndex;
 
-					auto vb = std::static_pointer_cast<VKVertexBuffer>(mesh->GetVertexBuffer());
-					auto ib = std::static_pointer_cast<VKIndexBuffer>(mesh->GetIndexBuffer());
-
-					if (!vb || !ib) continue;
-
-					ObjectPushConstants pc{};
-					pc.modelMatrix = worldTransform.Matrix;
-					pc.albedoMapIndex = 0;
+					Material::RenderMode mode = Material::RenderMode::Opaque;
 
 					if (meshRenderer.MaterialUUID.IsValid())
 					{
 						auto material = AssetManager::GetAsset<Material>(meshRenderer.MaterialUUID);
 						if (material)
 						{
-							auto albedoTex = std::static_pointer_cast<VKTexture>(material->GetTextureByType(MapType::Diffuse));
-							if (albedoTex)
-								pc.albedoMapIndex = albedoTex->GetBindlessIndex();
+							auto slotIt = m_MaterialSlotMap.find(material->Handle);
+							if (slotIt != m_MaterialSlotMap.end())
+								dc.materialSlot = slotIt->second;
+							mode = material->GetRenderMode();
 						}
 					}
 
-					vkCmdPushConstants(cmd, m_TrianglePipeline->GetLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(ObjectPushConstants), &pc);
-
-					VkBuffer vertexBuffers[] = { vb->GetVulkanBuffer() };
-					VkDeviceSize offsets[] = { 0 };
-					vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-
-					vkCmdBindIndexBuffer(cmd, ib->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
-
-					vkCmdDrawIndexed(cmd, ib->GetCount(), 1, 0, 0, 0);
+					switch (mode)
+					{
+					case Material::RenderMode::Cutout:      cutoutDraws.push_back(dc);      break;
+					case Material::RenderMode::Transparent:
+					case Material::RenderMode::Fade:        transparentDraws.push_back(dc); break;
+					default:                                opaqueDraws.push_back(dc);       break;
+					}
 				}
+
+				// Draw helper lambda
+				auto DrawBatch = [&](const std::vector<DrawCommand>& draws, Material::RenderMode mode)
+					{
+						if (draws.empty()) return;
+
+						auto pipeIt = m_Pipelines.find(mode);
+						if (pipeIt == m_Pipelines.end() || !pipeIt->second) return;
+
+						pipeIt->second->Bind(cmd);
+
+						for (const auto& dc : draws)
+						{
+							auto mesh = dc.model->GetMesh(dc.meshIndex);
+							auto vb = std::static_pointer_cast<VKVertexBuffer>(mesh->GetVertexBuffer());
+							auto ib = std::static_pointer_cast<VKIndexBuffer>(mesh->GetIndexBuffer());
+							if (!vb || !ib) continue;
+
+							ObjectPushConstants pc{};
+							pc.modelMatrix = dc.modelMatrix;
+							pc.materialIndex = dc.materialSlot;
+
+							vkCmdPushConstants(cmd, pipelineLayout,
+								VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+								0, sizeof(ObjectPushConstants), &pc);
+
+							VkBuffer vertexBuffers[] = { vb->GetVulkanBuffer() };
+							VkDeviceSize offsets[] = { 0 };
+							vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+							vkCmdBindIndexBuffer(cmd, ib->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+							vkCmdDrawIndexed(cmd, ib->GetCount(), 1, 0, 0, 0);
+						}
+					};
+
+				// Draw order: Opaque → Cutout → Transparent
+				DrawBatch(opaqueDraws, Material::RenderMode::Opaque);
+				DrawBatch(cutoutDraws, Material::RenderMode::Cutout);
+				DrawBatch(transparentDraws, Material::RenderMode::Transparent);
 			}
 		);
 		return outputHandle;
@@ -363,26 +421,12 @@ void main() {
 				auto* vkRenderer = static_cast<VulkanBackend*>(Renderer::GetBackend());
 				VkImage swapchainImage = vkRenderer->GetSwapchain().GetImage(vkRenderer->GetSwapchain().GetCurrentFrameIndex());
 				VkImageView swapchainView = vkRenderer->GetSwapchain().GetImageView(vkRenderer->GetSwapchain().GetCurrentFrameIndex());
-				VkFormat swapchainFormat = vkRenderer->GetSwapchain().GetImageFormat(); // Get actual format
 
 				RG::TextureDesc desc;
 				desc.name = "Backbuffer";
 				desc.width = vkRenderer->GetSwapchain().GetExtent().width;
 				desc.height = vkRenderer->GetSwapchain().GetExtent().height;
 
-				// Map Vulkan format to TextureFormat
-				// This is a bit hacky, we should probably store VkFormat in TextureDesc if we want full flexibility
-				// But for now, let's assume RGBA8_Unorm maps to whatever the swapchain is if we handle it in RenderGraph
-				// OR we add a new format enum for Swapchain?
-				// Let's stick to RGBA8_Unorm but ensure RenderGraph knows how to handle it.
-				// Actually, RenderGraph uses TextureFormat to determine VkFormat.
-				// If we pass RGBA8_Unorm, RenderGraph uses VK_FORMAT_R8G8B8A8_UNORM.
-				// But Swapchain is B8G8R8A8_UNORM.
-				// So we need to tell RenderGraph the correct format.
-				// We need to add BGRA8 to TextureFormat.
-
-				// For now, I will assume RenderGraph has been updated to handle this or I will update RenderGraphResources.h
-				// Let's update RenderGraphResources.h to include BGRA8_Unorm.
 				desc.format = RG::TextureFormat::BGRA8_Unorm;
 
 				data.backbuffer = rg.ImportResource(desc,

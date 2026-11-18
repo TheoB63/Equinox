@@ -8,13 +8,17 @@
 #include "equinox/renderer/backend/vulkan/VulkanPipeline.h"
 #include "equinox/renderer/backend/vulkan/VulkanBuffer.h"
 #include "equinox/renderer/Texture.h"
+#include "equinox/renderer/Material.h"
+
+#include "equinox/core/UUID.h"
 
 #include <entt/entt.hpp>
 #include <unordered_map>
 
 namespace Equinox
 {
-	struct GlobalUniforms {
+	struct GlobalUniforms
+	{
 		glm::mat4 viewProjection;
 		glm::mat4 view;
 		glm::mat4 projection;
@@ -22,9 +26,11 @@ namespace Equinox
 		float time;
 	};
 
-	struct ObjectPushConstants {
-		glm::mat4 modelMatrix;
-		u32 albedoMapIndex;
+	struct ObjectPushConstants
+	{
+		glm::mat4 modelMatrix;  // 64 bytes
+		u32 materialIndex;      // 4 bytes — index into material SSBO
+		u32 _pad[3];            // 12 bytes padding (80 total)
 	};
 
 	class RenderingSystem : public System
@@ -44,6 +50,8 @@ namespace Equinox
 	private:
 		void InitGlobalUniforms();
 		void UpdateGlobalUniforms();
+		void CreatePipelines();
+		u32  EnsureMaterialRegistered(Material* material);
 
 		RG::ResourceHandle AddGeometryPass(RG::RenderGraph& rg, entt::registry& registry);
 		void AddImGuiPass(RG::RenderGraph& rg, RG::ResourceHandle sceneColor);
@@ -58,8 +66,13 @@ namespace Equinox
 		VkDescriptorSetLayout m_GlobalSetLayout = VK_NULL_HANDLE;
 		VkDescriptorSet m_GlobalDescriptorSet = VK_NULL_HANDLE;
 
-		// Vulkan Test Pipeline
-		std::unique_ptr<VKPipeline> m_TrianglePipeline;
+		// PBR Pipelines (one per RenderMode)
+		std::unordered_map<Material::RenderMode, std::unique_ptr<VKPipeline>> m_Pipelines;
+		std::vector<u32> m_PBRVertSpv;
+		std::vector<u32> m_PBRFragSpv;
+
+		// Material SSBO slot tracking (MaterialUUID -> SSBO index)
+		std::unordered_map<UUID, u32, UUIDHash> m_MaterialSlotMap;
 	};
 
 }

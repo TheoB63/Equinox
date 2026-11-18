@@ -326,8 +326,7 @@ namespace Equinox
 		m_ProjectionMatrix = glm::perspective(
 			glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
 
-		// Vulkan Y-flip for Editor Camera too
-		m_ProjectionMatrix[1][1] *= -1.0f;
+		// No Y-flip here, applied at GPU uniform upload only (RenderingSystem::UpdateGlobalUniforms)
 	}
 
 	void EditorCamera::UpdateView() {

@@ -45,9 +45,13 @@ namespace Equinox
 		m_GPUData.roughness = Get<float>("u_Roughness", 0.5f);
 		m_GPUData.alphaCutoff = m_AlphaCutoff;
 
-		// Flags
+		// Flags, each bit indicates a valid texture is bound for that feature
 		m_GPUData.flags = 0;
-		if (IsUseMapEnabled(MapType::Normal)) m_GPUData.flags |= 1 << 0; // Has Normal Map
+		if (GetTextureByType(MapType::Normal) && IsUseMapEnabled(MapType::Normal))    m_GPUData.flags |= (1 << 0);
+		if (GetTextureByType(MapType::Metalness) && IsUseMapEnabled(MapType::Metalness)) m_GPUData.flags |= (1 << 1);
+		if (GetTextureByType(MapType::Oclusion) && IsUseMapEnabled(MapType::Oclusion))  m_GPUData.flags |= (1 << 2);
+		if (GetTextureByType(MapType::Diffuse) && IsUseMapEnabled(MapType::Diffuse))   m_GPUData.flags |= (1 << 3);
+		if (GetTextureByType(MapType::Emissive) && IsUseMapEnabled(MapType::Emissive))  m_GPUData.flags |= (1 << 4);
 	}
 
 	void Material::Serialize(nlohmann::json& json) const
