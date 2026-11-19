@@ -92,7 +92,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,7 +120,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -148,7 +148,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -235,10 +235,10 @@
     <ClInclude Include="source\equinox\resources\AssetSerializer.h" />
     <ClInclude Include="source\equinox\resources\FileSystem.h" />
     <ClInclude Include="source\equinox\resources\FileWatcher.h" />
-    <ClInclude Include="source\equinox\resources\importers\ShaderImporter.h" />
     <ClInclude Include="source\equinox\resources\MetaFile.h" />
     <ClInclude Include="source\equinox\resources\importers\MaterialImporter.h" />
     <ClInclude Include="source\equinox\resources\importers\ModelImporter.h" />
+    <ClInclude Include="source\equinox\resources\importers\ShaderImporter.h" />
     <ClInclude Include="source\equinox\resources\importers\TextureImporter.h" />
     <ClInclude Include="source\equinox\scene\Components.h" />
     <ClInclude Include="source\equinox\scene\Entity.h" />
@@ -310,10 +310,10 @@
     <ClCompile Include="source\equinox\resources\AssetSerializer.cpp" />
     <ClCompile Include="source\equinox\resources\FileSystem.cpp" />
     <ClCompile Include="source\equinox\resources\FileWatcher.cpp" />
-    <ClCompile Include="source\equinox\resources\importers\ShaderImporter.cpp" />
     <ClCompile Include="source\equinox\resources\MetaFile.cpp" />
     <ClCompile Include="source\equinox\resources\importers\MaterialImporter.cpp" />
     <ClCompile Include="source\equinox\resources\importers\ModelImporter.cpp" />
+    <ClCompile Include="source\equinox\resources\importers\ShaderImporter.cpp" />
     <ClCompile Include="source\equinox\resources\importers\TextureImporter.cpp" />
     <ClCompile Include="source\equinox\scene\Entity.cpp" />
     <ClCompile Include="source\equinox\scene\Scene.cpp" />

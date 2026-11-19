@@ -593,10 +593,20 @@ namespace Equinox
 				{
 					nlohmann::json json;
 					material.Serialize(json);
+
+					// Write source .mat file
+					auto sourcePath = AssetDatabase::GetMetadata(material.Handle).Path;
+					if (!sourcePath.empty())
+					{
+						std::ofstream file(sourcePath);
+						file << json.dump(4);
+					}
+
 					MaterialAssetData data;
 					data.JsonData = json;
-					auto path = AssetDatabase::GetArtifactPath(material.Handle);
-					AssetSerializer::SerializeMaterial(path, data);
+					auto artifactPath = AssetDatabase::GetArtifactPath(material.Handle);
+					AssetSerializer::SerializeMaterial(artifactPath, data);
+
 					material.ClearDirty();
 				}
 			}
