@@ -24,6 +24,8 @@
 #include "equinox/jobs/JobSystemTests.h"
 #include "equinox/jobs/IOThread.h"
 
+#include "equinox/memory/MemoryTracker.h"
+
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/ShaderLibrary.h"
 
@@ -32,6 +34,7 @@ namespace Equinox
 	App::App(int argc, char** argv)
 	{
 		// Core Systems Init
+		Memory::MemoryTracker::Init();
 		JobSystem::Init();
 		IOThread::Init();
 		m_FrameData.Init();
@@ -216,6 +219,7 @@ namespace Equinox
 		m_FrameData.Shutdown();
 		IOThread::Shutdown();
 		JobSystem::Shutdown();
+		Memory::MemoryTracker::Shutdown();
 	}
 
 	WindowSpec App::ParseCommandLineArgs(int argc, char** argv)

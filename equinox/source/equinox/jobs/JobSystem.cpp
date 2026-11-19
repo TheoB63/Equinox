@@ -31,7 +31,7 @@ namespace Equinox::JobSystem
 	static constexpr u32 MAX_FIBERS = 512;
 	static constexpr u32 HIGH_QUEUE_SIZE = 4096;  // Must be power of 2
 	static constexpr u32 LOCAL_DEQUE_SIZE = 1024;
-	static constexpr u32 MAX_INLINE_DEPTH = 4;     // V5: depth-limited inline execution
+	static constexpr u32 MAX_INLINE_DEPTH = 4;     // depth-limited inline execution
 
 	// -------------------------------------------------------------------------------
 	// Internal Job Struct
@@ -212,7 +212,7 @@ namespace Equinox::JobSystem
 					s_Data.ReadyFibers[s_Data.ReadyFiberCount++] = waitingFiber;
 				}
 
-				// V4: Wake a sleeping worker
+				// Wake a sleeping worker
 				s_Data.HighQueue.GetGeneration(); // Touch to trigger wake
 				u32 gen = s_Data.HighQueue.GetGeneration();
 #ifdef _WIN32
@@ -395,7 +395,7 @@ namespace Equinox::JobSystem
 			// ---- Priority 5: Idle — Wait for work (V4 compliant) ----
 #ifdef _WIN32
 			{
-				// V4: Compare-and-wait pattern to prevent lost wakeups
+				// Compare-and-wait pattern to prevent lost wakeups
 				u32 gen = s_Data.HighQueue.GetGeneration();
 
 				// Double-check: is there work now?
@@ -564,7 +564,7 @@ namespace Equinox::JobSystem
 
 		if (t_IsMainThread)
 		{
-			// V2: Main thread is ISOLATED — no job stealing.
+			// Main thread is ISOLATED — no job stealing.
 			// Busy-spin with _mm_pause until counter reaches target.
 			while (true)
 			{
@@ -587,7 +587,7 @@ namespace Equinox::JobSystem
 				continue;
 			}
 
-			// V5: Try to help (depth-limited inline execution)
+			// Try to help (depth-limited inline execution)
 			JobContext* ctx = GetCurrentJobContext();
 			if (ctx && ctx->InlineDepth < MAX_INLINE_DEPTH)
 			{
@@ -656,9 +656,9 @@ namespace Equinox::JobSystem
 
 	void YieldFiber()
 	{
-		if (t_IsMainThread) return; // Main thread cannot yield (V2)
+		if (t_IsMainThread) return; // Main thread cannot yield
 
-		// V3: Assert not recording
+		// Assert not recording
 		JobContext* ctx = GetCurrentJobContext();
 		assert(!ctx || !ctx->IsRecording &&
 			"YieldFiber called while IsRecording == true! Contract 4 violation.");

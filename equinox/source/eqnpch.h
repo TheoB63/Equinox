@@ -21,4 +21,6 @@
 #include "equinox/core/Math.h"
 #include "equinox/core/Profiler.h"
 
+#include "equinox/memory/MemoryMacros.h"
+
 #include "equinox/utils/CustomFormatters.h"

@@ -25,19 +25,19 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -182,6 +182,8 @@
     <ClInclude Include="source\equinox\jobs\WorkStealingDeque.h" />
     <ClInclude Include="source\equinox\memory\LinearAllocator.h" />
     <ClInclude Include="source\equinox\memory\Memory.h" />
+    <ClInclude Include="source\equinox\memory\MemoryMacros.h" />
+    <ClInclude Include="source\equinox\memory\MemoryTracker.h" />
     <ClInclude Include="source\equinox\memory\TaggedPageAllocator.h" />
     <ClInclude Include="source\equinox\platform\AppEvent.h" />
     <ClInclude Include="source\equinox\platform\Event.h" />
@@ -268,6 +270,7 @@
     <ClCompile Include="source\equinox\editor\panels\ScenePanel.cpp" />
     <ClCompile Include="source\equinox\jobs\IOThread.cpp" />
     <ClCompile Include="source\equinox\jobs\JobSystem.cpp" />
+    <ClCompile Include="source\equinox\memory\MemoryTracker.cpp" />
     <ClCompile Include="source\equinox\memory\TaggedPageAllocator.cpp" />
     <ClCompile Include="source\equinox\platform\Input.cpp" />
     <ClCompile Include="source\equinox\platform\WinWindow.cpp" />

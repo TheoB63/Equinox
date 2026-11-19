@@ -1,5 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/memory/TaggedPageAllocator.h"
+#include "equinox/memory/MemoryTracker.h"
 #include "equinox/core/Log.h"
 
 #ifdef _WIN32
@@ -30,6 +31,7 @@ namespace Equinox::Memory
 		// Free all pages
 		for (Page* page : m_FreePages)
 		{
+			MemoryTracker::RecordFree(Category::FrameTagged, PAGE_SIZE);
 #ifdef _WIN32
 			VirtualFree(page->Base, 0, MEM_RELEASE);
 #endif
@@ -39,6 +41,7 @@ namespace Equinox::Memory
 
 		for (Page* page : m_UsedPages)
 		{
+			MemoryTracker::RecordFree(Category::FrameTagged, PAGE_SIZE);
 #ifdef _WIN32
 			VirtualFree(page->Base, 0, MEM_RELEASE);
 #endif
@@ -143,6 +146,8 @@ namespace Equinox::Memory
 				delete page;
 				return nullptr;
 			}
+
+			MemoryTracker::RecordAlloc(Category::FrameTagged, PAGE_SIZE);
 		}
 
 		page->Used = 0;

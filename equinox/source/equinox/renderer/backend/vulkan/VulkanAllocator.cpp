@@ -1,6 +1,9 @@
 #include "eqnpch.h"
 #include "VulkanAllocator.h"
+
 #include "equinox/core/Log.h"
+
+#include "equinox/memory/MemoryTracker.h"
 
 #define VMA_IMPLEMENTATION
 #include <vma/vk_mem_alloc.h>
@@ -16,7 +19,7 @@ namespace Equinox
 
 	void VulkanAllocator::Init(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device)
 	{
-		s_Data = new AllocatorData();
+		s_Data = EQN_NEW(Memory::Category::Rendering, AllocatorData);
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = physicalDevice;
@@ -31,11 +34,10 @@ namespace Equinox
 
 	void VulkanAllocator::Shutdown()
 	{
-		if (s_Data && s_Data->allocator) 
+		if (s_Data && s_Data->allocator)
 		{
 			vmaDestroyAllocator(s_Data->allocator);
-			delete s_Data;
-			s_Data = nullptr;
+			EQN_DELETE(Memory::Category::Rendering, s_Data);
 		}
 	}
 
@@ -51,6 +53,11 @@ namespace Equinox
 
 		VmaAllocation allocation;
 		vmaCreateBuffer(s_Data->allocator, &bufferInfo, &allocInfo, &outBuffer, &allocation, nullptr);
+
+		VmaAllocationInfo vmaAllocInfo;
+		vmaGetAllocationInfo(s_Data->allocator, allocation, &vmaAllocInfo);
+		Memory::MemoryTracker::RecordAlloc(Memory::Category::GPU, vmaAllocInfo.size);
+
 		return allocation;
 	}
 
@@ -62,6 +69,10 @@ namespace Equinox
 		VmaAllocation allocation;
 		vmaCreateImage(s_Data->allocator, &imageInfo, &allocInfo, &outImage, &allocation, nullptr);
 
+		VmaAllocationInfo vmaAllocInfo;
+		vmaGetAllocationInfo(s_Data->allocator, allocation, &vmaAllocInfo);
+		Memory::MemoryTracker::RecordAlloc(Memory::Category::GPU, vmaAllocInfo.size);
+
 		EQN_CORE_TRACE("VMA Alloc Image: {0}x{1}", imageInfo.extent.width, imageInfo.extent.height);
 
 		return allocation;
@@ -69,11 +80,19 @@ namespace Equinox
 
 	void VulkanAllocator::FreeBuffer(VkBuffer buffer, VmaAllocation allocation)
 	{
+		VmaAllocationInfo vmaAllocInfo;
+		vmaGetAllocationInfo(s_Data->allocator, allocation, &vmaAllocInfo);
+		Memory::MemoryTracker::RecordFree(Memory::Category::GPU, vmaAllocInfo.size);
+
 		vmaDestroyBuffer(s_Data->allocator, buffer, allocation);
 	}
 
 	void VulkanAllocator::FreeImage(VkImage image, VmaAllocation allocation)
 	{
+		VmaAllocationInfo vmaAllocInfo;
+		vmaGetAllocationInfo(s_Data->allocator, allocation, &vmaAllocInfo);
+		Memory::MemoryTracker::RecordFree(Memory::Category::GPU, vmaAllocInfo.size);
+
 		EQN_CORE_TRACE("VMA Free Image");
 		vmaDestroyImage(s_Data->allocator, image, allocation);
 	}

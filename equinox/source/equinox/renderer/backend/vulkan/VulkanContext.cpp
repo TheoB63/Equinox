@@ -26,7 +26,7 @@ namespace Equinox
 	void VulkanContext::Init(void* windowHandle)
 	{
 		EQN_CORE_ASSERT(!s_Instance, "VulkanContext already initialized!");
-		s_Instance = new VulkanContext();
+		s_Instance = EQN_NEW(Memory::Category::Rendering, VulkanContext);
 		s_Instance->m_WindowHandle = windowHandle;
 
 		s_Instance->CreateInstance();
@@ -65,8 +65,7 @@ namespace Equinox
 
 		vkDestroyInstance(s_Instance->m_Instance, nullptr);
 
-		delete s_Instance;
-		s_Instance = nullptr;
+		EQN_DELETE(Memory::Category::Rendering, s_Instance);
 	}
 
 	VulkanContext& VulkanContext::Get()
