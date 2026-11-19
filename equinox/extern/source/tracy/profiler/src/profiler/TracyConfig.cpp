@@ -38,14 +38,23 @@ void LoadConfig()
     if( ini_sget( ini, "achievements", "enabled", "%d", &v ) ) s_config.achievements = v;
     if( ini_sget( ini, "achievements", "asked", "%d", &v ) ) s_config.achievementsAsked = v;
     if( ini_sget( ini, "ui", "saveUserScale", "%d", &v ) ) s_config.saveUserScale = v;
-    if( ini_sget( ini, "ui", "userScale", "%lf", &v1 ) && v1 > 0.0 && s_config.saveUserScale ) s_config.userScale = v1;
+    if( ini_sget( ini, "ui", "zoomLevel", "%d", &v ) && v >= 0 && v < s_zoomPresetCount ) s_config.zoomLevel = v;
     if( ini_sget( ini, "llm", "enabled", "%d", &v ) ) s_config.llm = v;
     if( v2 = ini_get( ini, "llm", "address" ); v2 ) s_config.llmAddress = v2;
     if( v2 = ini_get( ini, "llm", "model" ); v2 ) s_config.llmModel = v2;
+    if( v2 = ini_get( ini, "llm", "fastModel" ); v2 ) s_config.llmFastModel = v2;
     if( v2 = ini_get( ini, "llm", "embeddings" ); v2 ) s_config.llmEmbeddingsModel = v2;
     if( v2 = ini_get( ini, "llm", "useragent" ); v2 ) s_config.llmUserAgent = v2;
     if( v2 = ini_get( ini, "llm", "searchIdentifier" ); v2 ) s_config.llmSearchIdentifier = v2;
     if( v2 = ini_get( ini, "llm", "searchApiKey" ); v2 ) s_config.llmSearchApiKey = v2;
+    if( v2 = ini_get( ini, "llm", "searchBraveApiKey" ); v2 ) s_config.llmSearchBraveApiKey = v2;
+    if( ini_sget( ini, "llm", "annotateCallstacks", "%d", &v ) ) s_config.llmAnnotateCallstacks = v;
+    if( ini_sget( ini, "llm", "limitToolReplySize", "%d", &v ) ) s_config.llmLimitToolReplySize = v;
+    if( ini_sget( ini, "llm", "maxToolReplySizeValue", "%d", &v ) ) s_config.llmMaxToolReplySizeValue = v;
+    if( ini_sget( ini, "llm", "separateFastModel", "%d", &v ) ) s_config.llmSeparateFastModel = v;
+    if( ini_sget( ini, "llm", "summary", "%d", &v ) ) s_config.llmSummary = v;
+    if( ini_sget( ini, "llm", "suggestion", "%d", &v ) ) s_config.llmSuggestion = v;
+    if( ini_sget( ini, "llm", "personality", "%d", &v ) ) s_config.llmPersonality = v;
 
     ini_free( ini );
 }
@@ -83,16 +92,25 @@ bool SaveConfig()
 
     fprintf( f, "\n[ui]\n" );
     fprintf( f, "saveUserScale = %i\n", (int)s_config.saveUserScale );
-    fprintf( f, "userScale = %lf\n", s_config.userScale );
+    fprintf( f, "zoomLevel = %i\n", s_config.zoomLevel );
 
     fprintf( f, "\n[llm]\n" );
     fprintf( f, "enabled = %i\n", (int)s_config.llm );
     fprintf( f, "address = %s\n", s_config.llmAddress.c_str() );
     fprintf( f, "model = %s\n", s_config.llmModel.c_str() );
+    fprintf( f, "fastModel = %s\n", s_config.llmFastModel.c_str() );
     fprintf( f, "embeddings = %s\n", s_config.llmEmbeddingsModel.c_str() );
     fprintf( f, "useragent = %s\n", s_config.llmUserAgent.c_str() );
     fprintf( f, "searchIdentifier = %s\n", s_config.llmSearchIdentifier.c_str() );
     fprintf( f, "searchApiKey = %s\n", s_config.llmSearchApiKey.c_str() );
+    fprintf( f, "searchBraveApiKey = %s\n", s_config.llmSearchBraveApiKey.c_str() );
+    fprintf( f, "annotateCallstacks = %i\n", (int)s_config.llmAnnotateCallstacks );
+    fprintf( f, "limitToolReplySize = %i\n", (int)s_config.llmLimitToolReplySize );
+    fprintf( f, "maxToolReplySizeValue = %i\n", s_config.llmMaxToolReplySizeValue );
+    fprintf( f, "separateFastModel = %i\n", (int)s_config.llmSeparateFastModel );
+    fprintf( f, "summary = %i\n", (int)s_config.llmSummary );
+    fprintf( f, "suggestion = %i\n", (int)s_config.llmSuggestion );
+    fprintf( f, "personality = %i\n", s_config.llmPersonality );
 
     fclose( f );
     return true;

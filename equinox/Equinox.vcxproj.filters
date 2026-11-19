@@ -203,6 +203,9 @@
     <ClInclude Include="source\equinox\renderer\ShaderCompiler.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\ShaderLibrary.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\Texture.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
@@ -338,7 +341,6 @@
     <ClInclude Include="source\equinox\utils\ImGuiUtils.h">
       <Filter>equinox\utils</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\ShaderLibrary.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -421,6 +423,9 @@
       <Filter>equinox\renderer</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\ShaderCompiler.cpp">
+      <Filter>equinox\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\ShaderLibrary.cpp">
       <Filter>equinox\renderer</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\Texture.cpp">
@@ -522,6 +527,5 @@
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp">
       <Filter>equinox\utils</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\renderer\ShaderLibrary.cpp" />
   </ItemGroup>
 </Project>

@@ -12,6 +12,7 @@ namespace tracy
 TimelineItem::TimelineItem( View& view, Worker& worker, const void* key, bool wantPreprocess )
     : m_visible( true )
     , m_showFull( true )
+    , m_pinned( false )
     , m_height( 0 )
     , m_wantPreprocess( wantPreprocess )
     , m_key( key )
@@ -82,32 +83,36 @@ void TimelineItem::Draw( bool firstFrame, const TimelineContext& ctx, int yOffse
             DrawTextContrast( draw, wpos + ImVec2( 0, hdrOffset ), colorInactive, ICON_FA_CARET_RIGHT );
         }
         const auto label = HeaderLabel();
-        labelWidth = ImGui::CalcTextSize( label ).x;
-        DrawTextContrast( draw, wpos + ImVec2( ty, hdrOffset ), m_showFull ? color : colorInactive, label );
+        const auto pinWidth = IsPinned() ? ImGui::CalcTextSize( ICON_FA_THUMBTACK " " ).x : 0.f;
+        labelWidth = pinWidth + ImGui::CalcTextSize( label ).x;
         if( m_showFull )
         {
             DrawLine( draw, dpos + ImVec2( 0, hdrOffset + ty - 1 ), dpos + ImVec2( w, hdrOffset + ty - 1 ), HeaderLineColor() );
             HeaderExtraContents( ctx, hdrOffset, labelWidth );
         }
+        if( IsPinned() ) DrawTextContrast( draw, wpos + ImVec2( ty, hdrOffset ), m_showFull ? color : colorInactive, ICON_FA_THUMBTACK );
+        DrawTextContrast( draw, wpos + ImVec2( ty + pinWidth, hdrOffset ), m_showFull ? color : colorInactive, label );
 
         if( ctx.hover && ImGui::IsMouseHoveringRect( wpos + ImVec2( 0, hdrOffset ), wpos + ImVec2( ty + labelWidth, hdrOffset + ty ) ) )
         {
             HeaderTooltip( label );
 
-            if( IsMouseClicked( 0 ) )
+            if( IsMouseClicked( ImGuiMouseButton_Left ) )
             {
                 m_showFull = !m_showFull;
+                HeaderClicked();
             }
-            if( IsMouseClicked( 2 ) )
+            if( IsMouseClicked( ImGuiMouseButton_Middle ) )
             {
                 const auto t0 = RangeBegin();
                 const auto t1 = RangeEnd();
                 if( t0 < t1 )
                 {
                     m_view.ZoomToRange( t0, t1 );
+                    HeaderZoomed();
                 }
             }
-            if( IsMouseClicked( 1 ) )
+            if( IsMouseClicked( ImGuiMouseButton_Right ) )
             {
                 ImGui::OpenPopup( "menuPopup" );
             }
@@ -119,6 +124,11 @@ void TimelineItem::Draw( bool firstFrame, const TimelineContext& ctx, int yOffse
         if( ImGui::MenuItem( ICON_FA_EYE_SLASH " Hide" ) )
         {
             SetVisible( false );
+            ImGui::CloseCurrentPopup();
+        }
+        if( ImGui::MenuItem( IsPinned() ? ICON_FA_THUMBTACK_SLASH " Unpin" : ICON_FA_THUMBTACK " Pin" ) )
+        {
+            SetPinned( !IsPinned() );
             ImGui::CloseCurrentPopup();
         }
         DrawExtraPopupItems();

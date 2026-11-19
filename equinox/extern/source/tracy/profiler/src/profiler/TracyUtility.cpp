@@ -3,18 +3,24 @@
 #include "TracyColor.hpp"
 #include "TracyPrint.hpp"
 #include "TracyUtility.hpp"
+#include "TracyView.hpp"
 #include "TracyWorker.hpp"
+#include "../Fonts.hpp"
 
 namespace tracy
 {
 
-// Short list based on GetTypes() in TracySourceTokenizer.cpp
-constexpr const char* TypesList[] = {
-    "bool ", "char ", "double ", "float ", "int ", "long ", "short ",
-    "signed ", "unsigned ", "void ", "wchar_t ", "size_t ", "int8_t ",
-    "int16_t ", "int32_t ", "int64_t ", "intptr_t ", "uint8_t ", "uint16_t ",
-    "uint32_t ", "uint64_t ", "ptrdiff_t ", nullptr
-};
+static constexpr char OpSyms[] = "+-*/%^&|~!<>=[](){}\"";
+
+static bool IsOperatorBracket( const char* start, const char* ptr )
+{
+    auto anchor = ptr;
+    while( anchor > start && strchr( OpSyms, anchor[-1] ) != nullptr ) anchor--;
+    if( ptr - anchor >= 2 ) return false;
+    if( ptr - anchor == 1 && ptr[-1] != '<' ) return false;
+    if( anchor - start < 8 || memcmp( anchor - 8, "operator", 8 ) != 0 ) return false;
+    return anchor == start + 8 || anchor[-9] == ' ' || anchor[-9] == ':';
+}
 
 const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, float zsz )
 {
@@ -36,6 +42,11 @@ const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, fl
         memcpy( dst, start, ptr - start + 1 );
         dst += ptr - start + 1;
         if( ptr == end ) break;
+        if( IsOperatorBracket( name, ptr ) )
+        {
+            ptr++;
+            continue;
+        }
         cnt++;
         ptr++;
         while( cnt > 0 )
@@ -79,27 +90,42 @@ const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, fl
     }
 
     ptr = buf;
-    for(;;)
+    auto params = end;
+    while( params > buf && params[-1] != '(' ) params--;
+    if( params > buf )
     {
-        auto match = TypesList;
-        while( *match )
+        auto sp = params;
+        for(;;)
         {
-            auto m = *match;
-            auto p = ptr;
-            while( *m )
+            while( sp > buf && sp[-1] != ' ' ) sp--;
+            if( sp == buf ) break;
+            sp--;
+            auto word = sp;
+            while( word > buf && word[-1] != ' ' ) word--;
+            bool operatorSpace = false;
+            for( auto o = word; o + 8 <= sp; o++ )
             {
-                if( *m != *p ) break;
-                m++;
-                p++;
+                if( ( o == word || o[-1] == ':' ) && memcmp( o, "operator", 8 ) == 0 )
+                {
+                    auto t = o + 8;
+                    while( t < sp && strchr( OpSyms, *t ) != nullptr ) t++;
+                    if( t == sp )
+                    {
+                        operatorSpace = true;
+                        break;
+                    }
+                }
             }
-            if( !*m )
+            if( !operatorSpace )
             {
-                ptr = p;
+                auto q = buf;
+                while( q + 9 <= sp && memcmp( q, "operator ", 9 ) != 0 ) q++;
+                if( q + 9 > sp ) ptr = sp + 1;
                 break;
             }
-            match++;
+            if( word == buf ) break;
+            sp = word;
         }
-        if( !*match ) break;
     }
 
     tsz = ImGui::CalcTextSize( ptr, end );
@@ -110,6 +136,7 @@ const char* ShortenZoneName( ShortenName type, const char* name, ImVec2& tsz, fl
         auto p = ptr;
         while( p < end && *p != ':' ) p++;
         if( p == end ) return ptr;
+        if( p - ptr >= 9 && memcmp( ptr, "operator ", 9 ) == 0 ) return ptr;
         p++;
         while( p < end && *p == ':' ) p++;
         ptr = p;
@@ -138,6 +165,13 @@ void TooltipNormalizedName( const char* name, const char* normalized )
     }
 }
 
+const char* ShortenImageName( const char* image )
+{
+    const char* ptr = image + strlen( image );
+    while( ptr > image && ptr[-1] != '/' && ptr[-1] != '\\' ) ptr--;
+    return ptr;
+}
+
 uint32_t GetThreadColor( uint64_t thread, int depth, bool dynamic )
 {
     if( !dynamic ) return 0xFFCC5555;
@@ -161,6 +195,13 @@ uint32_t GetPlotColor( const PlotData& plot, const Worker& worker )
         assert( false );
         return 0;
     }
+}
+
+const char* GetPlotName( const PlotData& plot, const Worker& worker )
+{
+    if( plot.type == PlotType::SysTime ) return "CPU usage";
+    if( plot.type == PlotType::Memory && plot.name == 0 ) return "Memory usage";
+    return worker.GetString( plot.name );
 }
 
 const char* FormatPlotValue( double val, PlotValueFormatting format )
@@ -194,7 +235,7 @@ std::vector<std::string> SplitLines( const char* data, size_t sz )
     for(;;)
     {
         auto end = txt;
-        while( *end != '\n' && *end != '\r' && end - data < sz ) end++;
+        while( end - data < sz && *end != '\n' && *end != '\r' ) end++;
         ret.emplace_back( txt, end );
         if( end - data == sz ) break;
         if( *end == '\n' )
@@ -211,6 +252,99 @@ std::vector<std::string> SplitLines( const char* data, size_t sz )
         txt = end;
     }
     return ret;
+}
+
+void PrintLocalStack( const CallstackFrameData* frame, const Worker& worker, const View& view )
+{
+    for( uint8_t i=0; i<frame->size; i++ )
+    {
+        ImGui::TextDisabled( "%i.", i+1 );
+        ImGui::SameLine();
+        const auto symName = worker.GetString( frame->data[i].name );
+        const auto normalized = view.GetShortenName() != ShortenName::Never ? ShortenZoneName( ShortenName::OnlyNormalize, symName ) : symName;
+        if( worker.IsFrameExternal( frame->data[i].file, frame->imageName ) )
+        {
+            TextDisabledUnformatted( normalized );
+        }
+        else
+        {
+            ImGui::TextUnformatted( normalized );
+        }
+        ImGui::SameLine();
+        ImGui::PushFont( g_fonts.normal, FontSmall );
+        ImGui::AlignTextToFramePadding();
+        const auto srcline = frame->data[i].line;
+        if( srcline != 0 )
+        {
+            ImGui::TextDisabled( "%s:%i", worker.GetString( frame->data[i].file ), srcline );
+        }
+        else
+        {
+            ImGui::TextDisabled( "%s", worker.GetString( frame->data[i].file ) );
+        }
+        ImGui::PopFont();
+    }
+}
+
+static RangeSlim ListSections( const Vector<SectionItem>& sections, const Worker& worker )
+{
+    RangeSlim out = {};
+    int id = 0;
+    for( auto& v : sections )
+    {
+        ImGui::PushID( id++ );
+        const auto end = v.end.IsNonNegative() ? v.end.Val() : worker.GetLastTime();
+        if( ImGui::MenuItem( worker.GetString( v.text ) ) )
+        {
+            out.min = v.start.Val();
+            out.max = end;
+            out.active = true;
+        }
+        ImGui::PopID();
+        ImGui::SameLine();
+        ImGui::TextDisabled( "%s - %s (%s)", TimeToStringExact( v.start.Val() ), TimeToStringExact( end ), TimeToString( end - v.start.Val() ) );
+    }
+    return out;
+}
+
+RangeSlim ListSectionsMenu( const Worker& worker )
+{
+    RangeSlim out = {};
+    auto& sections = worker.GetSections();
+    if( sections.empty() )
+    {
+        TextDisabledUnformatted( ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE " Sections" );
+    }
+    else if( ImGui::BeginMenu( ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE " Sections" ) )
+    {
+        if( sections.size() == 1 )
+        {
+            out = ListSections( sections.begin()->second, worker );
+        }
+        else
+        {
+            std::vector<std::pair<uint16_t, const Vector<SectionItem>*>> s;
+            s.reserve( sections.size() );
+            for( auto& v : sections ) s.emplace_back( v.first, &v.second );
+            pdqsort_branchless( s.begin(), s.end(), []( const auto& lhs, const auto& rhs ) { return lhs.first < rhs.first; } );
+
+            int id = 0;
+            for( auto& v : s )
+            {
+                ImGui::PushID( id++ );
+                auto desc = worker.GetSectionCategoryDescription( v.first );
+                if( ImGui::BeginMenu( desc ) )
+                {
+                    auto res = ListSections( *v.second, worker );
+                    if( res.active ) out = res;
+                    ImGui::EndMenu();
+                }
+                ImGui::PopID();
+            }
+        }
+        ImGui::EndMenu();
+    }
+    return out;
 }
 
 }

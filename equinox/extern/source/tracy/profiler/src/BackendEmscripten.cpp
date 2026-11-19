@@ -24,6 +24,67 @@ static float s_prevScale = -1;
 static int s_width, s_height;
 static uint64_t s_time;
 static const char* s_prevCursor = nullptr;
+// Clipboard
+//
+// Browsers only give out the clipboard text in the paste event, but Dear ImGui wants it synchronously, in the middle
+// of a frame. The text is cached when the event fires (tracy_paste_clipboard) and GetClipboard returns the cache.
+// navigator.clipboard.readText() is not used, as it is asynchronous and makes browsers ask for permission.
+//
+// When pasting with the shortcut, the key event goes to Dear ImGui as usual and it pastes the cached text. The event
+// must not be default-prevented, or the browser won't send the paste event. Pastes without the shortcut, e.g. from
+// the menu of the browser, are turned into one so that the text is filtered the same way.
+//
+// Limitations:
+// - Only the text of the last paste event is available, so the clipboard can't be read on demand, e.g. from a button.
+//   navigator.clipboard.readText() would allow it, but it is harder to support and asks the user for confirmation.
+// - macOS Cmd shortcuts are not handled. That needs io.ConfigMacOSXBehaviors, and a workaround for the browser not
+//   sending key up events while Cmd is held.
+//
+// Same approach as:
+// - https://github.com/pongasoft/emscripten-glfw/blob/master/docs/Usage.md#clipboard-support
+// - https://github.com/Armchair-Software/emscripten-browser-clipboard
+static std::string s_clipboard;
+
+// True from the paste shortcut until its paste event. Dear ImGui does the pasting then.
+// It is not cleared by the key up, which the browser doesn't always send.
+static bool s_pasteShortcut = false;
+
+extern "C" void tracy_paste_clipboard( const char* text )
+{
+    s_clipboard = text;
+    // If the paste didn't come from the shortcut, fake it so that Dear ImGui does the pasting.
+    // It only accepts exactly Ctrl+V, so release the other modifiers. The next key event sets them again.
+    if( !s_pasteShortcut )
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        io.AddKeyEvent( ImGuiMod_Shift, false );
+        io.AddKeyEvent( ImGuiMod_Alt, false );
+        io.AddKeyEvent( ImGuiMod_Super, false );
+        io.AddKeyEvent( ImGuiMod_Ctrl, true );
+        io.AddKeyEvent( ImGuiKey_V, true );
+        io.AddKeyEvent( ImGuiKey_V, false );
+        io.AddKeyEvent( ImGuiMod_Ctrl, false );
+    }
+    s_pasteShortcut = false;
+    tracy::s_wasActive = true;
+}
+
+static void SetClipboard( ImGuiContext*, const char* text )
+{
+    s_clipboard = text;
+    EM_ASM( {
+        var text = UTF8ToString($0);
+        if( navigator.clipboard && navigator.clipboard.writeText )
+        {
+            navigator.clipboard.writeText( text );
+        }
+    }, text );
+}
+
+static const char* GetClipboard( ImGuiContext* )
+{
+    return s_clipboard.c_str();
+}
 
 static ImGuiKey TranslateKeyCode( const char* code )
 {
@@ -138,6 +199,64 @@ static ImGuiKey TranslateKeyCode( const char* code )
     return ImGuiKey_None;
 }
 
+// What each physical key sent to Dear ImGui when it was pressed.
+// The character of a key can change before it is released (AltGr let go first), so the release can't work it out again.
+// Two things are left as they are, because the fixes cost more than the bugs:
+// - Two keys can send the same ImGuiKey (the key labelled A, and AltGr plus the key at QWERTY's A). Letting go of one
+//   releases it for both. Counting the presses would fix it, with a second table.
+// - Nothing is cleared when the window loses focus. The next press of a key overwrites its old entry anyway.
+static ImGuiKey s_sentKey[ImGuiKey_NamedKey_COUNT];
+
+// Letters follow the layout, so Ctrl+Z is on the key labelled Z. Everything else uses the physical key,
+// including letters that aren't A-Z.
+static ImGuiKey TranslateKeyDown( const EmscriptenKeyboardEvent* e )
+{
+    const ImGuiKey physical = TranslateKeyCode( e->code );
+    if( physical == ImGuiKey_None ) return ImGuiKey_None;
+    ImGuiKey& sent = s_sentKey[physical - ImGuiKey_NamedKey_BEGIN];
+    if( !e->repeat || sent == ImGuiKey_None )
+    {
+        const char c = e->key[0];
+        const bool letter = !e->key[1] && ( ( c >= 'a' && c <= 'z' ) || ( c >= 'A' && c <= 'Z' ) );
+        const ImGuiKey key = letter ? (ImGuiKey)( ImGuiKey_A + ( c & 0x1f ) - 1 ) : physical;
+        // The key up was missed, so release the old key now.
+        if( sent != ImGuiKey_None && sent != key ) ImGui::GetIO().AddKeyEvent( sent, false );
+        sent = key;
+    }
+    return sent;
+}
+
+static ImGuiKey TranslateKeyUp( const EmscriptenKeyboardEvent* e )
+{
+    const ImGuiKey physical = TranslateKeyCode( e->code );
+    if( physical == ImGuiKey_None ) return ImGuiKey_None;
+    ImGuiKey& sent = s_sentKey[physical - ImGuiKey_NamedKey_BEGIN];
+    const ImGuiKey key = sent != ImGuiKey_None ? sent : physical;
+    sent = ImGuiKey_None;
+    return key;
+}
+
+// Ctrl+V, Cmd+V and Shift+Insert.
+static bool IsPasteShortcut( const EmscriptenKeyboardEvent* e, ImGuiKey key )
+{
+    return ( ( e->ctrlKey || e->metaKey ) && key == ImGuiKey_V ) || ( e->shiftKey && !e->ctrlKey && key == ImGuiKey_Insert );
+}
+
+// Dear ImGui only pastes on exactly Ctrl+V or Shift+Insert.
+static bool ImGuiPastes( const EmscriptenKeyboardEvent* e, ImGuiKey key )
+{
+    return !e->altKey && ( key == ImGuiKey_Insert || !e->shiftKey );
+}
+
+static void UpdateKeyModifiers( const EmscriptenKeyboardEvent* e )
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.AddKeyEvent( ImGuiMod_Ctrl, e->ctrlKey );
+    io.AddKeyEvent( ImGuiMod_Shift, e->shiftKey );
+    io.AddKeyEvent( ImGuiMod_Alt, e->altKey );
+    io.AddKeyEvent( ImGuiMod_Super, e->metaKey );
+}
+
 Backend::Backend( const char* title, const std::function<void()>& redraw, const std::function<void(float)>& scaleChanged, const std::function<int(void)>& isBusy, RunQueue* mainThreadTasks )
 {
     constexpr EGLint eglConfigAttrib[] = {
@@ -183,6 +302,10 @@ Backend::Backend( const char* title, const std::function<void()>& redraw, const 
     ImGuiIO& io = ImGui::GetIO();
     io.BackendPlatformName = "wasm (tracy profiler)";
 
+    auto& platform = ImGui::GetPlatformIO();
+    platform.Platform_SetClipboardTextFn = SetClipboard;
+    platform.Platform_GetClipboardTextFn = GetClipboard;
+
     emscripten_set_mousedown_callback( "#canvas", nullptr, EM_TRUE, []( int, const EmscriptenMouseEvent* e, void* ) -> EM_BOOL {
         ImGui::GetIO().AddMouseButtonEvent( e->button == 0 ? 0 : 3 - e->button, true );
         tracy::s_wasActive = true;
@@ -215,17 +338,32 @@ Backend::Backend( const char* title, const std::function<void()>& redraw, const 
         return EM_TRUE;
     } );
     emscripten_set_keydown_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, [] ( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL {
-        const auto code = TranslateKeyCode( e->code );
+        UpdateKeyModifiers( e );
+        const auto code = TranslateKeyDown( e );
         if( code == ImGuiKey_None ) return EM_FALSE;
         ImGui::GetIO().AddKeyEvent( code, true );
-        if( e->key[0] && !e->key[1] ) ImGui::GetIO().AddInputCharacter( *e->key );
+        // Let the browser handle the shortcut, or it won't send the paste event.
+        if( IsPasteShortcut( e, code ) )
+        {
+            // If Dear ImGui won't paste for this chord, the paste event fakes a Ctrl+V.
+            s_pasteShortcut = ImGuiPastes( e, code );
+            return EM_FALSE;
+        }
+        if( e->key[0] && !e->key[1] && !e->ctrlKey && !e->metaKey ) ImGui::GetIO().AddInputCharacter( *e->key );
         return EM_TRUE;
     } );
     emscripten_set_keyup_callback( EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_TRUE, [] ( int, const EmscriptenKeyboardEvent* e, void* ) -> EM_BOOL {
-        const auto code = TranslateKeyCode( e->code );
+        UpdateKeyModifiers( e );
+        const auto code = TranslateKeyUp( e );
         if( code == ImGuiKey_None ) return EM_FALSE;
         ImGui::GetIO().AddKeyEvent( code, false );
         return EM_TRUE;
+    } );
+    EM_ASM( {
+        document.addEventListener( 'paste', function( e ) {
+            var text = ( e.clipboardData || window.clipboardData ).getData( 'text' );
+            ccall( 'tracy_paste_clipboard', 'void', ['string'], [text] );
+        } );
     } );
 
     s_time = std::chrono::duration_cast<std::chrono::microseconds>( std::chrono::high_resolution_clock::now().time_since_epoch() ).count();
@@ -265,8 +403,12 @@ void Backend::NewFrame( int& w, int& h )
 
     if( s_width != w || s_height != h )
     {
-        EM_ASM( Module.canvas.style.width = window.innerWidth + 'px'; Module.canvas.style.height = window.innerHeight + 'px' );
-        EM_ASM( Module.canvas.width = $0; Module.canvas.height = $1, w, h );
+        EM_ASM( {
+            Module.canvas.style.width = ($0 / $2) + 'px';
+            Module.canvas.style.height = ($1 / $2) + 'px';
+            Module.canvas.width = $0;
+            Module.canvas.height = $1;
+        }, w, h, double( scale ) );
 
         s_width = w;
         s_height = h;
@@ -338,4 +480,14 @@ void Backend::SetTitle( const char* title )
 float Backend::GetDpiScale()
 {
     return EM_ASM_DOUBLE( { return window.devicePixelRatio; } );
+}
+
+size_t Backend::HandleType()
+{
+    return 0;
+}
+
+void* Backend::Handle()
+{
+    return nullptr;
 }

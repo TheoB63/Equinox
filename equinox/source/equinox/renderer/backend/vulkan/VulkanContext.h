@@ -65,7 +65,12 @@ namespace Equinox
 		// Validation Layers
 		bool CheckValidationLayerSupport();
 		std::vector<const char*> m_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+#ifdef DEBUG
 		bool m_EnableValidationLayers = true; // TODO: Disable in Release
+#elif RELEASE || DIST
+		bool m_EnableValidationLayers = false; // TODO: Disable in Release
+#endif // DEBUG
+
 
 		VkInstance m_Instance = VK_NULL_HANDLE;
 		VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;

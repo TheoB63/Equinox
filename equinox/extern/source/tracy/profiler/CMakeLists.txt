@@ -1,12 +1,19 @@
 cmake_minimum_required(VERSION 3.25)
 
-option(NO_FILESELECTOR "Disable the file selector" OFF)
-option(GTK_FILESELECTOR "Use the GTK file selector on Linux instead of the xdg-portal one" OFF)
-option(LEGACY "Instead of Wayland, use the legacy X11 backend on Linux" OFF)
-option(NO_ISA_EXTENSIONS "Disable ISA extensions (don't pass -march=native or -mcpu=native to the compiler)" OFF)
-option(NO_STATISTICS "Disable calculation of statistics" OFF)
-option(SELF_PROFILE "Enable self-profiling" OFF)
-option(SANITIZE "Sanitizer parameters" OFF)
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/options.cmake)
+
+set_option(NO_FILESELECTOR "Disable the file selector" OFF)
+set_option(GTK_FILESELECTOR "Use the GTK file selector on Linux instead of the xdg-portal one" OFF)
+set_option(LEGACY "Instead of Wayland, use the legacy X11 backend on Linux" OFF)
+set_option(SELF_PROFILE "Enable self-profiling" OFF)
+set_option_value(SANITIZE "Sanitizer parameters" "")
+
+if(APPLE)
+    set_option(BUNDLE "Build a macOS application bundle" OFF)
+endif()
+
+set(NO_STATISTICS OFF)
+set(VENDOR_GUI ON)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/version.cmake)
 
@@ -17,6 +24,10 @@ project(
     LANGUAGES C CXX
     VERSION ${TRACY_VERSION_STRING}
 )
+
+if(APPLE)
+    enable_language(OBJC)
+endif()
 
 if(SELF_PROFILE)
     add_definitions(-DTRACY_ENABLE)
@@ -31,6 +42,8 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/config.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/vendor.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/../cmake/server.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/GitRef.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../cmake/manual.cmake)
 
 include(ExternalProject)
 ExternalProject_Add(embed
@@ -40,16 +53,26 @@ ExternalProject_Add(embed
         -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}
 )
 
-add_custom_command(
-    OUTPUT data
-    COMMAND ${CMAKE_COMMAND} -E make_directory data
-)
-
+# Embeds a file into the profiler as a compressed C array (data/NAME.cpp/.hpp).
+# FILE is relative to the current source directory; with BUILD, relative to
+# the current build directory. With TEXT, line endings are normalized to unix.
 function(Embed LIST NAME FILE)
+    cmake_parse_arguments(EMBED "TEXT;BUILD" "" "" ${ARGN})
+    if(EMBED_TEXT)
+        set(EMBED_FLAGS -t)
+    else()
+        set(EMBED_FLAGS)
+    endif()
+    if(EMBED_BUILD)
+        set(EMBED_SOURCE ${CMAKE_CURRENT_BINARY_DIR}/${FILE})
+    else()
+        set(EMBED_SOURCE ${CMAKE_CURRENT_LIST_DIR}/${FILE})
+    endif()
     add_custom_command(
         OUTPUT data/${NAME}.cpp data/${NAME}.hpp
-        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/embed ${NAME} ${CMAKE_CURRENT_LIST_DIR}/${FILE} data/${NAME}
-        DEPENDS data embed ${CMAKE_CURRENT_LIST_DIR}/${FILE}
+        COMMAND ${CMAKE_COMMAND} -E make_directory data
+        COMMAND ${CMAKE_CURRENT_BINARY_DIR}/embed ${EMBED_FLAGS} ${NAME} ${EMBED_SOURCE} data/${NAME}
+        DEPENDS embed ${EMBED_SOURCE}
     )
     list(APPEND ${LIST} data/${NAME}.cpp)
     return(PROPAGATE ${LIST})
@@ -61,15 +84,18 @@ set(SERVER_FILES
     TracyBadVersion.cpp
     TracyColor.cpp
     TracyConfig.cpp
+    TracyDisassembly.cpp
     TracyEmbed.cpp
     TracyEventDebug.cpp
     TracyFileselector.cpp
     TracyFilesystem.cpp
     TracyImGui.cpp
     TracyManualData.cpp
+    TracyManualWindow.cpp
     TracyMarkdown.cpp
     TracyMicroArchitecture.cpp
     TracyMouse.cpp
+    TracyNameGen.cpp
     TracyProtoHistory.cpp
     TracySourceContents.cpp
     TracySourceTokenizer.cpp
@@ -94,11 +120,11 @@ set(SERVER_FILES
     TracyView_FindZone.cpp
     TracyView_FlameGraph.cpp
     TracyView_FrameOverview.cpp
+    TracyView_FrameStatistics.cpp
     TracyView_FrameTimeline.cpp
     TracyView_FrameTree.cpp
     TracyView_GpuTimeline.cpp
     TracyView_Locks.cpp
-    TracyView_Manual.cpp
     TracyView_Memory.cpp
     TracyView_Messages.cpp
     TracyView_Navigation.cpp
@@ -115,6 +141,7 @@ set(SERVER_FILES
     TracyView_ZoneInfo.cpp
     TracyView_ZoneTimeline.cpp
     TracyWeb.cpp
+    TracyWindowConstraints.cpp
 )
 
 if(NOT EMSCRIPTEN)
@@ -130,9 +157,9 @@ endif()
 list(TRANSFORM SERVER_FILES PREPEND "src/profiler/")
 
 set(PROFILER_FILES
-    src/ConnectionHistory.cpp
     src/Filters.cpp
     src/Fonts.cpp
+    src/History.cpp
     src/HttpRequest.cpp
     src/ImGuiContext.cpp
     src/ini.c
@@ -145,66 +172,137 @@ set(PROFILER_FILES
     src/winmainArchDiscovery.cpp
 )
 
-Embed(PROFILER_FILES SystemPrompt src/llm/system.prompt.md)
-Embed(PROFILER_FILES SystemReminder src/llm/system.reminder.md)
+Embed(PROFILER_FILES PersonalityAnnoyed src/llm/personality.annoyed.md TEXT)
+Embed(PROFILER_FILES PersonalityEmotion src/llm/personality.emotion.md TEXT)
+Embed(PROFILER_FILES SystemPrompt src/llm/system.prompt.md TEXT)
+Embed(PROFILER_FILES SkillCallstack src/llm/skill.callstack.md TEXT)
+Embed(PROFILER_FILES SkillOptimization src/llm/skill.optimization.md TEXT)
+Embed(PROFILER_FILES ToolsJson src/llm/tools.json TEXT)
+
 Embed(PROFILER_FILES FontFixed src/font/FiraCode-Retina.ttf)
-Embed(PROFILER_FILES FontIcons src/font/Font\ Awesome\ 6\ Free-Solid-900.otf)
+Embed(PROFILER_FILES FontIcons src/font/Font\ Awesome\ 7\ Free-Solid-900.otf)
 Embed(PROFILER_FILES FontNormal src/font/Roboto-Regular.ttf)
 Embed(PROFILER_FILES FontBold src/font/Roboto-Bold.ttf)
 Embed(PROFILER_FILES FontItalic src/font/Roboto-Italic.ttf)
 Embed(PROFILER_FILES FontBoldItalic src/font/Roboto-BoldItalic.ttf)
-Embed(PROFILER_FILES Manual ../manual/tracy.md)
+Embed(PROFILER_FILES FontEmoji src/font/NotoEmoji-Regular.ttf)
+Embed(PROFILER_FILES FontCjk src/font/SourceHanSans-Normal.ttc)
+set(MANUAL_MD ${CMAKE_CURRENT_BINARY_DIR}/manual/tracy.md)
+add_custom_command(
+    OUTPUT ${MANUAL_MD}
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/../manual/latex2md.py
+            --tex ${CMAKE_CURRENT_LIST_DIR}/../manual/tracy.tex
+            --out ${MANUAL_MD}
+            --pandoc ${TRACY_PANDOC}
+            --icons ${CMAKE_CURRENT_LIST_DIR}/src/profiler/IconsFontAwesome7.h
+    DEPENDS
+        ${CMAKE_CURRENT_LIST_DIR}/../manual/tracy.tex
+        ${CMAKE_CURRENT_LIST_DIR}/../manual/filter.lua
+        ${CMAKE_CURRENT_LIST_DIR}/../manual/latex2md.py
+        ${CMAKE_CURRENT_LIST_DIR}/src/profiler/IconsFontAwesome7.h
+    COMMENT "Generating user manual"
+    VERBATIM)
+
+Embed(PROFILER_FILES Manual manual/tracy.md TEXT BUILD)
+
+Embed(PROFILER_FILES Text100Million src/achievements/100Million.md TEXT)
+Embed(PROFILER_FILES TextAddFrameSets src/achievements/AddFrameSets.md TEXT)
+Embed(PROFILER_FILES TextAllocStacks src/achievements/AllocStacks.md TEXT)
+Embed(PROFILER_FILES TextAnnotateZones src/achievements/AnnotateZones.md TEXT)
+Embed(PROFILER_FILES TextAnnotations src/achievements/Annotations.md TEXT)
+Embed(PROFILER_FILES TextAppInfo src/achievements/AppInfo.md TEXT)
+Embed(PROFILER_FILES TextAskAssist src/achievements/AskAssist.md TEXT)
+Embed(PROFILER_FILES TextConnectToClient src/achievements/ConnectToClient.md TEXT)
+Embed(PROFILER_FILES TextContention src/achievements/Contention.md TEXT)
+Embed(PROFILER_FILES TextContextSwitches src/achievements/ContextSwitches.md TEXT)
+Embed(PROFILER_FILES TextCpuData src/achievements/CpuData.md TEXT)
+Embed(PROFILER_FILES TextEntryStacks src/achievements/EntryStacks.md TEXT)
+Embed(PROFILER_FILES TextFindZone src/achievements/FindZone.md TEXT)
+Embed(PROFILER_FILES TextFrameImages src/achievements/FrameImages.md TEXT)
+Embed(PROFILER_FILES TextFrameStatistics src/achievements/FrameStatistics.md TEXT)
+Embed(PROFILER_FILES TextGhostZones src/achievements/GhostZones.md TEXT)
+Embed(PROFILER_FILES TextGlobalSettings src/achievements/GlobalSettings.md TEXT)
+Embed(PROFILER_FILES TextGpu src/achievements/Gpu.md TEXT)
+Embed(PROFILER_FILES TextGpuStats src/achievements/GpuStats.md TEXT)
+Embed(PROFILER_FILES TextHwCounters src/achievements/HwCounters.md TEXT)
+Embed(PROFILER_FILES TextInspectZone src/achievements/InspectZone.md TEXT)
+Embed(PROFILER_FILES TextInstrumentationIntro src/achievements/InstrumentationIntro.md TEXT)
+Embed(PROFILER_FILES TextInstrumentationStatistics src/achievements/InstrumentationStatistics.md TEXT)
+Embed(PROFILER_FILES TextInstrumentFrames src/achievements/InstrumentFrames.md TEXT)
+Embed(PROFILER_FILES TextIntro src/achievements/Intro.md TEXT)
+Embed(PROFILER_FILES TextLeaks src/achievements/Leaks.md TEXT)
+Embed(PROFILER_FILES TextLoadTrace src/achievements/LoadTrace.md TEXT)
+Embed(PROFILER_FILES TextLocks src/achievements/Locks.md TEXT)
+Embed(PROFILER_FILES TextLogMessages src/achievements/LogMessages.md TEXT)
+Embed(PROFILER_FILES TextManual src/achievements/Manual.md TEXT)
+Embed(PROFILER_FILES TextMemory src/achievements/Memory.md TEXT)
+Embed(PROFILER_FILES TextMemoryPools src/achievements/MemoryPools.md TEXT)
+Embed(PROFILER_FILES TextNameThreads src/achievements/NameThreads.md TEXT)
+Embed(PROFILER_FILES TextNavigate src/achievements/Navigate.md TEXT)
+Embed(PROFILER_FILES TextLightFlame src/achievements/LightFlame.md TEXT)
+Embed(PROFILER_FILES TextPlots src/achievements/Plots.md TEXT)
+Embed(PROFILER_FILES TextReadSource src/achievements/ReadSource.md TEXT)
+Embed(PROFILER_FILES TextReadAssembly src/achievements/ReadAssembly.md TEXT)
+Embed(PROFILER_FILES TextCompareTraces src/achievements/CompareTraces.md TEXT)
+Embed(PROFILER_FILES TextSamplingIntro src/achievements/SamplingIntro.md TEXT)
+Embed(PROFILER_FILES TextSamplingStats src/achievements/SamplingStats.md TEXT)
+Embed(PROFILER_FILES TextSaveTrace src/achievements/SaveTrace.md TEXT)
+Embed(PROFILER_FILES TextSurviveCrash src/achievements/SurviveCrash.md TEXT)
+Embed(PROFILER_FILES TextTimeRanges src/achievements/TimeRanges.md TEXT)
+Embed(PROFILER_FILES TextWaitStacks src/achievements/WaitStacks.md TEXT)
+Embed(PROFILER_FILES TextZoneCallstacks src/achievements/ZoneCallstacks.md TEXT)
+Embed(PROFILER_FILES TextSections src/achievements/Sections.md TEXT)
 
 set(INCLUDES "${CMAKE_CURRENT_BINARY_DIR}")
 set(LIBS "")
 
 if(USE_WAYLAND)
     pkg_check_modules(WAYLAND REQUIRED egl wayland-egl wayland-cursor xkbcommon)
+    pkg_check_modules(WAYLAND_CLIENT REQUIRED wayland-client)
+    if(WAYLAND_CLIENT_VERSION VERSION_LESS 1.22)
+        message(WARNING "libwayland ${WAYLAND_CLIENT_VERSION} is too old and does not provide version 6 of the core protocol. Building in this configuration is not supported and will result in reduced functionality.")
+    endif()
     set(INCLUDES "${INCLUDES};${WAYLAND_INCLUDE_DIRS}")
-    set(LIBS "${LIBS};${WAYLAND_LIBRARIES}")
+    set(LIBS "${LIBS};${WAYLAND_LINK_LIBRARIES}")
     set(PROFILER_FILES ${PROFILER_FILES}
         src/BackendWayland.cpp
     )
 
     include(${CMAKE_CURRENT_LIST_DIR}/../cmake/FindWaylandScanner.cmake)
 
-    CPMAddPackage(
-        NAME wayland-protocols
-        GIT_REPOSITORY https://gitlab.freedesktop.org/wayland/wayland-protocols.git
-        GIT_TAG 1.37
-        DOWNLOAD_ONLY YES
-    )
+    pkg_check_modules(WAYLAND_PROTOCOLS REQUIRED wayland-protocols)
+    pkg_get_variable(WAYLAND_PROTOCOLS_PKGDATADIR wayland-protocols pkgdatadir)
 
     ecm_add_wayland_client_protocol(PROFILER_FILES
-        PROTOCOL ${wayland-protocols_SOURCE_DIR}/stable/xdg-shell/xdg-shell.xml
+        PROTOCOL ${WAYLAND_PROTOCOLS_PKGDATADIR}/stable/xdg-shell/xdg-shell.xml
         BASENAME xdg-shell
     )
     ecm_add_wayland_client_protocol(PROFILER_FILES
-        PROTOCOL ${wayland-protocols_SOURCE_DIR}/staging/xdg-activation/xdg-activation-v1.xml
+        PROTOCOL ${WAYLAND_PROTOCOLS_PKGDATADIR}/staging/xdg-activation/xdg-activation-v1.xml
         BASENAME xdg-activation
     )
     ecm_add_wayland_client_protocol(PROFILER_FILES
-        PROTOCOL ${wayland-protocols_SOURCE_DIR}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
+        PROTOCOL ${WAYLAND_PROTOCOLS_PKGDATADIR}/unstable/xdg-decoration/xdg-decoration-unstable-v1.xml
         BASENAME xdg-decoration
     )
     ecm_add_wayland_client_protocol(PROFILER_FILES
-        PROTOCOL ${wayland-protocols_SOURCE_DIR}/staging/fractional-scale/fractional-scale-v1.xml
+        PROTOCOL ${WAYLAND_PROTOCOLS_PKGDATADIR}/staging/fractional-scale/fractional-scale-v1.xml
         BASENAME fractional-scale
     )
     ecm_add_wayland_client_protocol(PROFILER_FILES
-        PROTOCOL ${wayland-protocols_SOURCE_DIR}/stable/viewporter/viewporter.xml
+        PROTOCOL ${WAYLAND_PROTOCOLS_PKGDATADIR}/stable/viewporter/viewporter.xml
         BASENAME viewporter
     )
     ecm_add_wayland_client_protocol(PROFILER_FILES
-        PROTOCOL ${wayland-protocols_SOURCE_DIR}/staging/cursor-shape/cursor-shape-v1.xml
+        PROTOCOL ${WAYLAND_PROTOCOLS_PKGDATADIR}/staging/cursor-shape/cursor-shape-v1.xml
         BASENAME cursor-shape
     )
     ecm_add_wayland_client_protocol(PROFILER_FILES
-        PROTOCOL ${wayland-protocols_SOURCE_DIR}/unstable/tablet/tablet-unstable-v2.xml
+        PROTOCOL ${WAYLAND_PROTOCOLS_PKGDATADIR}/unstable/tablet/tablet-unstable-v2.xml
         BASENAME tablet
     )
     ecm_add_wayland_client_protocol(PROFILER_FILES
-        PROTOCOL ${wayland-protocols_SOURCE_DIR}/staging/xdg-toplevel-icon/xdg-toplevel-icon-v1.xml
+        PROTOCOL ${WAYLAND_PROTOCOLS_PKGDATADIR}/staging/xdg-toplevel-icon/xdg-toplevel-icon-v1.xml
         BASENAME xdg-toplevel-icon
     )
 elseif(EMSCRIPTEN)
@@ -234,6 +332,25 @@ if(WIN32)
     )
     add_executable(${PROJECT_NAME} WIN32 ${PROFILER_FILES} ${COMMON_FILES} ${SERVER_FILES})
     set_property(DIRECTORY ${CMAKE_CURRENT_LIST_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+elseif(APPLE AND BUNDLE)
+    set(ICON_SRC ${CMAKE_CURRENT_LIST_DIR}/../icon/icon.png)
+    set(ICON_ICNS ${CMAKE_CURRENT_BINARY_DIR}/icon.icns)
+    add_custom_command(
+        OUTPUT ${ICON_ICNS}
+        COMMAND sips -s format icns ${ICON_SRC} --out ${ICON_ICNS}
+        DEPENDS ${ICON_SRC}
+    )
+    set_source_files_properties(${ICON_ICNS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${PROFILER_FILES} ${COMMON_FILES} ${SERVER_FILES} ${ICON_ICNS})
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_LIST_DIR}/macos/Info.plist.in
+        MACOSX_BUNDLE_BUNDLE_NAME "Tracy Profiler"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "pl.nereid.tracy"
+        MACOSX_BUNDLE_BUNDLE_VERSION ${TRACY_VERSION_STRING}
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${TRACY_VERSION_STRING}
+        MACOSX_BUNDLE_ICON_FILE icon.icns
+        MACOSX_BUNDLE_COPYRIGHT "Bartosz Taudul"
+    )
 else()
     add_executable(${PROJECT_NAME} ${PROFILER_FILES} ${COMMON_FILES} ${SERVER_FILES})
 endif()
@@ -263,34 +380,13 @@ if(NOT EMSCRIPTEN)
     )
 endif()
 
-if(NOT DEFINED GIT_REV)
-    set(GIT_REV "HEAD")
-endif()
-
-find_package(Git)
-if(Git_FOUND)
-    add_custom_target(git-ref
-        COMMAND ${CMAKE_COMMAND} -E echo "#pragma once" > GitRef.hpp.tmp
-        COMMAND ${GIT_EXECUTABLE} -C ${CMAKE_CURRENT_SOURCE_DIR} log -1 "--format=namespace tracy { static inline const char* GitRef = %x22%h%x22; }" ${GIT_REV} >> GitRef.hpp.tmp || echo "namespace tracy { static inline const char* GitRef = \"unknown\"; }" >> GitRef.hpp.tmp
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different GitRef.hpp.tmp GitRef.hpp
-        BYPRODUCTS GitRef.hpp GitRef.hpp.tmp
-        VERBATIM
-    )
-    add_dependencies(${PROJECT_NAME} git-ref)
-else()
-    message(WARNING "git not found, using 'unknown' as git ref.")
-    add_custom_command(
-        OUTPUT GitRef.hpp
-        COMMAND ${CMAKE_COMMAND} -E echo "#pragma once" > GitRef.hpp
-        COMMAND ${CMAKE_COMMAND} -E echo "namespace tracy { static inline const char* GitRef = \"unknown\"; }" >> GitRef.hpp
-        VERBATIM
-    )
-    target_sources(${PROJECT_NAME} PUBLIC GitRef.hpp)
-endif()
+add_git_ref(${PROJECT_NAME})
 
 if(NOT EMSCRIPTEN)
     if(NOT NO_FILESELECTOR)
         target_link_libraries(${PROJECT_NAME} PRIVATE nfd::nfd)
+    else()
+        target_compile_definitions(${PROJECT_NAME} PRIVATE TRACY_NO_FILESELECTOR)
     endif()
     if(NOT USE_WAYLAND)
         target_link_libraries(${PROJECT_NAME} PRIVATE TracyGlfw3)
@@ -298,9 +394,23 @@ if(NOT EMSCRIPTEN)
 endif()
 
 if(EMSCRIPTEN)
-    target_link_options(${PROJECT_NAME} PRIVATE -pthread -sASSERTIONS=0 -sINITIAL_MEMORY=384mb -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=4gb -sSTACK_SIZE=1048576 -sWASM_BIGINT=1 -sPTHREAD_POOL_SIZE=8 -sEXPORTED_FUNCTIONS=_main,_nativeOpenFile -sEXPORTED_RUNTIME_METHODS=ccall -sENVIRONMENT=web,worker --preload-file embed.tracy)
+    target_compile_options(${PROJECT_NAME} PRIVATE -sDISABLE_EXCEPTION_CATCHING=0)
+    target_link_options(${PROJECT_NAME} PRIVATE
+        -pthread
+        -sASSERTIONS=0
+        -sINITIAL_MEMORY=384mb
+        -sALLOW_MEMORY_GROWTH=1
+        -sMAXIMUM_MEMORY=4gb
+        -sSTACK_SIZE=1048576
+        -sPTHREAD_POOL_SIZE=8
+        -sEXPORTED_FUNCTIONS=_main,_nativeOpenFile,_tracy_paste_clipboard
+        -sEXPORTED_RUNTIME_METHODS=ccall
+        -sENVIRONMENT=web,worker
+        -sDISABLE_EXCEPTION_CATCHING=0
+        "--pre-js;${CMAKE_CURRENT_LIST_DIR}/wasm/url_trace_pre.js"
+    )
 
-    file(DOWNLOAD https://share.nereid.pl/i/embed.tracy ${CMAKE_CURRENT_BINARY_DIR}/embed.tracy EXPECTED_MD5 ca0fa4f01e7b8ca5581daa16b16c768d)
+    file(DOWNLOAD https://share.nereid.pl/i/embed.tracy ${CMAKE_CURRENT_BINARY_DIR}/embed.tracy EXPECTED_MD5 f018919fcd34de2fb349be8be354048b)
     file(COPY ${CMAKE_CURRENT_LIST_DIR}/wasm/index.html DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
     file(COPY ${CMAKE_CURRENT_LIST_DIR}/wasm/httpd.py DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
     file(COPY_FILE ${CMAKE_CURRENT_LIST_DIR}/../icon/icon.svg ${CMAKE_CURRENT_BINARY_DIR}/favicon.svg)

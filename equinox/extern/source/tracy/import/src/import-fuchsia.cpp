@@ -30,8 +30,11 @@
 #include "../../server/TracyFileWrite.hpp"
 #include "../../server/TracyMmap.hpp"
 #include "../../server/TracyWorker.hpp"
+#include "../../public/common/TracyVersion.hpp"
+#include "GitRef.hpp"
 
 void Usage() {
+  printf("tracy-import-fuchsia %i.%i.%i / %s\n\n", tracy::Version::Major, tracy::Version::Minor, tracy::Version::Patch, tracy::GitRef);
   printf("Usage: import-fuchsia input.json output.tracy\n\n");
   printf("See: "
          "https://fuchsia.dev/fuchsia-src/reference/tracing/trace-format\n\n");
@@ -133,7 +136,7 @@ std::vector<uint8_t> read_input(const char *input) {
     auto zctx = ZSTD_createDStream();
     ZSTD_initDStream(zctx);
 
-    enum { tmpSize = 64 * 1024 };
+    constexpr size_t tmpSize = 64 * 1024;
     auto tmp = new char[tmpSize];
 
     ZSTD_inBuffer_s zin = {zbuf, (size_t)zsz};
@@ -237,9 +240,8 @@ void readString(DecodeState &dec, std::string &res, Record const &r,
   } else if ((ref & 0x8000) != 0) {
     // inline string
     size_t size_name = ref & 0x7fff;
-    res.resize(size_name + 1);
+    res.resize(size_name);
     memcpy(res.data(), (uint8_t *)&r.p[offset], size_name);
-    res[size_name] = 0;
     offset += ROUND_TO_WORD(size_name) >> 3;
   } else {
     res = dec.stringRefs[ref];
@@ -446,7 +448,7 @@ int main(int argc, char **argv) {
       assert((str_ref & 0x8000) == 0);
       uint16_t str_len = (r.header >> 32) & 0x7fff;
 
-      name.resize(str_len + 1);
+      name.resize(str_len);
       memcpy(name.data(), (uint8_t *)&r.p[1], str_len);
       dec.stringRefs[str_ref] = name;
       break;

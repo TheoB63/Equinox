@@ -23,6 +23,7 @@ protected:
     int64_t RangeEnd() const override;
 
     void HeaderTooltip( const char* label ) const override;
+    void HeaderClicked() override;
     void HeaderExtraContents( const TimelineContext& ctx, int offset, float labelWidth ) override;
 
     bool DrawContents( const TimelineContext& ctx, int& offset ) override;
@@ -35,9 +36,7 @@ protected:
     void Preprocess( const TimelineContext& ctx, TaskDispatch& td, bool visible, int yPos ) override;
 
 private:
-#ifndef TRACY_NO_STATISTICS
     int PreprocessGhostLevel( const TimelineContext& ctx, const Vector<GhostZone>& vec, int depth, bool visible );
-#endif
     int PreprocessZoneLevel( const TimelineContext& ctx, const Vector<short_ptr<ZoneEvent>>& vec, int depth, bool visible, const uint32_t inheritedColor );
 
     template<typename Adapter, typename V>

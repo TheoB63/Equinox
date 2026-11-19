@@ -66,7 +66,7 @@ class StringIdx
 {
 public:
     tracy_force_inline StringIdx() { memset( m_idx, 0, sizeof( m_idx ) ); }
-    tracy_force_inline StringIdx( uint32_t idx )
+    tracy_force_inline explicit StringIdx( uint32_t idx )
     {
         SetIdx( idx );
     }
@@ -85,11 +85,20 @@ public:
         return idx - 1;
     }
 
+    tracy_force_inline uint32_t Raw() const
+    {
+        uint32_t raw = 0;
+        memcpy( &raw, m_idx, 3 );
+        return raw;
+    }
+
     tracy_force_inline bool Active() const
     {
         uint32_t zero = 0;
         return memcmp( m_idx, &zero, 3 ) != 0;
     }
+
+    tracy_force_inline bool operator==( const StringIdx& rhs ) const { return memcmp( m_idx, rhs.m_idx, 3 ) == 0; }
 
 private:
     uint8_t m_idx[3];
@@ -196,8 +205,6 @@ struct SourceLocation : public SourceLocationBase
     mutable uint32_t namehash;
 };
 
-enum { SourceLocationSize = sizeof( SourceLocation ) };
-
 
 struct ZoneEvent
 {
@@ -222,7 +229,6 @@ struct ZoneEvent
     uint32_t extra;
 };
 
-enum { ZoneEventSize = sizeof( ZoneEvent ) };
 static_assert( std::is_standard_layout<ZoneEvent>::value, "ZoneEvent is not standard layout" );
 
 
@@ -233,8 +239,6 @@ struct ZoneExtra
     StringIdx name;
     Int24 color;
 };
-
-enum { ZoneExtraSize = sizeof( ZoneExtra ) };
 
 
 // This union exploits the fact that the current implementations of x64 and arm64 do not provide
@@ -251,8 +255,6 @@ union CallstackFrameId
     uint64_t data;
 };
 
-enum { CallstackFrameIdSize = sizeof( CallstackFrameId ) };
-
 static tracy_force_inline bool operator==( const CallstackFrameId& lhs, const CallstackFrameId& rhs ) { return lhs.data == rhs.data; }
 
 
@@ -261,8 +263,6 @@ struct SampleData
     Int48 time;
     Int24 callstack;
 };
-
-enum { SampleDataSize = sizeof( SampleData ) };
 
 struct SampleDataSort { bool operator()( const SampleData& lhs, const SampleData& rhs ) const { return lhs.time.Val() < rhs.time.Val(); }; };
 
@@ -273,8 +273,6 @@ struct SampleDataRange
     uint16_t thread;
     CallstackFrameId ip;
 };
-
-enum { SampleDataRangeSize = sizeof( SampleDataRange ) };
 
 
 struct HwSampleData
@@ -308,87 +306,6 @@ struct HwSampleData
     }
 };
 
-enum { HwSampleDataSize = sizeof( HwSampleData ) };
-
-
-struct LockEvent
-{
-    enum class Type : uint8_t
-    {
-        Wait,
-        Obtain,
-        Release,
-        WaitShared,
-        ObtainShared,
-        ReleaseShared
-    };
-
-    tracy_force_inline int64_t Time() const { return int64_t( _time_srcloc ) >> 16; }
-    tracy_force_inline void SetTime( int64_t time ) { assert( time < (int64_t)( 1ull << 47 ) ); memcpy( ((char*)&_time_srcloc)+2, &time, 4 ); memcpy( ((char*)&_time_srcloc)+6, ((char*)&time)+4, 2 ); }
-    tracy_force_inline int16_t SrcLoc() const { return int16_t( _time_srcloc & 0xFFFF ); }
-    tracy_force_inline void SetSrcLoc( int16_t srcloc ) { memcpy( &_time_srcloc, &srcloc, 2 ); }
-
-    uint64_t _time_srcloc;
-    uint8_t thread;
-    Type type;
-};
-
-struct LockEventShared : public LockEvent
-{
-    uint64_t waitShared;
-    uint64_t sharedList;
-};
-
-struct LockEventPtr
-{
-    short_ptr<LockEvent> ptr;
-    uint8_t lockingThread;
-    uint8_t lockCount;
-    uint64_t waitList;
-};
-
-enum { LockEventSize = sizeof( LockEvent ) };
-enum { LockEventSharedSize = sizeof( LockEventShared ) };
-enum { LockEventPtrSize = sizeof( LockEventPtr ) };
-
-enum { MaxLockThreads = sizeof( LockEventPtr::waitList ) * 8 };
-static_assert( std::numeric_limits<decltype(LockEventPtr::lockCount)>::max() >= MaxLockThreads, "Not enough space for lock count." );
-
-
-enum class LockType : uint8_t;
-
-struct LockMap
-{
-    struct TimeRange
-    {
-        int64_t start = std::numeric_limits<int64_t>::max();
-        int64_t end = std::numeric_limits<int64_t>::min();
-    };
-
-    StringIdx customName;
-    int16_t srcloc;
-    Vector<LockEventPtr> timeline;
-    unordered_flat_map<uint64_t, uint8_t> threadMap;
-    std::vector<uint64_t> threadList;
-    LockType type;
-    int64_t timeAnnounce;
-    int64_t timeTerminate;
-    bool valid;
-    bool isContended;
-    uint64_t lockingThread;
-
-    TimeRange range[64];
-};
-
-struct LockHighlight
-{
-    int64_t id;
-    int64_t begin;
-    int64_t end;
-    uint8_t thread;
-    bool blocked;
-};
-
 
 struct GpuEvent
 {
@@ -415,7 +332,6 @@ struct GpuEvent
     uint16_t query_id;
 };
 
-enum { GpuEventSize = sizeof( GpuEvent ) };
 static_assert( std::is_standard_layout<GpuEvent>::value, "GpuEvent is not standard layout" );
 
 
@@ -446,7 +362,6 @@ struct MemEvent
     uint64_t _time_thread_free;
 };
 
-enum { MemEventSize = sizeof( MemEvent ) };
 static_assert( std::is_standard_layout<MemEvent>::value, "MemEvent is not standard layout" );
 
 
@@ -471,18 +386,12 @@ struct SymbolData : public CallstackFrameBasic
     Int24 size;
 };
 
-enum { CallstackFrameBasicSize = sizeof( CallstackFrameBasic ) };
-enum { CallstackFrameSize = sizeof( CallstackFrame ) };
-enum { SymbolDataSize = sizeof( SymbolData ) };
-
 
 struct SymbolLocation
 {
     uint64_t addr;
     uint32_t len;
 };
-
-enum { SymbolLocationSize = sizeof( SymbolLocation ) };
 
 
 struct CallstackFrameData
@@ -491,8 +400,6 @@ struct CallstackFrameData
     uint8_t size;
     StringIdx imageName;
 };
-
-enum { CallstackFrameDataSize = sizeof( CallstackFrameData ) };
 
 
 struct MemCallstackFrameTree
@@ -504,9 +411,8 @@ struct MemCallstackFrameTree
     uint32_t count;
     unordered_flat_map<uint64_t, MemCallstackFrameTree> children;
     unordered_flat_set<uint32_t> callstacks;
+    unordered_flat_set<uint64_t> group;
 };
-
-enum { MemCallstackFrameTreeSize = sizeof( MemCallstackFrameTree ) };
 
 
 struct CallstackFrameTree
@@ -516,9 +422,8 @@ struct CallstackFrameTree
     CallstackFrameId frame;
     uint32_t count;
     unordered_flat_map<uint64_t, CallstackFrameTree> children;
+    unordered_flat_set<uint64_t> group;
 };
-
-enum { CallstackFrameTreeSize = sizeof( CallstackFrameTree ) };
 
 
 struct CrashEvent
@@ -529,7 +434,6 @@ struct CrashEvent
     uint32_t callstack = 0;
 };
 
-enum { CrashEventSize = sizeof( CrashEvent ) };
 
 /**
 * Represents a context switch.
@@ -595,6 +499,7 @@ struct ContextSwitchData
     tracy_force_inline int64_t End() const { return _end.Val(); }
     tracy_force_inline void SetEnd( int64_t end ) { assert( end < (int64_t)( 1ull << 47 ) ); _end = end; }
     tracy_force_inline bool IsEndValid() const { return _end.IsNonNegative(); }
+    tracy_force_inline int64_t EndOrStart() const { return _end.IsNonNegative() ? _end.Val() : _start.Val(); }
     tracy_force_inline uint8_t Cpu() const { return _cpu; }
     tracy_force_inline void SetCpu( uint8_t cpu ) { _cpu = cpu; }
     tracy_force_inline uint8_t WakeupCpu() const { return _wakeupcpu; }
@@ -620,8 +525,6 @@ struct ContextSwitchData
     uint16_t _thread; // currently unused ? Could store next thread or prios here.
 };
 
-enum { ContextSwitchDataSize = sizeof( ContextSwitchData ) };
-
 
 struct ContextSwitchCpu
 {
@@ -639,8 +542,6 @@ struct ContextSwitchCpu
     Int48 _end;
 };
 
-enum { ContextSwitchCpuSize = sizeof( ContextSwitchCpu ) };
-
 
 struct ContextSwitchUsage
 {
@@ -657,8 +558,6 @@ struct ContextSwitchUsage
     uint64_t _time_other_own;
 };
 
-enum { ContextSwitchUsageSize = sizeof( ContextSwitchUsage ) };
-
 
 struct MessageData
 {
@@ -667,9 +566,9 @@ struct MessageData
     uint16_t thread;
     uint32_t color;
     Int24 callstack;
+    MessageSourceType source;
+    MessageSeverity severity;
 };
-
-enum { MessageDataSize = sizeof( MessageData ) };
 
 
 struct PlotItem
@@ -678,8 +577,6 @@ struct PlotItem
     double val;
 };
 
-enum { PlotItemSize = sizeof( PlotItem ) };
-
 
 struct FrameEvent
 {
@@ -687,8 +584,6 @@ struct FrameEvent
     int64_t end;
     int32_t frameImage;
 };
-
-enum { FrameEventSize = sizeof( FrameEvent ) };
 
 
 struct FrameImage
@@ -700,8 +595,6 @@ struct FrameImage
     uint8_t flip;
 };
 
-enum { FrameImageSize = sizeof( FrameImage ) };
-
 
 struct GhostZone
 {
@@ -710,8 +603,6 @@ struct GhostZone
     int32_t child;
 };
 
-enum { GhostZoneSize = sizeof( GhostZone ) };
-
 
 struct ChildSample
 {
@@ -719,7 +610,14 @@ struct ChildSample
     uint64_t addr;
 };
 
-enum { ChildSampleSize = sizeof( ChildSample ) };
+struct ChildSampleSort { bool operator()( const ChildSample& lhs, const ChildSample& rhs ) const { return lhs.time.Val() < rhs.time.Val(); }; };
+
+
+struct SectionItem
+{
+    Int48 start, end;
+    StringIdx text;
+};
 
 #pragma pack( pop )
 
@@ -741,9 +639,10 @@ struct ThreadData
 #endif
     Vector<SampleData> samples;
     SampleData pendingSample;
-    Vector<SampleData> ctxSwitchSamples;
+    SortedVector<SampleData, SampleDataSort> ctxSwitchSamples;
     uint64_t kernelSampleCnt;
     uint8_t isFiber;
+    uint8_t inLocks;      // has a thread slot in at least one lock map
     ThreadData* fiber;
     uint8_t* stackCount;
     int32_t groupHint;
@@ -779,8 +678,6 @@ struct GpuCtxData
     unordered_flat_map<uint16_t, unordered_flat_map<int64_t, double>> notes;
     short_ptr<GpuEvent> query[64*1024];
 };
-
-enum { GpuCtxDataSize = sizeof( GpuCtxData ) };
 
 
 enum class PlotType : uint8_t
@@ -888,14 +785,19 @@ struct CpuThreadData
     uint32_t migrations = 0;
 };
 
-enum { CpuThreadDataSize = sizeof( CpuThreadData ) };
 
+enum class ParameterType
+{
+    Integer,
+    Boolean,
+    Trigger
+};
 
 struct Parameter
 {
     uint32_t idx;
     StringRef name;
-    bool isBool;
+    ParameterType type;
     int32_t val;
 };
 
@@ -903,11 +805,11 @@ struct Parameter
 struct SymbolStats
 {
     uint32_t incl, excl;
-    unordered_flat_map<uint32_t, uint32_t> parents;
-    unordered_flat_map<uint32_t, uint32_t> baseParents;
+    unordered_flat_map<uint32_t, uint32_t> wasExecuting;
+    unordered_flat_map<uint32_t, uint32_t> wasExecutingBase;
+    unordered_flat_map<uint32_t, uint32_t> wasReached;
+    unordered_flat_map<uint32_t, uint32_t> wasReachedNonReentrant;
 };
-
-enum { SymbolStatsSize = sizeof( SymbolStats ) };
 
 
 struct FlameGraphItem

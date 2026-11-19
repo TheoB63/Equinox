@@ -3,7 +3,7 @@
 #include "imgui.h"
 #include "../Fonts.hpp"
 
-#include "IconsFontAwesome6.h"
+#include "IconsFontAwesome7.h"
 #include "TracyBadVersion.hpp"
 #include "TracyImGui.hpp"
 #include "TracyWeb.hpp"
@@ -58,7 +58,7 @@ void BadVersionImpl( BadVersionState& badVer )
         ImGui::PushFont( g_fonts.normal, FontBig );
         TextCentered( ICON_FA_TRIANGLE_EXCLAMATION );
         ImGui::PopFont();
-        ImGui::Text( "The file you are trying to open cannot be mapped to memory." );
+        ImGui::Text( "The file could not be read or is corrupted." );
         ImGui::Separator();
         if( ImGui::Button( "OK" ) )
         {

@@ -92,7 +92,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,7 +120,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -148,7 +148,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -25,27 +25,27 @@ bool TimelineItemPlot::IsEmpty() const
     return m_plot->data.empty();
 }
 
+void TimelineItemPlot::HeaderZoomed()
+{
+    if( s_config.achievements ) m_view.Achieve( "chartValues" );
+}
+
 const char* TimelineItemPlot::HeaderLabel() const
 {
     static char tmp[1024];
+    const auto plotName = GetPlotName( *m_plot, m_worker );
     switch( m_plot->type )
     {
     case PlotType::User:
-        return m_worker.GetString( m_plot->name );
+        return plotName;
     case PlotType::Memory:
-        if( m_plot->name == 0 )
-        {
-            return ICON_FA_MEMORY " Memory usage";
-        }
-        else
-        {
-            sprintf( tmp, ICON_FA_MEMORY " %s", m_worker.GetString( m_plot->name ) );
-            return tmp;
-        }
+        sprintf( tmp, ICON_FA_MEMORY " %s", plotName );
+        return tmp;
     case PlotType::SysTime:
-        return ICON_FA_GAUGE_HIGH " CPU usage";
+        sprintf( tmp, ICON_FA_GAUGE_HIGH " %s", plotName );
+        return tmp;
     case PlotType::Power:
-        sprintf( tmp, ICON_FA_BOLT " %s", m_worker.GetString( m_plot->name ) );
+        sprintf( tmp, ICON_FA_BOLT " %s", plotName );
         return tmp;
     default:
         assert( false );
@@ -127,7 +127,7 @@ void TimelineItemPlot::Preprocess( const TimelineContext& ctx, TaskDispatch& td,
     if( !visible ) return;
     if( yPos > ctx.yMax ) return;
     if( m_plot->data.empty() ) return;
-    const auto PlotHeight = int( round( PlotHeightPx * GetScale() ) );
+    const auto PlotHeight = int( round( PlotHeightPx * ctx.scale ) );
     if( yPos + PlotHeight < ctx.yMin ) return;
 
     td.Queue( [this, &ctx] {
@@ -199,7 +199,7 @@ void TimelineItemPlot::Preprocess( const TimelineContext& ctx, TaskDispatch& td,
         while( it < end )
         {
             auto next = std::upper_bound( it, end, int64_t( it->time.Val() + MinVisNs ), [] ( const auto& l, const auto& r ) { return l < r.time.Val(); } );
-            assert( next > it );
+            if( next <= it ) next = it + 1;
             const auto rsz = uint32_t( next - it );
             if( rsz < 4 )
             {

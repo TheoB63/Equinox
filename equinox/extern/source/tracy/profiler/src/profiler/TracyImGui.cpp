@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <algorithm>
+#include <string>
+#include <string.h>
 
 #include "TracyPrint.hpp"
 #include "TracyImGui.hpp"
@@ -26,6 +28,30 @@ void DrawZigZag( ImDrawList* draw, const ImVec2& wpos, double start, double end,
 {
     const auto v = ( end - start ) / ( h * 2 );
     draw->AddImage( zigzagTex, wpos + ImVec2( start, -h ), wpos + ImVec2( end, h ), ImVec2( 0, 0 ), ImVec2( v, 1 ), color );
+}
+
+void DrawGlyphTransformed( ImDrawList* draw, ImFont* font, float size, const char* icon, const ImVec2& origin, const ImVec2& pivot, float angle, float scale, uint32_t color )
+{
+    unsigned int codepoint = 0;
+    ImTextCharFromUtf8( &codepoint, icon, nullptr );
+
+    ImFontBaked* baked = font->GetFontBaked( size );
+    const ImFontGlyph* glyph = baked->FindGlyph( ( ImWchar )codepoint );
+
+    const float cx = glyph->X0 + ( glyph->X1 - glyph->X0 ) * pivot.x;
+    const float cy = glyph->Y0 + ( glyph->Y1 - glyph->Y0 ) * pivot.y;
+    const float c = cosf( angle ) * scale;
+    const float s = sinf( angle ) * scale;
+    const auto pt = [origin, cx, cy, c, s]( float x, float y ) {
+        const float dx = x - cx;
+        const float dy = y - cy;
+        return origin + ImVec2( cx + dx * c - dy * s, cy + dx * s + dy * c );
+    };
+
+    draw->AddImageQuad( font->OwnerAtlas->TexRef,
+        pt( glyph->X0, glyph->Y0 ), pt( glyph->X1, glyph->Y0 ), pt( glyph->X1, glyph->Y1 ), pt( glyph->X0, glyph->Y1 ),
+        ImVec2( glyph->U0, glyph->V0 ), ImVec2( glyph->U1, glyph->V0 ), ImVec2( glyph->U1, glyph->V1 ), ImVec2( glyph->U0, glyph->V1 ),
+        color );
 }
 
 void DrawStripedRect( ImDrawList* draw, const ImVec2& wpos, double x0, double y0, double x1, double y1, double sw, uint32_t color, bool fix_stripes_in_screen_space, bool inverted )
@@ -127,25 +153,65 @@ void PrintSource( const std::vector<Tokenizer::Line>& lines )
     }
 }
 
-bool PrintTextWrapped( const char* text, const char* end )
+bool PrintTextWrapped( const char* text, const char* end, bool strikethrough, bool underline )
 {
     bool hovered = false;
-
     if( !end ) end = text + strlen( text );
+
     auto firstWord = text;
+    while( firstWord < end && *firstWord == ' ' ) firstWord++;
     while( firstWord < end && *firstWord != ' ' && *firstWord != '\n' ) firstWord++;
 
-    auto fontSize = ImGui::GetFontSize();
+    const auto fontSize = ImGui::GetFontSize();
+    const auto fontSize05 = round( fontSize * 0.5f );
+    const auto scale = GetScale();
+    const auto color = ImGui::ColorConvertFloat4ToU32( ImGui::GetStyle().Colors[ImGuiCol_Text] );
+
     auto left = ImGui::GetContentRegionAvail().x;
     auto fwLen = ImGui::CalcTextSize( text, firstWord ).x;
     if( fwLen > left )
     {
+        const auto textPrev = text;
+        while( text < firstWord && *text == ' ' ) text++;
+
+        const auto prev = left;
         ImGui::NewLine();
         left = ImGui::GetContentRegionAvail().x;
+        if( left == prev )
+        {
+            ImGui::SameLine( 0, 0 );    // undo NewLine
+            text = textPrev;
+        }
     }
 
     auto endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text, end, left );
-    ImGui::TextUnformatted( text, endLine );
+    // A word wider than the leftover that continues previous text must move whole
+    // to the next line, not be cut mid-word. ImGui's CalcWordWrapPosition() only
+    // cuts words that fit on no line (i.e. words wider than the full line width),
+    // so a mid-word cut on a glued continuation is a wrap-width artifact.
+    if( endLine < end && endLine > text && endLine[-1] != ' ' && endLine[-1] != '\n' && endLine[0] != ' ' && endLine[0] != '\n' )
+    {
+        const auto isWordChar = []( char c ) { return c != ' ' && c != '\n' && strchr( ",.;:!?\"'()", c ) == nullptr; };
+        const char* ws = endLine;
+        while( ws > text && isWordChar( ws[-1] ) ) ws--;
+        if( ws > text ) endLine = ws;   // continuation word -> move it whole
+    }
+    if( strikethrough || underline )
+    {
+        auto y1 = ImGui::GetCursorScreenPos().y + fontSize05;
+        auto y2 = ImGui::GetCursorScreenPos().y + fontSize;
+        auto x0 = ImGui::GetCursorScreenPos().x - scale;
+        ImGui::TextUnformatted( text, endLine );
+        ImGui::SameLine( 0, 0 );
+        auto x1 = ImGui::GetCursorScreenPos().x + scale;
+        ImGui::NewLine();
+        if( strikethrough ) ImGui::GetWindowDrawList()->AddLineH( x0, x1, y1, color, scale );
+        if( underline ) ImGui::GetWindowDrawList()->AddLineH( x0, x1, y2, color, scale );
+    }
+    else
+    {
+        ImGui::TextUnformatted( text, endLine );
+    }
     if( !hovered ) hovered = ImGui::IsItemHovered();
 
     left = ImGui::GetContentRegionAvail().x;
@@ -155,11 +221,46 @@ bool PrintTextWrapped( const char* text, const char* end )
         if( *text == ' ' ) text++;
         endLine = ImGui::GetFont()->CalcWordWrapPosition( fontSize, text, end, left );
         if( text == endLine ) endLine++;
-        ImGui::TextUnformatted( text, endLine );
+        if( strikethrough || underline )
+        {
+            auto y1 = ImGui::GetCursorScreenPos().y + fontSize05;
+            auto y2 = ImGui::GetCursorScreenPos().y + fontSize;
+            auto x0 = ImGui::GetCursorScreenPos().x - scale;
+            ImGui::TextUnformatted( text, endLine );
+            ImGui::SameLine( 0, 0 );
+            auto x1 = ImGui::GetCursorScreenPos().x + scale;
+            ImGui::NewLine();
+            if( strikethrough ) ImGui::GetWindowDrawList()->AddLineH( x0, x1, y1, color, scale );
+            if( underline ) ImGui::GetWindowDrawList()->AddLineH( x0, x1, y2, color, scale );
+        }
+        else
+        {
+            ImGui::TextUnformatted( text, endLine );
+        }
         if( !hovered ) hovered = ImGui::IsItemHovered();
     }
 
     return hovered;
+}
+
+bool DragHeightSplitter( const char* id, float& height, float minHeight, float maxHeight, float thickness )
+{
+    ImGui::InvisibleButton( id, ImVec2( -1, thickness * 1.5f ) );
+    const bool active = ImGui::IsItemActive();
+    if( active ) height = std::clamp( height + ImGui::GetIO().MouseDelta.y, minHeight, maxHeight );
+    if( ImGui::IsItemHovered() || active ) ImGui::SetMouseCursor( ImGuiMouseCursor_ResizeNS );
+
+    auto color = ImGui::GetColorU32( ImGuiCol_Separator );
+    if( active ) color = ImGui::GetColorU32( ImGuiCol_SeparatorActive );
+    else if( ImGui::IsItemHovered() ) color = ImGui::GetColorU32( ImGuiCol_SeparatorHovered );
+
+    auto draw = ImGui::GetWindowDrawList();
+    const auto p0 = ImGui::GetItemRectMin();
+    const auto p1 = ImGui::GetItemRectMax();
+    const float y = ( p0.y + p1.y ) * 0.5f;
+    draw->AddLineH( p0.x, p1.x, y, color, thickness );
+
+    return active;
 }
 
 }

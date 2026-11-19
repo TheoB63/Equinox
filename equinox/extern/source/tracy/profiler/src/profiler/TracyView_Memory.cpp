@@ -172,8 +172,11 @@ std::vector<MemoryPage> View::GetMemoryPages() const
 
 void View::DrawMemory()
 {
+    if( s_config.achievements && !m_worker.GetMemoryNamed( m_memInfo.pool ).data.empty() ) Achieve( "trackMemory" );
+
     const auto scale = GetScale();
     ImGui::SetNextWindowSize( ImVec2( 1100 * scale, 500 * scale ), ImGuiCond_FirstUseEver );
+    m_memoryConstraint.Constrain();
     ImGui::Begin( "Memory", &m_memInfo.show, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse );
     if( ImGui::GetCurrentWindowRead()->SkipItems ) { ImGui::End(); return; }
 
@@ -188,6 +191,7 @@ void View::DrawMemory()
             {
                 if( ImGui::Selectable( v.first == 0 ? "Default allocator" : m_worker.GetString( v.first ) ) )
                 {
+                    if( s_config.achievements && v.first != 0 ) Achieve( "memoryPools" );
                     m_memInfo.pool = v.first;
                     m_memInfo.showAllocList = false;
                 }
@@ -255,6 +259,7 @@ void View::DrawMemory()
         ToggleButton( ICON_FA_RULER " Limits", m_showRanges );
     }
     ImGui::PopStyleVar();
+    m_memoryConstraint.MarkMinWidth();
 
     ImGui::Separator();
     ImGui::BeginChild( "##memory" );
@@ -329,6 +334,7 @@ void View::DrawMemory()
     ImGui::Separator();
     if( ImGui::TreeNode( ICON_FA_HEART_PULSE " Active allocations" ) )
     {
+        if( s_config.achievements ) Achieve( "huntLeaks" );
         uint64_t total = 0;
         std::vector<const MemEvent*> items;
         items.reserve( mem.active.size() );
@@ -393,7 +399,7 @@ void View::DrawMemory()
         auto pages = GetMemoryPages();
         const size_t lines = pages.size();
 
-        ImGui::BeginChild( "##memMap", ImVec2( PageSize + 2, lines + 2 ), false );
+        ImGui::BeginChild( "##memMap", ImVec2( PageSize + 2, lines + 2 ), ImGuiChildFlags_None );
         auto draw = ImGui::GetWindowDrawList();
         const auto wpos = ImGui::GetCursorScreenPos() + ImVec2( 1, 1 );
         const auto dpos = wpos + ImVec2( 0.5f, 0.5f );
@@ -435,7 +441,7 @@ void View::DrawMemory()
 
     ImGui::PushID( m_memInfo.pool );
     ImGui::Separator();
-    if( ImGui::TreeNode( ICON_FA_TREE " Bottom-up call stack tree" ) )
+    if( ImGui::TreeNode( ICON_FA_TREE ICON_FA_ARROW_UP " Bottom-up call stack tree" ) )
     {
         ImGui::SameLine();
         DrawHelpMarker( "Press ctrl key to display allocation info tooltip. Right click on function name to display allocations list." );
@@ -461,6 +467,7 @@ void View::DrawMemory()
         auto tree = GetCallstackFrameTreeBottomUp( mem );
         if( !tree.empty() )
         {
+            if( s_config.achievements ) Achieve( "allocStacks" );
             int idx = 0;
             DrawFrameTreeLevel( tree, idx );
         }
@@ -473,7 +480,7 @@ void View::DrawMemory()
     }
 
     ImGui::Separator();
-    if( ImGui::TreeNode( ICON_FA_TREE " Top-down call stack tree" ) )
+    if( ImGui::TreeNode( ICON_FA_TREE ICON_FA_ARROW_DOWN " Top-down call stack tree" ) )
     {
         ImGui::SameLine();
         DrawHelpMarker( "Press ctrl key to display allocation info tooltip. Right click on function name to display allocations list." );
@@ -499,6 +506,7 @@ void View::DrawMemory()
         auto tree = GetCallstackFrameTreeTopDown( mem );
         if( !tree.empty() )
         {
+            if( s_config.achievements ) Achieve( "allocStacks" );
             int idx = 0;
             DrawFrameTreeLevel( tree, idx );
         }
@@ -562,9 +570,9 @@ void View::DrawMemoryAllocWindow()
         if( ev.CsAlloc() != 0 )
         {
             const auto cs = ev.CsAlloc();
-            SmallCallstackButton( ICON_FA_ALIGN_JUSTIFY, cs, idx );
+            SmallCallstackButton( ICON_FA_ALIGN_JUSTIFY, cs, idx, tidAlloc );
             ImGui::SameLine();
-            DrawCallstackCalls( cs, 4 );
+            DrawCallstackCalls( cs, 6 );
         }
         if( ev.TimeFree() < 0 )
         {
@@ -588,9 +596,9 @@ void View::DrawMemoryAllocWindow()
             if( ev.csFree.Val() != 0 )
             {
                 const auto cs = ev.csFree.Val();
-                SmallCallstackButton( ICON_FA_ALIGN_JUSTIFY, cs, idx );
+                SmallCallstackButton( ICON_FA_ALIGN_JUSTIFY, cs, idx, tidFree );
                 ImGui::SameLine();
-                DrawCallstackCalls( cs, 4 );
+                DrawCallstackCalls( cs, 6 );
             }
             TextFocused( "Duration:", TimeToString( ev.TimeFree() - ev.TimeAlloc() ) );
         }
@@ -614,7 +622,7 @@ void View::DrawMemoryAllocWindow()
             if( hover )
             {
                 m_zoneHighlight = zoneAlloc;
-                if( IsMouseClicked( 2 ) )
+                if( IsMouseClicked( ImGuiMouseButton_Middle ) )
                 {
                     ZoomToZone( *zoneAlloc );
                 }
@@ -639,7 +647,7 @@ void View::DrawMemoryAllocWindow()
                 if( hover )
                 {
                     m_zoneHighlight = zoneFree;
-                    if( IsMouseClicked( 2 ) )
+                    if( IsMouseClicked( ImGuiMouseButton_Middle ) )
                     {
                         ZoomToZone( *zoneFree );
                     }
@@ -829,7 +837,7 @@ void View::ListMemData( std::vector<const MemEvent*>& vec, const std::function<v
                     if( hover )
                     {
                         m_zoneHighlight = zone;
-                        if( IsMouseClicked( 2 ) )
+                        if( IsMouseClicked( ImGuiMouseButton_Middle ) )
                         {
                             ZoomToZone( *zone );
                         }
@@ -873,7 +881,7 @@ void View::ListMemData( std::vector<const MemEvent*>& vec, const std::function<v
                         if( hover )
                         {
                             m_zoneHighlight = zoneFree;
-                            if( IsMouseClicked( 2 ) )
+                            if( IsMouseClicked( ImGuiMouseButton_Middle ) )
                             {
                                 ZoomToZone( *zoneFree );
                             }
@@ -888,7 +896,7 @@ void View::ListMemData( std::vector<const MemEvent*>& vec, const std::function<v
                 }
                 else
                 {
-                    SmallCallstackButton( "alloc", v->CsAlloc(), idx );
+                    SmallCallstackButton( "alloc", v->CsAlloc(), idx, m_worker.DecompressThread( v->ThreadAlloc() ) );
                 }
                 ImGui::SameLine();
                 ImGui::Spacing();
@@ -899,7 +907,7 @@ void View::ListMemData( std::vector<const MemEvent*>& vec, const std::function<v
                 }
                 else
                 {
-                    SmallCallstackButton( "free", v->csFree.Val(), idx );
+                    SmallCallstackButton( "free", v->csFree.Val(), idx, m_worker.DecompressThread( v->ThreadFree() ) );
                 }
             }
         }

@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "bin-int\\windows-x86_64\\Dist\\glm\\glm.obj",
+            "outputs": [
+                "bin-int\\windows-x86_64\\Dist\\glm\\glm.cppm.ifc.dt.module.json",
+                "bin-int\\windows-x86_64\\Dist\\glm\\glm.cppm.ifc.dt.d.json",
+                "bin-int\\windows-x86_64\\Dist\\glm\\glm.ifc"
+            ],
+            "provides": [
+                {
+                    "logical-name": "glm",
+                    "source-path": "c:\\users\\etudiant1\\desktop\\equinox\\equinox\\extern\\source\\glm\\glm\\glm.cppm",
+                    "is-interface": true
+                }
+            ],
+            "requires": []
+        }
+    ]
+}

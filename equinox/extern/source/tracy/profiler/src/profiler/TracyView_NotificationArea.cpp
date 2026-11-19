@@ -10,6 +10,82 @@ namespace tracy
 
 extern double s_time;
 
+void View::DrawDeadlockMembers( const DeadlockGroup& group, const Vector<DeadlockMember>& members ) const
+{
+    const auto& lockMap = m_worker.GetLockMap();
+    for( uint32_t i=group.first; i<group.first+group.cnt; i++ )
+    {
+        const auto& m = members[i];
+        const auto it = lockMap.find( m.lock );
+        assert( it != lockMap.end() );
+        if( m.holder == m.thread )
+        {
+            ImGui::Text( "\"%s\" waits for %u: %s (upgrade request)", m_worker.GetThreadName( m.thread ), m.lock, GetLockDisplayName( m_worker, *it->second ) );
+        }
+        else
+        {
+            ImGui::Text( "\"%s\" waits for %u: %s, held by \"%s\"", m_worker.GetThreadName( m.thread ), m.lock, GetLockDisplayName( m_worker, *it->second ), m_worker.GetThreadName( m.holder ) );
+        }
+    }
+}
+
+void View::DrawDeadlockDetail( uint64_t thread, uint32_t lock ) const
+{
+    const auto& dgroups = m_worker.GetDeadlockGroups();
+    const auto& dmembers = m_worker.GetDeadlockMembers();
+    for( const auto& g : dgroups )
+    {
+        bool match = false;
+        for( uint32_t i=g.first; i<g.first+g.cnt; i++ )
+        {
+            const auto& m = dmembers[i];
+            if( ( thread == AnyThread || m.thread == thread ) && ( lock == AnyLock || m.lock == lock ) )
+            {
+                match = true;
+                break;
+            }
+        }
+        if( !match ) continue;
+        ImGui::Separator();
+        TextColoredUnformatted( ImVec4( 1.f, 0.2f, 0.2f, 1.f ), "Deadlock detected" );
+        TextFocused( "Cycle closed at:", TimeToString( g.time ) );
+        DrawDeadlockMembers( g, dmembers );
+    }
+}
+
+void View::DeadlockTooltip( const DeadlockGroup& group, const Vector<DeadlockMember>& members ) const
+{
+    ImGui::BeginTooltip();
+    ImGui::TextUnformatted( "Deadlock detected" );
+    TextFocused( "Cycle closed at:", TimeToString( group.time ) );
+    ImGui::Separator();
+    DrawDeadlockMembers( group, members );
+    ImGui::EndTooltip();
+}
+
+void View::DeadlocksTooltip()
+{
+    const auto& groups = m_worker.GetDeadlockGroups();
+    const auto& members = m_worker.GetDeadlockMembers();
+    if( groups.size() == 1 )
+    {
+        DeadlockTooltip( groups[0], members );
+        return;
+    }
+    ImGui::BeginTooltip();
+    ImGui::Text( "%zu deadlocks detected", groups.size() );
+    for( size_t gi=0; gi<groups.size(); gi++ )
+    {
+        const auto& g = groups[gi];
+        ImGui::Separator();
+        ImGui::Text( "Cycle #%zu closed at: %s", gi+1, TimeToString( g.time ) );
+        ImGui::Indent( ImGui::GetTextLineHeight() );
+        DrawDeadlockMembers( g, members );
+        ImGui::Unindent( ImGui::GetTextLineHeight() );
+    }
+    ImGui::EndTooltip();
+}
+
 void View::DrawNotificationArea()
 {
     if( m_sendQueueWarning.enabled )
@@ -24,11 +100,12 @@ void View::DrawNotificationArea()
             ImGui::TextWrapped( "Such behavior is typically caused by the symbol resolution performed client-side. If this is a problem, you may try the following options:" );
             ImGui::BulletText( "Disable inline-symbol resolution with TRACY_NO_CALLSTACK_INLINES" );
             ImGui::BulletText( "Disable call stack sampling with TRACY_NO_SAMPLING" );
+            ImGui::BulletText( "Disable context switch call stacks with TRACY_NO_WAIT_STACKS" );
             ImGui::BulletText( "Change sampling frequency with TRACY_SAMPLING_HZ" );
             ImGui::BulletText( "Disable symbol resolution altogether with TRACY_NO_CALLSTACK" );
             ImGui::TextWrapped( "For more information, please refer to the manual." );
             ImGui::EndTooltip();
-            if( IsMouseClicked( 0 ) ) m_sendQueueWarning.enabled = false;
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_sendQueueWarning.enabled = false;
         }
     }
     auto& io = ImGui::GetIO();
@@ -54,7 +131,8 @@ void View::DrawNotificationArea()
         else
         {
             const auto sif = m_worker.GetSendInFlight();
-            if( sif != 0 )
+            if( sif != 0 ) m_sendInFlightTime = s_time;
+            if( s_time - m_sendInFlightTime < 0.1f )
             {
                 ImGui::SameLine();
                 TextColoredUnformatted( ImVec4( 1, 0.75f, 0, 1 ), ICON_FA_SATELLITE_DISH );
@@ -75,13 +153,30 @@ void View::DrawNotificationArea()
         if( ImGui::IsItemHovered() )
         {
             CrashTooltip();
-            if( IsMouseClicked( 0 ) )
+            if( IsMouseClicked( ImGuiMouseButton_Left ) )
             {
-                m_showInfo = true;
+                m_callstackView = {
+                    .id = crash.callstack,
+                    .thread = crash.thread
+                };
             }
-            if( IsMouseClicked( 2 ) )
+            if( IsMouseClicked( ImGuiMouseButton_Middle ) )
             {
                 CenterAtTime( crash.time );
+            }
+        }
+    }
+    const auto& deadlocks = m_worker.GetDeadlockGroups();
+    if( !deadlocks.empty() )
+    {
+        ImGui::SameLine();
+        TextColoredUnformatted( ImVec4( 1, 0, 0, 1 ), ICON_FA_ARROWS_SPIN );
+        if( ImGui::IsItemHovered() )
+        {
+            DeadlocksTooltip();
+            if( IsMouseClicked( ImGuiMouseButton_Left ) )
+            {
+                m_showInfo = true;
             }
         }
     }
@@ -90,6 +185,22 @@ void View::DrawNotificationArea()
         ImGui::SameLine();
         TextColoredUnformatted( ImVec4( 1, 0.5, 0, 1 ), ICON_FA_EYE_DROPPER );
         TooltipIfHovered( "Sampling data and ghost zones may be displayed wrongly due to data inconsistency. Save and reload the trace to fix this." );
+    }
+    if( m_worker.HasExcessiveZoneDepth() )
+    {
+        ImGui::SameLine();
+        TextColoredUnformatted( ImVec4( 1, 0.5, 0, 1 ), ICON_FA_LAYER_GROUP );
+        if( ImGui::IsItemHovered() )
+        {
+            const auto t = m_worker.GetExcessiveZoneDepthTime();
+            ImGui::BeginTooltip();
+            ImGui::TextUnformatted( "Some zones exceed the maximum nesting depth of 256 and are not displayed." );
+            ImGui::Separator();
+            TextFocused( "First occurrence:", TimeToString( t - m_worker.GetFirstTime() ) );
+            ImGui::TextDisabled( "Click to center the view at this time." );
+            ImGui::EndTooltip();
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) CenterAtTime( t );
+        }
     }
     if( m_vd.drawEmptyLabels )
     {
@@ -100,7 +211,7 @@ void View::DrawNotificationArea()
             ImGui::BeginTooltip();
             ImGui::TextUnformatted( "Displaying empty labels." );
             ImGui::EndTooltip();
-            if( IsMouseClicked( 0 ) ) m_vd.drawEmptyLabels = false;
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_vd.drawEmptyLabels = false;
         }
     }
     if( !m_vd.drawContextSwitches )
@@ -112,7 +223,7 @@ void View::DrawNotificationArea()
             ImGui::BeginTooltip();
             ImGui::TextUnformatted( "Context switches are hidden." );
             ImGui::EndTooltip();
-            if( IsMouseClicked( 0 ) ) m_vd.drawContextSwitches = true;
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_vd.drawContextSwitches = true;
         }
     }
     if( !m_vd.drawCpuData )
@@ -124,19 +235,19 @@ void View::DrawNotificationArea()
             ImGui::BeginTooltip();
             ImGui::TextUnformatted( "CPU data is hidden." );
             ImGui::EndTooltip();
-            if( IsMouseClicked( 0 ) ) m_vd.drawCpuData = true;
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_vd.drawCpuData = true;
         }
     }
     if( !m_vd.drawGpuZones )
     {
         ImGui::SameLine();
-        TextColoredUnformatted( ImVec4( 1, 0.5, 0, 1 ), ICON_FA_EYE );
+        TextColoredUnformatted( ImVec4( 1, 0.5, 0, 1 ), ICON_FA_DISPLAY );
         if( ImGui::IsItemHovered() )
         {
             ImGui::BeginTooltip();
             ImGui::TextUnformatted( "GPU zones are hidden." );
             ImGui::EndTooltip();
-            if( IsMouseClicked( 0 ) ) m_vd.drawGpuZones = true;
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_vd.drawGpuZones = true;
         }
     }
     if( !m_vd.drawZones )
@@ -148,10 +259,9 @@ void View::DrawNotificationArea()
             ImGui::BeginTooltip();
             ImGui::TextUnformatted( "CPU zones are hidden." );
             ImGui::EndTooltip();
-            if( IsMouseClicked( 0 ) ) m_vd.drawZones = true;
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_vd.drawZones = true;
         }
     }
-#ifndef TRACY_NO_STATISTICS
     if( !m_vd.ghostZones )
     {
         ImGui::SameLine();
@@ -161,10 +271,9 @@ void View::DrawNotificationArea()
             ImGui::BeginTooltip();
             ImGui::TextUnformatted( "Ghost zones are hidden." );
             ImGui::EndTooltip();
-            if( IsMouseClicked( 0 ) ) m_vd.ghostZones = true;
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_vd.ghostZones = true;
         }
     }
-#endif
     if( !m_vd.drawLocks )
     {
         ImGui::SameLine();
@@ -174,7 +283,7 @@ void View::DrawNotificationArea()
             ImGui::BeginTooltip();
             ImGui::TextUnformatted( "Locks are hidden." );
             ImGui::EndTooltip();
-            if( IsMouseClicked( 0 ) ) m_vd.drawLocks = true;
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_vd.drawLocks = true;
         }
     }
     if( !m_vd.drawPlots )
@@ -186,7 +295,19 @@ void View::DrawNotificationArea()
             ImGui::BeginTooltip();
             ImGui::TextUnformatted( "Plots are hidden." );
             ImGui::EndTooltip();
-            if( IsMouseClicked( 0 ) ) m_vd.drawPlots = true;
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_vd.drawPlots = true;
+        }
+    }
+    if( !m_vd.drawSections )
+    {
+        ImGui::SameLine();
+        TextColoredUnformatted( ImVec4( 1, 0.5, 0, 1 ), ICON_FA_ARROWS_LEFT_RIGHT_TO_LINE );
+        if( ImGui::IsItemHovered() )
+        {
+            ImGui::BeginTooltip();
+            ImGui::TextUnformatted( "Sections are hidden." );
+            ImGui::EndTooltip();
+            if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_vd.drawSections = true;
         }
     }
     {
@@ -197,6 +318,17 @@ void View::DrawNotificationArea()
             {
                 hidden = true;
                 break;
+            }
+        }
+        if( !hidden )
+        {
+            for( auto& v : m_sectionVisMap )
+            {
+                if( !v.second )
+                {
+                    hidden = true;
+                    break;
+                }
             }
         }
         if( !hidden )
@@ -220,19 +352,14 @@ void View::DrawNotificationArea()
                 ImGui::BeginTooltip();
                 ImGui::TextUnformatted( "Some timeline entries are hidden." );
                 ImGui::EndTooltip();
-                if( IsMouseClicked( 0 ) ) m_showOptions = true;
+                if( IsMouseClicked( ImGuiMouseButton_Left ) ) m_showOptions = true;
             }
         }
     }
     if( !m_worker.IsBackgroundDone() )
     {
         ImGui::SameLine();
-        const auto pos = ImGui::GetCursorPos();
-        auto draw = ImGui::GetWindowDrawList();
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 0 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f + 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 1 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f        ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-        draw->AddCircleFilled( pos + ImVec2( ty * 0.5f + 2 * ty, ty * 0.675f ), ty * ( 0.15f + 0.2f * ( pow( cos( s_time * 3.5f - 0.3f ), 16.f ) ) ), 0xFFBBBBBB, 12 );
-        ImGui::Dummy( ImVec2( ty * 3, ty ) );
+        DrawWaitingDots( s_time, false );
         auto rmin = ImGui::GetItemRectMin();
         const auto rmax = ImGui::GetItemRectMax();
         if( ImGui::IsMouseHoveringRect( rmin, rmax ) )
@@ -245,7 +372,7 @@ void View::DrawNotificationArea()
     if( m_saveThreadState.load( std::memory_order_relaxed ) == SaveThreadState::Saving )
     {
         ImGui::SameLine();
-        ImGui::TextUnformatted( ICON_FA_FLOPPY_DISK " Saving trace..." );
+        ImGui::TextUnformatted( ICON_FA_FLOPPY_DISK " Saving trace…" );
         m_notificationTime = 0;
     }
     else if( m_notificationTime > 0 )
