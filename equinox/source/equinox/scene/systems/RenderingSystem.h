@@ -9,6 +9,7 @@
 #include "equinox/renderer/backend/vulkan/VulkanBuffer.h"
 #include "equinox/renderer/Texture.h"
 #include "equinox/renderer/Material.h"
+#include "equinox/renderer/Model.h"
 
 #include "equinox/core/UUID.h"
 
@@ -38,6 +39,14 @@ namespace Equinox
 		glm::mat4 modelMatrix;  // 64 bytes
 		u32 materialIndex;      // 4 bytes — index into material SSBO
 		u32 _pad[3];            // 12 bytes padding (80 total)
+	};
+
+	struct DrawCommand 
+	{
+		glm::mat4 modelMatrix;
+		u32 materialSlot;
+		std::shared_ptr<Model> model;
+		u32 meshIndex;
 	};
 
 	// ---- Light data structs (mirrored in pbr.frag Set 3) ----
@@ -130,6 +139,11 @@ namespace Equinox
 
 		// Material SSBO slot tracking (MaterialUUID -> SSBO index)
 		std::unordered_map<UUID, u32, UUIDHash> m_MaterialSlotMap;
+
+		// Draw command buffers (reused across frames to avoid per-frame heap allocation)
+		std::vector<DrawCommand> m_OpaqueDraws;
+		std::vector<DrawCommand> m_CutoutDraws;
+		std::vector<DrawCommand> m_TransparentDraws;
 
 		// Shader hot-reload
 		FileWatcher m_ShaderWatcher;

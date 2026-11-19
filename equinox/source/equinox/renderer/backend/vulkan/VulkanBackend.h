@@ -36,13 +36,23 @@ namespace Equinox
 
 	private:
 		void CreateSyncObjects();
+		void DestroySyncObjects();
 		void CreateFrameCommandBuffers();
 
 		std::unique_ptr<VulkanSwapchain> m_Swapchain;
 
-		// Synchronization — Uses global MAX_FRAMES_IN_FLIGHT from FrameData.h
+		// Synchronization — per Vulkan swapchain semaphore reuse rules:
+		// imageAvailable: ring of (imageCount + 1) — cycled by frame, picked before acquire
+		// renderFinished: one per swapchain image — indexed by acquired image index
+		// (safe because acquiring image N means presentation released its semaphore)
 		std::vector<VkSemaphore> m_ImageAvailableSemaphores;
 		std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+
+		u32 m_ImageAvailableSemCount = 0;
+		u32 m_RenderFinishedSemCount = 0;
+		u32 m_NextAcquireSemIndex = 0;		// cycles through imageAvailable ring
+		u32 m_CurrentAcquireSemIndex = 0;   // which imageAvailable was used this frame
+		u32 m_AcquiredImageIndex = 0;       // swapchain image index from last acquire
 
 		// Timeline Semaphore for CPU-GPU Sync
 		TimelineSemaphore m_FrameTimeline;

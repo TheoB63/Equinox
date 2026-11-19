@@ -362,10 +362,13 @@ namespace Equinox
 	void VulkanContext::FlushDeletionQueue()
 	{
 		auto& queue = m_DeletionQueues[m_CurrentFrameIndex];
-		for (auto& func : queue.deletors) {
+		for (auto& func : queue.deletors) 
+		{
 			func();
 		}
-		queue.deletors.clear();
+
+		// Swap with empty deque to actually free memory (clear() keeps capacity in deque)
+		std::deque<std::function<void()>>{}.swap(queue.deletors);
 	}
 	void VulkanContext::FlushAllDeletionQueues()
 	{
