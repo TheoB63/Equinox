@@ -339,10 +339,14 @@ namespace Equinox::RG
 			if (pass.culled) continue;
 
 			// 1. Batched Barriers
+			// Use a stack buffer to avoid per-pass heap allocation (16 barriers should be plenty).
+			static constexpr u32 k_MaxBarriers = 16;
+
 			if (!pass.preBarriers.empty())
 			{
-				std::vector<VkImageMemoryBarrier2> barriers;
-				barriers.reserve(pass.preBarriers.size());
+				VkImageMemoryBarrier2 barriers[k_MaxBarriers];
+				u32 barrierCount = 0;
+				EQN_CORE_ASSERT(pass.preBarriers.size() <= k_MaxBarriers, "Too many barriers per pass!");
 
 				for (const auto& b : pass.preBarriers)
 				{
@@ -350,8 +354,8 @@ namespace Equinox::RG
 					auto [srcStage, srcAccess] = GetStateInfo(b.before);
 					auto [dstStage, dstAccess] = GetStateInfo(b.after);
 
-					VkImageMemoryBarrier2 vkBarrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 };
-					vkBarrier.srcStageMask = srcStage;
+					VkImageMemoryBarrier2& vkBarrier = barriers[barrierCount++];
+					vkBarrier = { VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 };					vkBarrier.srcStageMask = srcStage;
 					vkBarrier.srcAccessMask = srcAccess;
 					vkBarrier.dstStageMask = dstStage;
 					vkBarrier.dstAccessMask = dstAccess;
@@ -359,29 +363,35 @@ namespace Equinox::RG
 					vkBarrier.newLayout = GetLayout(b.after);
 					vkBarrier.image = res.image;
 					vkBarrier.subresourceRange = { GetAspect(res.desc.format), 0, 1, 0, 1 };
-					barriers.push_back(vkBarrier);
 				}
 
 				VkDependencyInfo dep{ VK_STRUCTURE_TYPE_DEPENDENCY_INFO };
-				dep.imageMemoryBarrierCount = (u32)barriers.size();
-				dep.pImageMemoryBarriers = barriers.data();
+
+				dep.imageMemoryBarrierCount = barrierCount;
+				dep.pImageMemoryBarriers = barriers;
 				vkCmdPipelineBarrier2(primaryCmd, &dep);
 			}
 
 			// 2. Build RenderPassInfo
-			std::vector<AttachmentInfo> colorAttachments;
+			// Stack buffer avoids per-pass heap allocation (max 8 color attachments).
+			static constexpr u32 k_MaxColorAtt = 8;
+			AttachmentInfo colorAttachmentsBuf[k_MaxColorAtt];
+			u32 colorAttachmentCount = 0;
+			EQN_CORE_ASSERT(pass.colorAttachments.size() <= k_MaxColorAtt, "Too many color attachments!");
+
 			for (const auto& att : pass.colorAttachments)
 			{
 				ResourceNode& res = m_Resources[att.handle.index - 1];
-				AttachmentInfo info{};
+				AttachmentInfo& info = colorAttachmentsBuf[colorAttachmentCount++];
+				info = {};
 				info.ImageView = res.view;
 				info.Format = GetVkFormat(res.desc.format);
 				info.LoadOp = att.loadOp;
 				info.StoreOp = att.storeOp;
 				info.ClearValue = att.clearValue;
 				info.Layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-				colorAttachments.push_back(info);
 			}
+			std::span<AttachmentInfo> colorAttachments(colorAttachmentsBuf, colorAttachmentCount);
 
 			AttachmentInfo depthInfo{};
 			if (pass.hasDepth)
