@@ -116,7 +116,7 @@ namespace Equinox
 		if (info.Type == AssetType::Texture)
 		{
 			auto* texData = static_cast<TextureAssetData*>(data.get());
-			newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data());
+			newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data(), texData->Settings);
 		}
 		else if (info.Type == AssetType::Model)
 		{
@@ -172,6 +172,13 @@ namespace Equinox
 	{
 		std::lock_guard<std::mutex> lock(s_AssetMutex);
 		return s_LoadingAssets.find(handle) != s_LoadingAssets.end();
+	}
+
+	void AssetManager::Evict(UUID handle)
+	{
+		std::lock_guard<std::mutex> lock(s_AssetMutex);
+		s_Assets.erase(handle);
+		s_LoadingAssets.erase(handle);
 	}
 
 	void AssetManager::Trim()
@@ -277,7 +284,7 @@ namespace Equinox
 				if (upload.Type == AssetType::Texture)
 				{
 					auto* texData = static_cast<TextureAssetData*>(upload.Data.get());
-					newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data());
+					newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data(), texData->Settings);
 				}
 				else if (upload.Type == AssetType::Model)
 				{

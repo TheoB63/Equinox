@@ -23,6 +23,14 @@ namespace Equinox
 		LinearMipmapLinear, NearestMipmapNearest
 	};
 
+	struct TextureSettings
+	{
+		bool GenerateMipmaps = true;
+		TextureWrapMode WrapMode = TextureWrapMode::Repeat;
+		TextureFilterMode MinFilter = TextureFilterMode::Linear;
+		TextureFilterMode MagFilter = TextureFilterMode::Linear;
+	};
+
 	class Texture : public Asset
 	{
 	public:
@@ -56,5 +64,7 @@ namespace Equinox
 		static std::shared_ptr<Texture> Create(const fs::path& path);
 		static std::shared_ptr<Texture> Create(u32 width, u32 height,
 			TextureFormat format, const void* data = nullptr);
+		static std::shared_ptr<Texture> Create(u32 width, u32 height,
+			TextureFormat format, const void* data, const TextureSettings& settings);
 	};
 }

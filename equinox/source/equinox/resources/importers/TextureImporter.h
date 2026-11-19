@@ -12,6 +12,7 @@ namespace Equinox
         uint32_t Width = 0;
         uint32_t Height = 0;
         TextureFormat Format = TextureFormat::None;
+        TextureSettings Settings;
     };
 
     class TextureImporter : public AssetImporter
