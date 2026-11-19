@@ -79,7 +79,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DEBUG;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;..\equinox\source;..\equinox\extern\source;..\equinox\extern\config-headers;..\equinox\extern\source\assimp\include;..\equinox\extern\source\glad\include;..\equinox\extern\source\glfw\include;..\equinox\extern\source\glm;..\equinox\extern\source\imgui;..\equinox\extern\source\spdlog\include;..\equinox\extern\source\tracy\public;..\equinox\extern\source\vulkan\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>

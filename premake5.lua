@@ -6,6 +6,10 @@ workspace "Equinox"
 
    buildoptions { "/utf-8" }
 
+   filter "action:vs*"
+      editandcontinue "Off"
+   filter {}
+   
    configurations
    {
       "Debug",

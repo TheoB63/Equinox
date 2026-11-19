@@ -14,7 +14,9 @@ project "Equinox"
    defines
    {
       "GLFW_INCLUDE_NONE",
-      "FMT_HEADER_ONLY=1"
+      "FMT_HEADER_ONLY=1",
+      "EQUINOX_SPIRV_CROSS_ENABLED=1",
+      "SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS"
    }
 
    files
@@ -62,9 +64,6 @@ project "Equinox"
       "spirv-cross"
    }
    
-   -- TODO: spirv-cross reflection disabled — Vulkan SDK pre-built libs have ABI mismatch.
-   -- When spirv-cross is built from source, add: links { "spirv-cross-core", "spirv-cross-glsl" }
-
    filter "configurations:Debug"
       defines { "DEBUG", "TRACY_ENABLE", "TRACY_FIBERS" }
       runtime "Debug"

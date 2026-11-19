@@ -5,8 +5,6 @@
 #include "equinox/renderer/backend/vulkan/VulkanContext.h"
 #include "equinox/core/Log.h"
 
-// TODO: spirv-cross reflection disabled — Vulkan SDK pre-built libs have ABI mismatch.
-// Re-enable includes + Reflect() body when spirv-cross is built from source.
 #if EQUINOX_SPIRV_CROSS_ENABLED
 #include <spirv_cross.hpp>
 #include <spirv_glsl.hpp>
@@ -113,9 +111,7 @@ namespace Equinox
 			if (!spirv.empty())
 			{
 				m_SpirVData[VK_SHADER_STAGE_VERTEX_BIT] = spirv;
-				// TODO: Reflect(VK_SHADER_STAGE_VERTEX_BIT, spirv);
-				// Disabled: Vulkan SDK spirv-cross libs have ABI mismatch with project MSVC.
-				// Re-enable when spirv-cross is built from source as a project dependency.
+				Reflect(VK_SHADER_STAGE_VERTEX_BIT, spirv);
 				CreateShaderModule(VK_SHADER_STAGE_VERTEX_BIT, spirv);
 			}
 		}
@@ -130,7 +126,7 @@ namespace Equinox
 			if (!spirv.empty())
 			{
 				m_SpirVData[VK_SHADER_STAGE_FRAGMENT_BIT] = spirv;
-				// TODO: Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, spirv);
+				Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, spirv);
 				CreateShaderModule(VK_SHADER_STAGE_FRAGMENT_BIT, spirv);
 			}
 		}
