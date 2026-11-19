@@ -130,7 +130,7 @@ namespace Equinox
 		case aiTextureType_METALNESS:           return MapType::Metalness;
 		case aiTextureType_DIFFUSE_ROUGHNESS:   return MapType::Roughness;
 		case aiTextureType_EMISSIVE:            return MapType::Emissive;
-		case aiTextureType_AMBIENT:             return MapType::Oclusion;
+		case aiTextureType_AMBIENT:             return MapType::Occlusion;
 		default:                                return MapType::Diffuse;
 		}
 	}
@@ -211,7 +211,8 @@ namespace Equinox
 
 		// Create new Material
 		nlohmann::json matJson;
-		matJson["shader"] = ""; // Default shader
+		UUID pbrUUID = AssetDatabase::GetUUID(FileSystem::AssetsPath() / "shaders/pbr.vert");
+		matJson["shader"] = pbrUUID.IsValid() ? pbrUUID.ToString() : "";
 		matJson["render_mode"] = 0; // Opaque
 
 		// Properties

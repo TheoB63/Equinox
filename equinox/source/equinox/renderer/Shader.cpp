@@ -19,16 +19,15 @@ namespace Equinox
 		}
 	}
 
-	std::string Shader::Load(const fs::path& filePath)
+	std::shared_ptr<Shader> Shader::Create(const std::vector<u32>& vertSpv, const std::vector<u32>& fragSpv, const fs::path& path)
 	{
-		std::ifstream in(filePath, std::ios::in | std::ios::binary);
-		if (!in) {
-			EQN_CORE_ERROR("Could not open shader file: {0}", filePath.string());
-			return "";
+		switch (Renderer::GetBackend()->GetAPI())
+		{
+		case RenderBackend::API::Vulkan:
+			return std::make_shared<VulkanShader>(vertSpv, fragSpv, path);
+		default:
+			EQN_CORE_ASSERT(false, "Unknown RenderBackend!");
+			return nullptr;
 		}
-
-		std::stringstream buffer;
-		buffer << in.rdbuf();
-		return buffer.str();
 	}
 }

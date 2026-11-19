@@ -75,7 +75,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DEBUG;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;EQUINOX_SPIRV_CROSS_ENABLED=1;SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS;DEBUG;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;extern\source\spirv-cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
@@ -100,7 +100,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;RELEASE;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;EQUINOX_SPIRV_CROSS_ENABLED=1;SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS;RELEASE;TRACY_ENABLE;TRACY_FIBERS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;extern\source\spirv-cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -128,7 +128,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>eqnpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;FMT_HEADER_ONLY=1;EQUINOX_SPIRV_CROSS_ENABLED=1;SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS;DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>source;extern\source;extern\config-headers;extern\source\assimp\include;extern\source\glad\include;extern\source\glfw\include;extern\source\glm;extern\source\imgui;extern\source\imguizmo;extern\source\spdlog\include;extern\source\vulkan\include;extern\source\tracy\public;extern\source\spirv-cross;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -235,6 +235,7 @@
     <ClInclude Include="source\equinox\resources\AssetSerializer.h" />
     <ClInclude Include="source\equinox\resources\FileSystem.h" />
     <ClInclude Include="source\equinox\resources\FileWatcher.h" />
+    <ClInclude Include="source\equinox\resources\importers\ShaderImporter.h" />
     <ClInclude Include="source\equinox\resources\MetaFile.h" />
     <ClInclude Include="source\equinox\resources\importers\MaterialImporter.h" />
     <ClInclude Include="source\equinox\resources\importers\ModelImporter.h" />
@@ -309,6 +310,7 @@
     <ClCompile Include="source\equinox\resources\AssetSerializer.cpp" />
     <ClCompile Include="source\equinox\resources\FileSystem.cpp" />
     <ClCompile Include="source\equinox\resources\FileWatcher.cpp" />
+    <ClCompile Include="source\equinox\resources\importers\ShaderImporter.cpp" />
     <ClCompile Include="source\equinox\resources\MetaFile.cpp" />
     <ClCompile Include="source\equinox\resources\importers\MaterialImporter.cpp" />
     <ClCompile Include="source\equinox\resources\importers\ModelImporter.cpp" />

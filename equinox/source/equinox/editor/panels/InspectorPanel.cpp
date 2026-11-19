@@ -586,10 +586,10 @@ namespace Equinox
 			else
 				ImGui::TextColored({ 0.2f, 0.9f, 0.4f, 1.0f }, "%s (Material)", material.GetName().c_str());
 
-			if (material.IsDirty()) 
+			if (material.IsDirty())
 			{
 				ImGui::SameLine();
-				if (ImGui::SmallButton("Save")) 
+				if (ImGui::SmallButton("Save"))
 				{
 					nlohmann::json json;
 					material.Serialize(json);
@@ -607,15 +607,17 @@ namespace Equinox
 		// Shader selection
 		ImGui::Text("Shader     ");
 		ImGui::SameLine();
-		if (auto shader = material.GetShader())
 		{
+			auto shader = material.GetShader();
+			std::string currentName = shader ? shader->GetName() : "<none>";
+
 			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-			if (ImGui::BeginCombo("##Shader", shader->GetName().c_str()))
+			if (ImGui::BeginCombo("##Shader", currentName.c_str()))
 			{
 				for (const auto& [name, s] : ShaderLibrary::GetAll())
 				{
-					bool selected = (s == material.GetShader());
-					if (ImGui::Selectable(name.c_str(), selected)) 
+					bool selected = shader && (s->Handle == material.GetShaderUUID());
+					if (ImGui::Selectable(name.c_str(), selected))
 					{
 						material.SetShader(s->Handle);
 						material.MarkDirty();
@@ -625,10 +627,6 @@ namespace Equinox
 				ImGui::EndCombo();
 			}
 		}
-		else
-		{
-			ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Missing Shader");
-		}
 
 		ImGui::Dummy({ 0, 4 });
 
@@ -636,7 +634,7 @@ namespace Equinox
 		{
 			UI::BeginProperties();
 			glm::vec4 color = material.GetColor();
-			if (UI::PropertyColor("Albedo Color", color)) 
+			if (UI::PropertyColor("Albedo Color", color))
 			{
 				material.SetColor(color);
 				material.MarkDirty();
@@ -855,7 +853,7 @@ namespace Equinox
 		DrawTextureProperty(MapType::Metalness, "Metallic");
 		DrawTextureProperty(MapType::Roughness, "Roughness");
 		DrawTextureProperty(MapType::Specular, "Specular");
-		DrawTextureProperty(MapType::Oclusion, "Oclusion");
+		DrawTextureProperty(MapType::Occlusion, "Occlusion");
 		DrawTextureProperty(MapType::Emissive, "Emissive");
 		DrawTextureProperty(MapType::Thickness, "Thickness");
 	}

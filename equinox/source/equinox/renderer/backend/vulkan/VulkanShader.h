@@ -11,6 +11,7 @@ namespace Equinox
 	{
 	public:
 		VulkanShader(const fs::path& path);
+		VulkanShader(const std::vector<u32>& vertSpv, const std::vector<u32>& fragSpv, const fs::path& path);
 		virtual ~VulkanShader();
 
 		virtual const fs::path& GetPath() const override { return m_Path; }

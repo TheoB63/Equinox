@@ -55,8 +55,8 @@ namespace Equinox
 		const std::unordered_map<std::string, ShaderBuffer>& GetPushConstants() const { return m_PushConstants; }
 
 		static std::shared_ptr<Shader> Create(const fs::path& filePath);
+		static std::shared_ptr<Shader> Create(const std::vector<u32>& vertSpv, const std::vector<u32>& fragSpv, const fs::path& path);
 
-		static std::string Load(const fs::path& filePath);
 	protected:
 		std::unordered_map<std::string, ShaderBuffer> m_Buffers;
 		std::unordered_map<std::string, ShaderResource> m_Resources;

@@ -5,10 +5,12 @@
 #include "equinox/resources/importers/TextureImporter.h"
 #include "equinox/resources/importers/ModelImporter.h"
 #include "equinox/resources/importers/MaterialImporter.h"
+#include "equinox/resources/importers/ShaderImporter.h"
 
 #include "equinox/renderer/Texture.h"
 #include "equinox/renderer/Model.h"
 #include "equinox/renderer/Material.h"
+#include "equinox/renderer/Shader.h"
 
 #include "equinox/core/Time.h"
 
@@ -29,6 +31,7 @@ namespace Equinox
 		s_Importers[AssetType::Texture] = std::make_unique<TextureImporter>();
 		s_Importers[AssetType::Model] = std::make_unique<ModelImporter>();
 		s_Importers[AssetType::Material] = std::make_unique<MaterialImporter>();
+		s_Importers[AssetType::Shader] = std::make_unique<ShaderImporter>();
 	}
 
 	void AssetManager::Shutdown()
@@ -100,6 +103,11 @@ namespace Equinox
 			auto matData = std::make_unique<MaterialAssetData>();
 			if (AssetSerializer::DeserializeMaterial(artifactPath, *matData)) data = std::move(matData);
 		}
+		else if (info.Type == AssetType::Shader)
+		{
+			auto shaderData = std::make_unique<ShaderAssetData>();
+			if (AssetSerializer::DeserializeShader(artifactPath, *shaderData)) data = std::move(shaderData);
+		}
 
 		if (!data) return nullptr;
 
@@ -121,6 +129,11 @@ namespace Equinox
 			auto material = std::make_shared<Material>();
 			material->Deserialize(matData->JsonData);
 			newAsset = material;
+		}
+		else if (info.Type == AssetType::Shader)
+		{
+			auto* shaderData = static_cast<ShaderAssetData*>(data.get());
+			newAsset = Shader::Create(shaderData->VertexSpirV, shaderData->FragmentSpirV, info.Path);
 		}
 
 		if (newAsset)
@@ -209,17 +222,25 @@ namespace Equinox
 		std::unique_ptr<AssetData> data = nullptr;
 		if (artifactReady)
 		{
-			if (req->Type == AssetType::Texture) {
+			if (req->Type == AssetType::Texture) 
+			{
 				auto texData = std::make_unique<TextureAssetData>();
 				if (AssetSerializer::DeserializeTexture(artifactPath, *texData)) data = std::move(texData);
 			}
-			else if (req->Type == AssetType::Model) {
+			else if (req->Type == AssetType::Model) 
+			{
 				auto modelData = std::make_unique<ModelAssetData>();
 				if (AssetSerializer::DeserializeModel(artifactPath, *modelData)) data = std::move(modelData);
 			}
-			else if (req->Type == AssetType::Material) {
+			else if (req->Type == AssetType::Material) 
+			{
 				auto matData = std::make_unique<MaterialAssetData>();
 				if (AssetSerializer::DeserializeMaterial(artifactPath, *matData)) data = std::move(matData);
+			}
+			else if (req->Type == AssetType::Shader) 
+			{
+				auto shaderData = std::make_unique<ShaderAssetData>();
+				if (AssetSerializer::DeserializeShader(artifactPath, *shaderData)) data = std::move(shaderData);
 			}
 		}
 
@@ -269,6 +290,11 @@ namespace Equinox
 					auto material = std::make_shared<Material>();
 					material->Deserialize(matData->JsonData);
 					newAsset = material;
+				}
+				else if (upload.Type == AssetType::Shader)
+				{
+					auto* shaderData = static_cast<ShaderAssetData*>(upload.Data.get());
+					newAsset = Shader::Create(shaderData->VertexSpirV, shaderData->FragmentSpirV, {});
 				}
 			}
 

@@ -3,6 +3,8 @@
 #include "equinox/resources/importers/TextureImporter.h"
 #include "equinox/resources/importers/ModelImporter.h"
 #include "equinox/resources/importers/MaterialImporter.h"
+#include "equinox/resources/importers/ShaderImporter.h"
+
 #include <fstream>
 
 namespace Equinox
@@ -159,6 +161,47 @@ namespace Equinox
         in.read(jsonStr.data(), size);
 
         outData.JsonData = nlohmann::json::parse(jsonStr);
+        return true;
+    }
+
+    bool AssetSerializer::SerializeShader(const fs::path& path, const ShaderAssetData& data)
+    {
+        std::ofstream out(path, std::ios::binary);
+        if (!out.is_open()) return false;
+
+        AssetHeader header;
+        header.Type = AssetType::Shader;
+        out.write((char*)&header, sizeof(AssetHeader));
+
+        ShaderHeader shaderHeader;
+        shaderHeader.VertexSpirVSize = (u32)data.VertexSpirV.size();
+        shaderHeader.FragmentSpirVSize = (u32)data.FragmentSpirV.size();
+        out.write((char*)&shaderHeader, sizeof(ShaderHeader));
+
+        out.write((char*)data.VertexSpirV.data(), data.VertexSpirV.size() * sizeof(u32));
+        out.write((char*)data.FragmentSpirV.data(), data.FragmentSpirV.size() * sizeof(u32));
+
+        return true;
+    }
+
+    bool AssetSerializer::DeserializeShader(const fs::path& path, ShaderAssetData& outData)
+    {
+        std::ifstream in(path, std::ios::binary);
+        if (!in.is_open()) return false;
+
+        AssetHeader header;
+        in.read((char*)&header, sizeof(AssetHeader));
+        if (header.Type != AssetType::Shader) return false;
+
+        ShaderHeader shaderHeader;
+        in.read((char*)&shaderHeader, sizeof(ShaderHeader));
+
+        outData.VertexSpirV.resize(shaderHeader.VertexSpirVSize);
+        in.read((char*)outData.VertexSpirV.data(), shaderHeader.VertexSpirVSize * sizeof(u32));
+
+        outData.FragmentSpirV.resize(shaderHeader.FragmentSpirVSize);
+        in.read((char*)outData.FragmentSpirV.data(), shaderHeader.FragmentSpirVSize * sizeof(u32));
+
         return true;
     }
 }

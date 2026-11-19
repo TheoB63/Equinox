@@ -4,6 +4,7 @@
 #include "equinox/resources/Asset.h"
 #include "equinox/renderer/Buffer.h"
 #include "equinox/resources/importers/MaterialImporter.h"
+#include "equinox/resources/importers/ShaderImporter.h"
 
 #include <vector>
 #include <filesystem>
@@ -46,6 +47,15 @@ namespace Equinox
         // - Material UUIDs [MaterialCount]
     };
 
+    struct ShaderHeader
+    {
+        u32 VertexSpirVSize;   // u32 count (not byte count)
+        u32 FragmentSpirVSize; // u32 count (not byte count)
+        // Followed by:
+        // - VertexSpirV [VertexSpirVSize * sizeof(u32)]
+        // - FragmentSpirV [FragmentSpirVSize * sizeof(u32)]
+    };
+
     class AssetSerializer
     {
     public:
@@ -57,5 +67,8 @@ namespace Equinox
 
         static bool SerializeMaterial(const fs::path& path, const struct MaterialAssetData& data);
         static bool DeserializeMaterial(const fs::path& path, struct MaterialAssetData& outData);
+    
+        static bool SerializeShader(const fs::path& path, const ShaderAssetData& data);
+        static bool DeserializeShader(const fs::path& path, ShaderAssetData& outData);
     };
 }

@@ -25,6 +25,7 @@
 
 #include "equinox/resources/AssetManager.h"
 #include "equinox/resources/FileSystem.h"
+#include "equinox/resources/AssetDatabase.h"
 
 #include <backends/imgui_impl_vulkan.h>
 #include <imgui.h>
@@ -49,11 +50,25 @@ namespace Equinox
 			InitGlobalUniforms();
 			InitShadowResources();
 
-			// Create and register shaders via Shader asset (compiles + reflects)
-			auto pbrShader = Shader::Create(FileSystem::AssetsPath() / "shaders/pbr.vert");
+			// Load shaders via AssetManager (imports + caches SPIR-V on first run)
+			// PBR
+			UUID pbrUUID = AssetDatabase::GetUUID(FileSystem::AssetsPath() / "shaders/pbr.vert");
+			auto pbrShader = std::static_pointer_cast<Shader>(AssetManager::LoadImmediate(pbrUUID));
+			if (!pbrShader)
+			{
+				EQN_CORE_ERROR("Failed to load PBR shader via AssetManager!");
+				return;
+			}
 			ShaderLibrary::Register("pbr", pbrShader);
 
-			auto shadowShader = Shader::Create(FileSystem::AssetsPath() / "shaders/shadowDepth.vert");
+			// Shadow
+			UUID shadowUUID = AssetDatabase::GetUUID(FileSystem::AssetsPath() / "shaders/shadowDepth.vert");
+			auto shadowShader = std::static_pointer_cast<Shader>(AssetManager::LoadImmediate(shadowUUID));
+			if (!shadowShader)
+			{
+				EQN_CORE_ERROR("Failed to load shadow shader via AssetManager!");
+				return;
+			}
 			ShaderLibrary::Register("shadowDepth", shadowShader);
 
 			// Extract SPIR-V for pipeline creation
