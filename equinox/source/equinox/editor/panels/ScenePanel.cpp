@@ -119,20 +119,28 @@ namespace Equinox
 			DrawGizmos();
 
 			// Camera Control
-			ImGui::SetNavCursorVisible(true);
+			ImGui::SetNavCursorVisible(!m_EditorCamera.IsFlying());
 			if (m_IsHovered) {
-				if (ImGui::IsKeyDown(ImGuiKey_F)) 
+				// F = frame selected, Shift+F = lock/track selected
+				if (ImGui::IsKeyPressed(ImGuiKey_F))
 				{
-					if (m_SelectedEntity) {
-						glm::vec3 newFocus = m_SelectedEntity.GetComponent<Transform>().Position;
-						m_EditorCamera.SetFocalPoint(newFocus);
+					bool shiftHeld = ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift);
+					if (m_SelectedEntity && m_SelectedEntity.IsValid())
+					{
+						if (shiftHeld)
+						{
+							m_EditorCamera.SetLockedEntity(m_SelectedEntity);
+						}
+						else
+						{
+							m_EditorCamera.ClearLockedEntity();
+							glm::vec3 newFocus = m_SelectedEntity.GetComponent<Transform>().Position;
+							m_EditorCamera.SetFocalPoint(newFocus);
+						}
 					}
 				}
 
-				bool rotate = ImGui::IsMouseDown(1);
-				bool pan = ImGui::IsMouseDown(2);
-				if (rotate || pan) ImGui::SetNavCursorVisible(false);
-				m_EditorCamera.OnUpdate(rotate, pan);
+				m_EditorCamera.OnUpdate(Time::DeltaTime());
 			}
 
 			ImGui::PopStyleVar();
@@ -214,7 +222,7 @@ namespace Equinox
 		}
 
 		// Gizmo Shortcuts
-		if (m_IsFocused && !ImGuizmo::IsUsing())
+		if (m_IsFocused && !ImGuizmo::IsUsing() && !m_EditorCamera.IsFlying())
 		{
 			if (ImGui::IsKeyPressed(ImGuiKey_Q))
 				m_GizmoType = -1;
@@ -258,28 +266,82 @@ namespace Equinox
 		UpdateView();
 	}
 
-	void EditorCamera::OnUpdate(bool rotate, bool pan) {
-		//if (ImGui::GetIO().WantCaptureMouse) return;
-
-		float dt = Time::DeltaTime();
+	void EditorCamera::OnUpdate(float dt)
+	{
 		auto [x, y] = ImGui::GetMousePos();
 		glm::vec2 currentMousePos(x, y);
 		glm::vec2 delta = (currentMousePos - m_LastMousePosition) * 0.002f;
 		m_LastMousePosition = currentMousePos;
 
+		// Input state
+		bool rmb = ImGui::IsMouseDown(ImGuiMouseButton_Right);
+		bool mmb = ImGui::IsMouseDown(ImGuiMouseButton_Middle);
+		bool lmb = ImGui::IsMouseDown(ImGuiMouseButton_Left);
+		bool altHeld = ImGui::IsKeyDown(ImGuiKey_LeftAlt) || ImGui::IsKeyDown(ImGuiKey_RightAlt);
+		bool shiftHeld = ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift);
+
+		m_IsFlying = rmb && !altHeld;
+
 		bool updated = false;
 
-		// Rotation (Right Mouse)
-		if (rotate) {
+		// --- Flythrough mode (RMB without Alt) ---
+		if (m_IsFlying)
+		{
+			// Mouse look
+			m_Yaw += delta.x * m_RotationSpeed * dt;
+			m_Pitch -= delta.y * m_RotationSpeed * dt;
+			m_Pitch = glm::clamp(m_Pitch, -89.0f, 89.0f);
+
+			// ZQSD + AE movement
+			glm::vec3 forward = GetForwardDirection();
+			glm::vec3 right = GetRightDirection();
+			glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+			float speed = m_FlySpeed * (shiftHeld ? m_ShiftMultiplier : 1.0f) * dt;
+			glm::vec3 movement(0.0f);
+
+			if (ImGui::IsKeyDown(ImGuiKey_Z)) movement += forward;
+			if (ImGui::IsKeyDown(ImGuiKey_S)) movement -= forward;
+			if (ImGui::IsKeyDown(ImGuiKey_D)) movement += right;
+			if (ImGui::IsKeyDown(ImGuiKey_Q)) movement -= right;
+			if (ImGui::IsKeyDown(ImGuiKey_E)) movement += worldUp;
+			if (ImGui::IsKeyDown(ImGuiKey_A)) movement -= worldUp;
+
+			if (glm::length(movement) > 0.0001f)
+				m_Position += glm::normalize(movement) * speed;
+
+			// Scroll adjusts base fly speed while in flythrough
+			float scrollDelta = ImGui::GetIO().MouseWheel;
+			if (scrollDelta != 0.0f) {
+				m_FlySpeed += scrollDelta * 0.5f;
+				m_FlySpeed = glm::clamp(m_FlySpeed, 0.1f, 200.0f);
+			}
+
+			// Keep focal point in sync so orbit works after releasing RMB
+			m_FocalPoint = m_Position + GetForwardDirection() * m_Distance;
+			updated = true;
+		}
+		// --- Orbit mode (Alt + LMB) ---
+		else if (altHeld && lmb)
+		{
 			m_Yaw += delta.x * m_RotationSpeed * dt;
 			m_Pitch -= delta.y * m_RotationSpeed * dt;
 			m_Pitch = glm::clamp(m_Pitch, -89.0f, 89.0f);
 			m_Position = CalculatePosition();
 			updated = true;
 		}
-
-		// Panning (Middle Mouse)
-		if (pan) {
+		// --- Smooth zoom (Alt + RMB drag) ---
+		else if (altHeld && rmb)
+		{
+			float zoomAmount = (delta.x + delta.y) * m_ZoomSpeed * m_Distance * dt;
+			m_Distance -= zoomAmount;
+			m_Distance = glm::max(m_Distance, 0.1f);
+			m_Position = CalculatePosition();
+			updated = true;
+		}
+		// --- Pan (Middle mouse) ---
+		else if (mmb)
+		{
 			glm::vec3 right = GetRightDirection();
 			glm::vec3 up = GetUpDirection();
 			float speed = m_PanSpeed * m_Distance * dt;
@@ -289,34 +351,71 @@ namespace Equinox
 			m_Position = CalculatePosition();
 			updated = true;
 		}
-
-		// Zoom (Mouse Scroll)
-		float zoomDelta = ImGui::GetIO().MouseWheel;
-		if (zoomDelta != 0.0f) {
-			float adaptiveSpeed = m_ZoomSpeed * m_Distance * dt;
-			m_Distance -= zoomDelta * adaptiveSpeed;
-			m_Distance = glm::max(m_Distance, 0.1f);
+		// --- Scroll zoom (when not in flythrough) ---
+		if (!m_IsFlying)
+		{
+			float zoomDelta = ImGui::GetIO().MouseWheel;
+			if (zoomDelta != 0.0f) {
+				float adaptiveSpeed = m_ZoomSpeed * m_Distance * dt;
+				m_Distance -= zoomDelta * adaptiveSpeed;
+				m_Distance = glm::max(m_Distance, 0.1f);
+				m_Position = CalculatePosition();
+				updated = true;
+			}
+		}
+		// --- Entity tracking (Shift+F lock) ---
+		if (m_IsTrackingEntity && m_LockedEntity && m_LockedEntity.IsValid())
+		{
+			m_FocalPoint = m_LockedEntity.GetComponent<Component::Transform>().Position;
 			m_Position = CalculatePosition();
 			updated = true;
 		}
 
+		// --- Cursor visibility ---
+		if (m_IsFlying && !m_WasFlying)
+			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+		else if (!m_IsFlying && m_WasFlying)
+			ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow);
+		m_WasFlying = m_IsFlying;
+
 		if (updated) UpdateView();
 	}
 
-	void EditorCamera::SetViewportSize(float width, float height) {
+	void EditorCamera::SetViewportSize(float width, float height)
+	{
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 		m_AspectRatio = width / height;
 		UpdateProjection();
 	}
 
-	void EditorCamera::SetFocalPoint(glm::vec3 focalPoint) {
+	void EditorCamera::SetFocalPoint(glm::vec3 focalPoint)
+	{
 		m_FocalPoint = focalPoint;
-		CalculatePosition();
+		m_Position = CalculatePosition();
 		UpdateView();
 	}
 
-	glm::vec3 EditorCamera::GetForwardDirection() const {
+	void EditorCamera::SetLockedEntity(Entity entity)
+	{
+		m_LockedEntity = entity;
+		m_IsTrackingEntity = true;
+		if (entity && entity.IsValid())
+		{
+			m_FocalPoint = entity.GetComponent<Component::Transform>().Position;
+			m_Position = CalculatePosition();
+			UpdateView();
+		}
+	}
+
+	void EditorCamera::ClearLockedEntity()
+	{
+		m_LockedEntity = {};
+		m_IsTrackingEntity = false;
+	}
+
+	glm::vec3 EditorCamera::GetForwardDirection() const
+	{
 		float yawRad = glm::radians(m_Yaw);
 		float pitchRad = glm::radians(m_Pitch);
 		return glm::vec3(
@@ -326,33 +425,39 @@ namespace Equinox
 		);
 	}
 
-	glm::vec3 EditorCamera::GetRightDirection() const {
+	glm::vec3 EditorCamera::GetRightDirection() const
+	{
 		float yawRad = glm::radians(m_Yaw);
 		return glm::vec3(-sin(yawRad), 0.0f, cos(yawRad));
 	}
 
-	glm::vec3 EditorCamera::GetUpDirection() const {
+	glm::vec3 EditorCamera::GetUpDirection() const
+	{
 		glm::vec3 forward = GetForwardDirection();
 		glm::vec3 right = GetRightDirection();
 		return glm::normalize(glm::cross(right, forward));
 	}
 
-	void EditorCamera::UpdateProjection() {
+	void EditorCamera::UpdateProjection()
+	{
 		m_ProjectionMatrix = glm::perspective(
 			glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
 
 		// No Y-flip here, applied at GPU uniform upload only (RenderingSystem::UpdateGlobalUniforms)
 	}
 
-	void EditorCamera::UpdateView() {
+	void EditorCamera::UpdateView()
+	{
 		m_ViewMatrix = glm::lookAt(m_Position, m_FocalPoint, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 
-	glm::vec3 EditorCamera::CalculatePosition() const {
+	glm::vec3 EditorCamera::CalculatePosition() const
+	{
 		return m_FocalPoint - GetForwardDirection() * m_Distance;
 	}
 
-	glm::quat EditorCamera::GetOrientation() const {
+	glm::quat EditorCamera::GetOrientation() const
+	{
 		return glm::quatLookAt(GetForwardDirection(), glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 }
