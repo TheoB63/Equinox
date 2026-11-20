@@ -82,6 +82,7 @@ namespace Equinox
 		Systems::SetScene(m_Scene.get());
 
 		Editor::Init(m_Window.get());
+		Editor::SetActiveScene(m_Scene);
 
 		// Subscribe to events
 		EventBus::Subscribe<WindowResizeEvent>(BusType::MainThread, [this](Event& e)

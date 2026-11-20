@@ -87,6 +87,7 @@ namespace Equinox
 			{ ".glsl",    AssetType::Shader },
 			{ ".vert",    AssetType::Shader },
 			{ ".ttf",     AssetType::Font },
+			{ ".equinox",    AssetType::Scene },
 			// { ".ini",     AssetType::Config   }
 		};
 
@@ -122,7 +123,8 @@ namespace Equinox
 			{ AssetType::Material,{ "Material", "materials", ".mat",  Vec4(0.2f, 0.9f, 0.4f, 1.0f) } },
 			{ AssetType::Shader,{ "Shader",   "shaders",   ".glsl", Vec4(0.9f, 0.3f, 0.3f, 1.0f) } },
 			{ AssetType::Font,{ "Font",     "fonts",     ".ttf",  Vec4(0.5f, 0.5f, 0.5f, 1.0f) } },
-			// { AssetType::Config,   { "Config",   "config",    ".json", Vec4(0.5f, 0.5f, 0.5f, 1.0f) } }
+			{ AssetType::Scene,{ "Scene",    "scenes",    ".equinox", Vec4(0.6f, 0.4f, 0.9f, 1.0f) } },
+			// { AssetType::Config,{	"Config",   "config",    ".json", Vec4(0.5f, 0.5f, 0.5f, 1.0f) } }
 		};
 		return typeInfo;
 	}

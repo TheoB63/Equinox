@@ -2,9 +2,12 @@
 #include "equinox/editor/Editor.h"
 
 #include "equinox/platform/WinWindow.h"
+#include "equinox/platform/FileDialog.h"
 
 #include "equinox/scene/Systems.h"
 #include "equinox/scene/systems/RenderingSystem.h"
+#include "equinox/scene/SceneSerializer.h"
+#include "equinox/scene/Components.h"
 
 #include "equinox/renderer/Renderer.h"
 #include "equinox/renderer/RenderBackend.h"
@@ -12,6 +15,7 @@
 #include "equinox/renderer/backend/vulkan/VulkanBackend.h"
 
 #include "equinox/resources/FileSystem.h"
+#include "equinox/resources/MetaFile.h"
 
 #include "equinox/utils/EquinoxIcons.h"
 
@@ -28,6 +32,7 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <GLFW/glfw3.h>
 
 namespace Equinox
 {
@@ -167,6 +172,7 @@ namespace Equinox
 
 		s_Context = nullptr;
 		s_Window = nullptr;
+		s_ActiveScene.reset();
 		EQN_CORE_INFO("Editor system shutdown completed");
 	}
 
@@ -223,7 +229,8 @@ namespace Equinox
 			ImGuiWindowFlags_NoMove |
 			ImGuiWindowFlags_NoDocking |
 			ImGuiWindowFlags_NoBringToFrontOnFocus |
-			ImGuiWindowFlags_NoBackground;
+			ImGuiWindowFlags_NoBackground |
+			ImGuiWindowFlags_MenuBar;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -232,9 +239,29 @@ namespace Equinox
 		ImGui::Begin("DockSpaceHost", &dockspaceOpen, hostWindowFlags);
 		ImGui::PopStyleVar(3);
 
+		// Menu bar
+		DrawMenuBar();
+
 		// Create dockspace
 		ImGuiID dockspaceID = ImGui::GetID("MainDockSpace");
 		ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockspaceFlags);
+
+		// Keyboard shortcuts
+		ProcessShortcuts();
+
+		// Dirty detection via hierarchy version
+		if (s_ActiveScene)
+		{
+			u32 currentVersion = s_ActiveScene->GetHierarchyVersion();
+			if (currentVersion != s_LastHierarchyVersion)
+			{
+				s_LastHierarchyVersion = currentVersion;
+				s_IsDirty = true;
+			}
+		}
+
+		// Update window title
+		UpdateWindowTitle();
 
 		// Render all panels
 		for (auto& panel : s_Panels)
@@ -776,5 +803,158 @@ namespace Equinox
 
 		EQN_CORE_INFO("Applied random style - Hue: {0}, WindowRounding: {1}",
 			hue, style.WindowRounding);
+	}
+
+	// ================================================================
+	// Scene Management
+	// ================================================================
+
+	void Editor::SetActiveScene(std::shared_ptr<Scene> scene)
+	{
+		s_ActiveScene = scene;
+		s_LastHierarchyVersion = scene ? scene->GetHierarchyVersion() : 0;
+
+		// Update Systems raw pointer so TransformSystem/RenderingSystem use the correct scene
+		Systems::SetScene(scene.get());
+
+		// Update panels that hold scene context
+		if (auto* hp = GetPanel<HierarchyPanel>())
+			hp->SetContext(scene);
+	}
+
+	void Editor::NewScene()
+	{
+		if (!s_ActiveScene) return;
+
+		// Clear all entities
+		s_ActiveScene->Clear();
+
+		s_ScenePath.clear();
+		s_IsDirty = false;
+		s_LastHierarchyVersion = s_ActiveScene->GetHierarchyVersion();
+
+		EQN_CORE_INFO("New scene created");
+	}
+
+	void Editor::OpenScene()
+	{
+		auto path = FileDialog::OpenFile("Equinox Scene (*.equinox)\0*.equinox\0All Files (*.*)\0*.*\0");
+		if (!path.has_value()) return;
+		OpenScene(path.value());
+	}
+
+	void Editor::OpenScene(const fs::path& path)
+	{
+		if (!s_ActiveScene) return;
+
+		if (SceneSerializer::Load(*s_ActiveScene, path)) 
+		{
+			s_ScenePath = path;
+			s_IsDirty = false;
+			s_LastHierarchyVersion = s_ActiveScene->GetHierarchyVersion();
+		}
+	}
+
+	void Editor::SaveScene()
+	{
+		if (!s_ActiveScene) return;
+
+		if (s_ScenePath.empty()) 
+		{
+			SaveSceneAs();
+			return;
+		}
+
+		if (SceneSerializer::Save(*s_ActiveScene, s_ScenePath)) 
+		{
+			s_IsDirty = false;
+
+			// Ensure .meta file exists
+			fs::path metaPath = s_ScenePath;
+			metaPath += ".meta";
+			if (!fs::exists(metaPath)) 
+			{
+				MetaFile::Create(s_ScenePath, AssetType::Scene);
+			}
+		}
+	}
+
+	void Editor::SaveSceneAs()
+	{
+		auto path = FileDialog::SaveFile("Equinox Scene (*.equinox)\0*.equinox\0All Files (*.*)\0*.*\0");
+		if (!path.has_value()) return;
+
+		s_ScenePath = path.value();
+		SaveScene();
+	}
+
+	void Editor::MarkDirty()
+	{
+		s_IsDirty = true;
+	}
+
+	void Editor::ProcessShortcuts()
+	{
+		bool ctrl = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
+		bool shift = ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift);
+
+		if (ctrl) 
+		{
+			if (ImGui::IsKeyPressed(ImGuiKey_N, false))
+				NewScene();
+			else if (ImGui::IsKeyPressed(ImGuiKey_O, false))
+				OpenScene();
+			else if (ImGui::IsKeyPressed(ImGuiKey_S, false))
+			{
+				if (shift)
+					SaveSceneAs();
+				else
+					SaveScene();
+			}
+		}
+	}
+
+	void Editor::DrawMenuBar()
+	{
+		if (ImGui::BeginMenuBar()) {
+			if (ImGui::BeginMenu("File")) {
+				if (ImGui::MenuItem("New Scene", "Ctrl+N"))
+					NewScene();
+				if (ImGui::MenuItem("Open Scene", "Ctrl+O"))
+					OpenScene();
+				ImGui::Separator();
+				if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
+					SaveScene();
+				if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
+					SaveSceneAs();
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
+	}
+
+	void Editor::UpdateWindowTitle()
+	{
+		if (!s_Window) return;
+
+		std::string title = "Equinox 0.1 [Vulkan]";
+		if (!s_ScenePath.empty())
+		{
+			title += " - " + s_ScenePath.filename().string();
+		}
+		else
+		{
+			title += " - Untitled";
+		}
+		if (s_IsDirty)
+		{
+			title += "*";
+		}
+
+		GLFWwindow* win = (GLFWwindow*)s_Window->GetNativeWindow();
+		if (win) 
+		{
+			glfwSetWindowTitle(win, title.c_str());
+		}
 	}
 }

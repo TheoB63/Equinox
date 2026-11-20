@@ -13,6 +13,7 @@ namespace Equinox
 		Scene();
 		~Scene();
 
+		void Clear();
 		Entity CreateEntity(const std::string& name = "Entity");
 		void DestroyEntity(Entity entity);
 		Entity DuplicateEntity(Entity original, bool skipParentAddition = false);

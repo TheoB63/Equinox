@@ -188,6 +188,7 @@
     <ClInclude Include="source\equinox\platform\AppEvent.h" />
     <ClInclude Include="source\equinox\platform\Event.h" />
     <ClInclude Include="source\equinox\platform\EventBus.h" />
+    <ClInclude Include="source\equinox\platform\FileDialog.h" />
     <ClInclude Include="source\equinox\platform\FileDropEvent.h" />
     <ClInclude Include="source\equinox\platform\Input.h" />
     <ClInclude Include="source\equinox\platform\KeyEvent.h" />
@@ -243,6 +244,7 @@
     <ClInclude Include="source\equinox\scene\Components.h" />
     <ClInclude Include="source\equinox\scene\Entity.h" />
     <ClInclude Include="source\equinox\scene\Scene.h" />
+    <ClInclude Include="source\equinox\scene\SceneSerializer.h" />
     <ClInclude Include="source\equinox\scene\System.h" />
     <ClInclude Include="source\equinox\scene\Systems.h" />
     <ClInclude Include="source\equinox\scene\systems\AnimationSystem.h" />
@@ -273,6 +275,7 @@
     <ClCompile Include="source\equinox\jobs\JobSystem.cpp" />
     <ClCompile Include="source\equinox\memory\MemoryTracker.cpp" />
     <ClCompile Include="source\equinox\memory\TaggedPageAllocator.cpp" />
+    <ClCompile Include="source\equinox\platform\FileDialog.cpp" />
     <ClCompile Include="source\equinox\platform\Input.cpp" />
     <ClCompile Include="source\equinox\platform\WinWindow.cpp" />
     <ClCompile Include="source\equinox\platform\Window.cpp" />
@@ -317,6 +320,7 @@
     <ClCompile Include="source\equinox\resources\importers\TextureImporter.cpp" />
     <ClCompile Include="source\equinox\scene\Entity.cpp" />
     <ClCompile Include="source\equinox\scene\Scene.cpp" />
+    <ClCompile Include="source\equinox\scene\SceneSerializer.cpp" />
     <ClCompile Include="source\equinox\scene\Systems.cpp" />
     <ClCompile Include="source\equinox\scene\systems\RenderingSystem.cpp" />
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp" />

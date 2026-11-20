@@ -1,10 +1,13 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/ProjectPanel.h"
 #include "equinox/editor/panels/InspectorPanel.h"
+#include "equinox/editor/Editor.h"
+
 #include "equinox/resources/AssetDatabase.h"
 #include "equinox/resources/AssetManager.h"
 #include "equinox/resources/MetaFile.h"
 #include "equinox/renderer/Material.h"
+
 #include "equinox/utils/ImGuiUtils.h"
 #include "equinox/utils/EquinoxIcons.h"
 
@@ -468,16 +471,21 @@ namespace Equinox
     {
         m_SelectedPath = node->Path;
 
-        if (doubleClick) {
-            if (node->Type == AssetType::None) {
+        if (doubleClick) 
+        {
+            if (node->Type == AssetType::None) 
+            {
                 m_CurrentDirNode = node;
             }
-            else {
-                // Open asset?
+            else if (node->Type == AssetType::Scene) 
+            {
+                Editor::OpenScene(node->Path);
             }
         }
-        else {
-            if (node->Type != AssetType::None) {
+        else 
+        {
+            if (node->Type != AssetType::None) 
+            {
                 m_InspectorPanel->SetSelectedResource(node->Handle);
             }
         }

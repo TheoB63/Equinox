@@ -22,18 +22,16 @@ namespace Equinox
 	HierarchyPanel::HierarchyPanel()
 	{
 		EQN_CORE_INFO("Created Hierarchy panel");
-		m_Context = std::make_shared<Scene>();
 	}
 
 	void HierarchyPanel::OnInit()
 	{
-		Systems::SetScene(m_Context.get());
 	}
 
 	void HierarchyPanel::OnRender()
 	{
 		ImGui::PushFont(Editor::GetFASolid());
-		if (ImGui::Begin(ICON_FA_LIST "  Hierarchy"))
+		if (ImGui::Begin(ICON_FA_LIST "  Hierarchy") && m_Context)
 		{
 			DrawTopBar();
 			ImGui::Separator();

@@ -1,0 +1,438 @@
+{
+    "entities": [
+        {
+            "active": true,
+            "directionalLight": {
+                "castShadows": true,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "intensity": 1.0,
+                "shadowBias": 0.004999999888241291
+            },
+            "parent": "",
+            "tag": "Directional Light",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    -45.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "021409b9-03fe-4056-8b5c-ca64726f2ae1"
+        },
+        {
+            "active": true,
+            "parent": "",
+            "tag": "porsche",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "b74a019f-a313-4a27-b743-ce2cbf6910f0"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "341cbd96-2fd2-42be-a77a-df0a06a4c533",
+                "meshIndex": 0,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Black",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "9df09373-2dd7-4d53-b0a8-014551dd4c5c"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "3d55f965-f002-41f9-bfff-c8a60001a5b4",
+                "meshIndex": 1,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Chromes",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "fe831390-c37b-425c-84fc-6ef71888e420"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "c9e7fe0c-b300-429b-aaa3-2ae2e35a1f96",
+                "meshIndex": 2,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Glass",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "20d889c7-636f-4178-a1a7-ce19a39fdd8a"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "ffc6d389-938f-485e-8d01-4c0c26afe1d4",
+                "meshIndex": 3,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Lights",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "485ef8b5-7071-46bb-8cfd-948e709acd70"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "1facec9c-06a0-4f8e-a2c5-11dae02997a0",
+                "meshIndex": 4,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Lights_Refraction",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "9b8176a7-9246-4685-871e-acecb36a0c1a"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "ae7a07bd-249d-420d-9540-817b4a59bf01",
+                "meshIndex": 5,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Paint",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "98472117-7cbb-4b4b-96b8-b058801a304f"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "ebc3a449-eb58-4343-87e6-7858ba25609d",
+                "meshIndex": 6,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Plastics",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "75db0458-a981-48c2-ac87-390954bf7be7"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "83d459ed-f45d-486d-b096-fc1318f900a6",
+                "meshIndex": 7,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Plates",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "d84ea291-771d-4c6e-80d4-f01394888c79"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "5140c27c-7e91-46b9-94df-88251446e2c4",
+                "meshIndex": 8,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Rims",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "5314e32d-bee1-47ad-867f-427c5c6b1860"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "1acfc635-4984-4f47-b425-8dab31e55908",
+                "meshIndex": 9,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Shadow",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "c10505d4-0926-43ee-88f7-f324ed9cc45c"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "96f64045-70ae-4895-8515-1a0c5ba2d6c4",
+                "meshIndex": 10,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Stickers",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "32b9391f-83e1-4ce9-a9fa-2b322d6f0c7c"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "e8f40d07-08c4-47e4-a09a-9345c9efdfb3",
+                "meshIndex": 11,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Tires",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "b564a4e8-024c-4256-a53d-4aff9912e2db"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "7f695c2b-b731-4b57-89e4-560dc448a7c8",
+                "meshIndex": 12,
+                "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
+            },
+            "parent": "b74a019f-a313-4a27-b743-ce2cbf6910f0",
+            "tag": "Wunderbaum",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "083fd816-3e19-43c4-be0e-e9848510280b"
+        }
+    ],
+    "version": 1
+}

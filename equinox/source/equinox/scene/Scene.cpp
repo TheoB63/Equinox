@@ -17,6 +17,24 @@ namespace Equinox
 		EQN_CORE_INFO("Destroyed scene");
 	}
 
+	void Scene::Clear()
+	{
+		m_RootEntities.clear();
+
+		//Destroy every entity individually
+		std::vector<entt::entity> all;
+		auto view = m_Registry.view<entt::entity>();
+		view.each([&all](entt::entity e)
+			{
+				all.push_back(e);
+			});
+		for (auto e : all)
+			m_Registry.destroy(e);
+
+		IncrementHierarchyVersion();
+		EQN_CORE_TRACE("Scene cleared");
+	}
+
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity = { m_Registry.create(), this };
@@ -54,8 +72,9 @@ namespace Equinox
 			RemoveFromRoots(entity);
 
 		// Finally destroy the entity itself
+		std::string name = entity.GetName();
 		m_Registry.destroy(entity);
-		EQN_CORE_TRACE("Destroyed entity: {0}", entity.GetName());
+		EQN_CORE_TRACE("Destroyed entity: {0}", name);
 		IncrementHierarchyVersion();
 	}
 
