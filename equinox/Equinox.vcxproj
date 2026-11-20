@@ -92,7 +92,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -120,7 +120,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -148,7 +148,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -166,10 +166,10 @@
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\editor\EditorSelection.h" />
     <ClInclude Include="source\equinox\editor\EditorStyle.h" />
+    <ClInclude Include="source\equinox\editor\UI.h" />
     <ClInclude Include="source\equinox\editor\inspectors\MaterialEditor.h" />
     <ClInclude Include="source\equinox\editor\inspectors\ModelViewer.h" />
     <ClInclude Include="source\equinox\editor\inspectors\TextureEditor.h" />
-    <ClInclude Include="source\equinox\editor\UI.h" />
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\ProfilerPanel.h" />
@@ -269,10 +269,10 @@
     <ClCompile Include="source\equinox\core\UUID.cpp" />
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
     <ClCompile Include="source\equinox\editor\EditorStyle.cpp" />
+    <ClCompile Include="source\equinox\editor\UI.cpp" />
     <ClCompile Include="source\equinox\editor\inspectors\MaterialEditor.cpp" />
     <ClCompile Include="source\equinox\editor\inspectors\ModelViewer.cpp" />
     <ClCompile Include="source\equinox\editor\inspectors\TextureEditor.cpp" />
-    <ClCompile Include="source\equinox\editor\UI.cpp" />
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\ProfilerPanel.cpp" />

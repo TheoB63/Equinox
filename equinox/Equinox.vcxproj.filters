@@ -10,6 +10,9 @@
     <Filter Include="equinox\editor">
       <UniqueIdentifier>{A463229A-9031-16A0-79C5-86C66532F204}</UniqueIdentifier>
     </Filter>
+    <Filter Include="equinox\editor\inspectors">
+      <UniqueIdentifier>{3DEBA02D-A9AD-D4B7-F25D-63445E5FAD95}</UniqueIdentifier>
+    </Filter>
     <Filter Include="equinox\editor\panels">
       <UniqueIdentifier>{96A7AD9D-0214-6998-CB07-01F637338B00}</UniqueIdentifier>
     </Filter>
@@ -86,8 +89,23 @@
     <ClInclude Include="source\equinox\editor\Editor.h">
       <Filter>equinox\editor</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\editor\EditorSelection.h">
+      <Filter>equinox\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\editor\EditorStyle.h">
+      <Filter>equinox\editor</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\editor\UI.h">
       <Filter>equinox\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\editor\inspectors\MaterialEditor.h">
+      <Filter>equinox\editor\inspectors</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\editor\inspectors\ModelViewer.h">
+      <Filter>equinox\editor\inspectors</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\editor\inspectors\TextureEditor.h">
+      <Filter>equinox\editor\inspectors</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h">
       <Filter>equinox\editor\panels</Filter>
@@ -156,6 +174,9 @@
       <Filter>equinox\platform</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\platform\EventBus.h">
+      <Filter>equinox\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\platform\FileDialog.h">
       <Filter>equinox\platform</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\platform\FileDropEvent.h">
@@ -323,6 +344,9 @@
     <ClInclude Include="source\equinox\scene\Scene.h">
       <Filter>equinox\scene</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\scene\SceneSerializer.h">
+      <Filter>equinox\scene</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\scene\System.h">
       <Filter>equinox\scene</Filter>
     </ClInclude>
@@ -350,13 +374,6 @@
     <ClInclude Include="source\equinox\utils\ImGuiUtils.h">
       <Filter>equinox\utils</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\scene\SceneSerializer.h" />
-    <ClInclude Include="source\equinox\platform\FileDialog.h" />
-    <ClInclude Include="source\equinox\editor\EditorStyle.h" />
-    <ClInclude Include="source\equinox\editor\EditorSelection.h" />
-    <ClInclude Include="source\equinox\editor\inspectors\TextureEditor.h" />
-    <ClInclude Include="source\equinox\editor\inspectors\ModelViewer.h" />
-    <ClInclude Include="source\equinox\editor\inspectors\MaterialEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -372,8 +389,20 @@
     <ClCompile Include="source\equinox\editor\Editor.cpp">
       <Filter>equinox\editor</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\editor\EditorStyle.cpp">
+      <Filter>equinox\editor</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\editor\UI.cpp">
       <Filter>equinox\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\editor\inspectors\MaterialEditor.cpp">
+      <Filter>equinox\editor\inspectors</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\editor\inspectors\ModelViewer.cpp">
+      <Filter>equinox\editor\inspectors</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\editor\inspectors\TextureEditor.cpp">
+      <Filter>equinox\editor\inspectors</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp">
       <Filter>equinox\editor\panels</Filter>
@@ -407,6 +436,9 @@
     </ClCompile>
     <ClCompile Include="source\equinox\memory\TaggedPageAllocator.cpp">
       <Filter>equinox\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\platform\FileDialog.cpp">
+      <Filter>equinox\platform</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\platform\Input.cpp">
       <Filter>equinox\platform</Filter>
@@ -540,6 +572,9 @@
     <ClCompile Include="source\equinox\scene\Scene.cpp">
       <Filter>equinox\scene</Filter>
     </ClCompile>
+    <ClCompile Include="source\equinox\scene\SceneSerializer.cpp">
+      <Filter>equinox\scene</Filter>
+    </ClCompile>
     <ClCompile Include="source\equinox\scene\Systems.cpp">
       <Filter>equinox\scene</Filter>
     </ClCompile>
@@ -549,11 +584,5 @@
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp">
       <Filter>equinox\utils</Filter>
     </ClCompile>
-    <ClCompile Include="source\equinox\scene\SceneSerializer.cpp" />
-    <ClCompile Include="source\equinox\platform\FileDialog.cpp" />
-    <ClCompile Include="source\equinox\editor\EditorStyle.cpp" />
-    <ClCompile Include="source\equinox\editor\inspectors\TextureEditor.cpp" />
-    <ClCompile Include="source\equinox\editor\inspectors\ModelViewer.cpp" />
-    <ClCompile Include="source\equinox\editor\inspectors\MaterialEditor.cpp" />
   </ItemGroup>
 </Project>

@@ -44,9 +44,13 @@ project "Equinox"
 
    libdirs
    {
-      "extern/source/vulkan/lib",
-      os.getenv("VULKAN_SDK") .. "/Lib"
+      "extern/source/vulkan/lib"
    }
+
+   local vulkanSDK = os.getenv("VULKAN_SDK")
+   if vulkanSDK then
+      libdirs { vulkanSDK .. "/Lib" }
+   end
 
    links
    {
