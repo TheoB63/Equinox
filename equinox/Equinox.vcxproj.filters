@@ -352,6 +352,11 @@
     </ClInclude>
     <ClInclude Include="source\equinox\scene\SceneSerializer.h" />
     <ClInclude Include="source\equinox\platform\FileDialog.h" />
+    <ClInclude Include="source\equinox\editor\EditorStyle.h" />
+    <ClInclude Include="source\equinox\editor\EditorSelection.h" />
+    <ClInclude Include="source\equinox\editor\inspectors\TextureEditor.h" />
+    <ClInclude Include="source\equinox\editor\inspectors\ModelViewer.h" />
+    <ClInclude Include="source\equinox\editor\inspectors\MaterialEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -546,5 +551,9 @@
     </ClCompile>
     <ClCompile Include="source\equinox\scene\SceneSerializer.cpp" />
     <ClCompile Include="source\equinox\platform\FileDialog.cpp" />
+    <ClCompile Include="source\equinox\editor\EditorStyle.cpp" />
+    <ClCompile Include="source\equinox\editor\inspectors\TextureEditor.cpp" />
+    <ClCompile Include="source\equinox\editor\inspectors\ModelViewer.cpp" />
+    <ClCompile Include="source\equinox\editor\inspectors\MaterialEditor.cpp" />
   </ItemGroup>
 </Project>

@@ -164,6 +164,11 @@
     <ClInclude Include="source\equinox\core\Timer.h" />
     <ClInclude Include="source\equinox\core\UUID.h" />
     <ClInclude Include="source\equinox\editor\Editor.h" />
+    <ClInclude Include="source\equinox\editor\EditorSelection.h" />
+    <ClInclude Include="source\equinox\editor\EditorStyle.h" />
+    <ClInclude Include="source\equinox\editor\inspectors\MaterialEditor.h" />
+    <ClInclude Include="source\equinox\editor\inspectors\ModelViewer.h" />
+    <ClInclude Include="source\equinox\editor\inspectors\TextureEditor.h" />
     <ClInclude Include="source\equinox\editor\UI.h" />
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h" />
     <ClInclude Include="source\equinox\editor\panels\InspectorPanel.h" />
@@ -263,6 +268,10 @@
     <ClCompile Include="source\equinox\core\Log.cpp" />
     <ClCompile Include="source\equinox\core\UUID.cpp" />
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
+    <ClCompile Include="source\equinox\editor\EditorStyle.cpp" />
+    <ClCompile Include="source\equinox\editor\inspectors\MaterialEditor.cpp" />
+    <ClCompile Include="source\equinox\editor\inspectors\ModelViewer.cpp" />
+    <ClCompile Include="source\equinox\editor\inspectors\TextureEditor.cpp" />
     <ClCompile Include="source\equinox\editor\UI.cpp" />
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp" />
     <ClCompile Include="source\equinox\editor\panels\InspectorPanel.cpp" />

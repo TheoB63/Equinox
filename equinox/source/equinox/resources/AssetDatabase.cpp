@@ -79,15 +79,18 @@ namespace Equinox
 			s_Assets[uuid] = { path, type };
 			s_PathToUuid[path] = uuid;
 
-			// Check Hash
-			u64 currentHash = CalculateAssetHash(path, metaPath);
-			if (s_ArtifactHashes[uuid] != currentHash || !fs::exists(GetArtifactPath(uuid)))
+			// Only check hash/reimport for types that have importers
+			if (AssetManager::HasImporter(type)) 
 			{
-				EQN_CORE_INFO("AssetDatabase: Re-importing {0}", path.filename().string());
-				s_ArtifactHashes[uuid] = currentHash;
-				fs::path artifact = GetArtifactPath(uuid);
-				if (fs::exists(artifact)) fs::remove(artifact);
-				s_DirtyAssets.push_back(uuid);
+				u64 currentHash = CalculateAssetHash(path, metaPath);
+				if (s_ArtifactHashes[uuid] != currentHash || !fs::exists(GetArtifactPath(uuid)))
+				{
+					EQN_CORE_INFO("AssetDatabase: Re-importing {0}", path.filename().string());
+					s_ArtifactHashes[uuid] = currentHash;
+					fs::path artifact = GetArtifactPath(uuid);
+					if (fs::exists(artifact)) fs::remove(artifact);
+					s_DirtyAssets.push_back(uuid);
+				}
 			}
 		}
 

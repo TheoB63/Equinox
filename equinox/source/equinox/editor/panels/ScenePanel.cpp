@@ -2,7 +2,7 @@
 
 #include "equinox/editor/panels/ScenePanel.h"
 #include "equinox/editor/panels/RenderPanel.h"
-#include "equinox/editor/panels/HierarchyPanel.h"
+#include "equinox/editor/EditorSelection.h"
 
 #include "equinox/scene/Components.h"
 
@@ -51,14 +51,13 @@ namespace Equinox
 
 	void ScenePanel::OnInit()
 	{
-		m_SelectedEntity = Editor::GetPanel<HierarchyPanel>()->GetSelectedEntity();
+		m_SelectedEntity = EditorSelection::GetSelectedEntity();
 	}
 
 	void ScenePanel::OnRender()
 	{
-		// Sync selection from Hierarchy
-		if (auto hierarchy = Editor::GetPanel<HierarchyPanel>())
-			m_SelectedEntity = hierarchy->GetSelectedEntity();
+		// Sync selection
+		m_SelectedEntity = EditorSelection::GetSelectedEntity();
 
 		ImGui::PushFont(Editor::GetFASolid());
 		std::string scene = ICON_FA_GAMEPAD + std::string("  Scene");

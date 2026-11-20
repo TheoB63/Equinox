@@ -174,6 +174,11 @@ namespace Equinox
 		return s_LoadingAssets.find(handle) != s_LoadingAssets.end();
 	}
 
+	bool AssetManager::HasImporter(AssetType type)
+	{
+		return s_Importers.find(type) != s_Importers.end();
+	}
+
 	void AssetManager::Evict(UUID handle)
 	{
 		std::lock_guard<std::mutex> lock(s_AssetMutex);
@@ -214,7 +219,7 @@ namespace Equinox
 		// 1. Import if missing
 		if (!artifactReady)
 		{
-			if (s_Importers.find(req->Type) != s_Importers.end())
+			if (HasImporter(req->Type))
 			{
 				auto& importer = s_Importers[req->Type];
 				artifactReady = importer->Import(req->Path, artifactPath);
@@ -229,22 +234,22 @@ namespace Equinox
 		std::unique_ptr<AssetData> data = nullptr;
 		if (artifactReady)
 		{
-			if (req->Type == AssetType::Texture) 
+			if (req->Type == AssetType::Texture)
 			{
 				auto texData = std::make_unique<TextureAssetData>();
 				if (AssetSerializer::DeserializeTexture(artifactPath, *texData)) data = std::move(texData);
 			}
-			else if (req->Type == AssetType::Model) 
+			else if (req->Type == AssetType::Model)
 			{
 				auto modelData = std::make_unique<ModelAssetData>();
 				if (AssetSerializer::DeserializeModel(artifactPath, *modelData)) data = std::move(modelData);
 			}
-			else if (req->Type == AssetType::Material) 
+			else if (req->Type == AssetType::Material)
 			{
 				auto matData = std::make_unique<MaterialAssetData>();
 				if (AssetSerializer::DeserializeMaterial(artifactPath, *matData)) data = std::move(matData);
 			}
-			else if (req->Type == AssetType::Shader) 
+			else if (req->Type == AssetType::Shader)
 			{
 				auto shaderData = std::make_unique<ShaderAssetData>();
 				if (AssetSerializer::DeserializeShader(artifactPath, *shaderData)) data = std::move(shaderData);
@@ -307,7 +312,7 @@ namespace Equinox
 
 			{
 				std::lock_guard<std::mutex> assetLock(s_AssetMutex);
-				
+
 				// Clear loading flag
 				s_LoadingAssets.erase(upload.Handle);
 

@@ -1,6 +1,6 @@
 #include "eqnpch.h"
 #include "equinox/editor/panels/HierarchyPanel.h"
-#include "equinox/editor/panels/InspectorPanel.h"
+#include "equinox/editor/EditorSelection.h"
 
 #include "equinox/scene/Components.h"
 #include "equinox/scene/Systems.h"
@@ -453,11 +453,7 @@ namespace Equinox
 	void HierarchyPanel::SetSelectedEntity(Entity entity)
 	{
 		m_Selection = entity;
-		// Sync with Inspector
-		if (auto* inspector = Editor::GetPanel<InspectorPanel>())
-		{
-			inspector->SetSelectedEntity(entity);
-		}
+		EditorSelection::SelectEntity(entity);
 	}
 
 	void HierarchyPanel::RenameEntity(Entity entity)

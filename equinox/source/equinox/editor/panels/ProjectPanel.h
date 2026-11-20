@@ -10,7 +10,8 @@
 
 namespace Equinox
 {
-    struct DirectoryNode {
+    struct DirectoryNode 
+    {
         fs::path Path;
         std::string Name;
         AssetType Type = AssetType::None;
@@ -21,8 +22,6 @@ namespace Equinox
 
         bool IsOpen = false;
     };
-
-	class InspectorPanel;
 
     class ProjectPanel : public Panel
     {
@@ -62,7 +61,6 @@ namespace Equinox
         const char* GetIcon(AssetType type, bool isDirectory) const;
 
         // Runtime state
-		InspectorPanel* m_InspectorPanel = nullptr;
         fs::path m_AssetsPath;
 
         std::unique_ptr<DirectoryNode> m_RootNode;

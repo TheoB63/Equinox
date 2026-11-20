@@ -60,7 +60,7 @@
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "341cbd96-2fd2-42be-a77a-df0a06a4c533",
+                "materialUUID": "864cdc0b-13e4-48c8-aa8d-7e910159b0b5",
                 "meshIndex": 0,
                 "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
             },
@@ -176,7 +176,7 @@
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "1facec9c-06a0-4f8e-a2c5-11dae02997a0",
+                "materialUUID": "2fda9f7d-1cce-4d24-a3e9-6db7970a4756",
                 "meshIndex": 4,
                 "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
             },
@@ -234,7 +234,7 @@
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "ebc3a449-eb58-4343-87e6-7858ba25609d",
+                "materialUUID": "6e38698e-d35f-47fa-b25b-7b5fb813bc02",
                 "meshIndex": 6,
                 "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
             },
@@ -263,7 +263,7 @@
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "83d459ed-f45d-486d-b096-fc1318f900a6",
+                "materialUUID": "87d257e3-bc82-4c97-8ebb-a8acbfd7db5f",
                 "meshIndex": 7,
                 "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
             },
@@ -292,7 +292,7 @@
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "5140c27c-7e91-46b9-94df-88251446e2c4",
+                "materialUUID": "68e2aae0-4b86-4086-b81c-c0f1865639dc",
                 "meshIndex": 8,
                 "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
             },
@@ -321,7 +321,7 @@
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "1acfc635-4984-4f47-b425-8dab31e55908",
+                "materialUUID": "88945494-ad27-4fd8-8525-b986a3e6d4dd",
                 "meshIndex": 9,
                 "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
             },
@@ -350,7 +350,7 @@
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "96f64045-70ae-4895-8515-1a0c5ba2d6c4",
+                "materialUUID": "af469259-80fb-40ec-8bb5-0978b930be01",
                 "meshIndex": 10,
                 "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
             },
@@ -379,7 +379,7 @@
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "e8f40d07-08c4-47e4-a09a-9345c9efdfb3",
+                "materialUUID": "9bb7e8a3-56b8-4abc-add6-e440d905e260",
                 "meshIndex": 11,
                 "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
             },
@@ -408,7 +408,7 @@
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "7f695c2b-b731-4b57-89e4-560dc448a7c8",
+                "materialUUID": "e4fb1bfb-1a6c-4238-a20b-6ab7d53ae1db",
                 "meshIndex": 12,
                 "modelUUID": "9df32c97-0192-4da4-9bef-7be64ae4d7c8"
             },
