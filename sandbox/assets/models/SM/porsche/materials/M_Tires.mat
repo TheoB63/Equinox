@@ -1,4 +1,5 @@
 {
+    "alpha": 1.0,
     "alpha_cutoff": 0.5,
     "alpha_from_diffuse": 0,
     "blend_dst": 3,
@@ -9,57 +10,74 @@
         0.8159204125404358,
         1.0
     ],
+    "emissive": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "is_gloss": 0,
+    "is_single_channel": 0,
+    "metal": 0.0,
     "render_mode": 0,
-    "shader": "0a073492-7454-45d2-92c5-254176b2e883",
+    "rough": 1.0,
+    "shader": "0000000000000064",
+    "subsurface": {
+        "color": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "strength": 0.0,
+        "thickness_scale": 0.0
+    },
     "textures": [
         {
             "type": 0,
             "useTexture": true,
-            "uuid": "efa051ba-1ec5-42f1-a995-40e6abec2809",
+            "uuid": "04f292cbe3a0449e",
             "uv": 0
         },
         {
             "type": 1,
             "useTexture": false,
-            "uuid": "00000000-0000-0000-0000-000000000000",
+            "uuid": "0000000000000003",
             "uv": 0
         },
         {
             "type": 2,
             "useTexture": true,
-            "uuid": "63b12397-b252-4b62-9525-843cd4b63262",
+            "uuid": "3e653647db350763",
             "uv": 0
         },
         {
             "type": 3,
             "useTexture": false,
-            "uuid": "00000000-0000-0000-0000-000000000000",
+            "uuid": "0000000000000003",
             "uv": 0
         },
         {
             "type": 4,
             "useTexture": false,
-            "uuid": "00000000-0000-0000-0000-000000000000",
+            "uuid": "0000000000000003",
             "uv": 0
         },
         {
             "type": 5,
             "useTexture": false,
-            "uuid": "00000000-0000-0000-0000-000000000000",
+            "uuid": "0000000000000003",
             "uv": 0
         },
         {
             "type": 6,
             "useTexture": true,
-            "uuid": "3cf5f66f-acb4-48e5-b8bb-b228dc7377f6",
+            "uuid": "02878506b4e9d06f",
             "uv": 0
         },
         {
             "type": 7,
             "useTexture": false,
-            "uuid": "00000000-0000-0000-0000-000000000000",
+            "uuid": "0000000000000003",
             "uv": 0
         }
-    ],
-    "uniforms": null
+    ]
 }

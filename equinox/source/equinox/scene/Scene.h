@@ -1,6 +1,11 @@
 #pragma once
 
+#include "equinox/core/UUID.h"
+#include "equinox/resources/Asset.h"
+
 #include <string>
+#include <unordered_map>
+#include <memory>
 #include <entt/entt.hpp>
 
 namespace Equinox
@@ -42,6 +47,11 @@ namespace Equinox
 		u32 GetHierarchyVersion() const { return m_HierarchyVersion; }
 		void IncrementHierarchyVersion() { m_HierarchyVersion++; }
 
+		// Asset lifetime: keeps shared_ptrs alive so Trim() won't evict in-use assets
+		void HoldAsset(UUID uuid, std::shared_ptr<Asset> asset);
+		void ReleaseAsset(UUID uuid);
+		void ReleaseAllAssets();
+
 	private:
 		std::string GenerateUniqueName(Entity entity);
 		void AddToRoots(Entity entity);
@@ -51,6 +61,7 @@ namespace Equinox
 		entt::registry m_Registry;
 		std::vector<Entity> m_RootEntities;
 		u32 m_HierarchyVersion = 0;
+		std::unordered_map<UUID, std::shared_ptr<Asset>, UUIDHash> m_HeldAssets;
 
 		friend class Entity;
 	};

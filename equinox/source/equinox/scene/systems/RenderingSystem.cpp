@@ -2,6 +2,7 @@
 
 #include "equinox/scene/systems/RenderingSystem.h"
 #include "equinox/scene/Components.h"
+#include "equinox/scene/Scene.h"
 
 #include "equinox/editor/Editor.h"
 #include "equinox/editor/panels/ScenePanel.h"
@@ -390,7 +391,7 @@ namespace Equinox
 		m_ShadowPipeline = std::make_unique<VKPipeline>(shadowConfig, m_ShadowVertSpv, m_ShadowFragSpv, layouts);
 	}
 
-	u32 RenderingSystem::EnsureMaterialRegistered(Material* material)
+	u32 RenderingSystem::EnsureMaterialRegistered(std::shared_ptr<Material> material)
 	{
 		auto it = m_MaterialSlotMap.find(material->Handle);
 		if (it != m_MaterialSlotMap.end())
@@ -516,14 +517,23 @@ namespace Equinox
 			// Global UBO second (reads m_CachedLightSpaceMatrix)
 			UpdateGlobalUniforms();
 
-			// Register materials for all visible entities
+			// Register materials and hold assets for all visible entities
 			auto matView = registry.view<WorldTransform, MeshRenderer>();
 			for (auto [entity, wt, mr] : matView.each())
 			{
+				if (mr.ModelUUID.IsValid())
+				{
+					auto model = AssetManager::GetAsset<Model>(mr.ModelUUID);
+					if (model)
+						scene->HoldAsset(mr.ModelUUID, model);
+				}
 				if (!mr.MaterialUUID.IsValid()) continue;
 				auto material = AssetManager::GetAsset<Material>(mr.MaterialUUID);
 				if (material)
-					EnsureMaterialRegistered(material.get());
+				{
+					scene->HoldAsset(mr.MaterialUUID, material);
+					EnsureMaterialRegistered(material);
+				}
 			}
 
 			// Upload dirty materials
@@ -760,7 +770,7 @@ namespace Equinox
 					{
 					case Material::RenderMode::Cutout:      m_CutoutDraws.push_back(dc);	 break;
 					case Material::RenderMode::Transparent:
-					case Material::RenderMode::Fade:        m_TransparentDraws.push_back(dc);break;
+					case Material::RenderMode::Fade:        m_TransparentDraws.push_back(dc); break;
 					default:                                m_OpaqueDraws.push_back(dc);     break;
 					}
 				}

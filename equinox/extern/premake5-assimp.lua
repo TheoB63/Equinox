@@ -3,7 +3,7 @@ project "assimp"
 	language "C++"
 	cppdialect "C++17"
 	warnings "Off"
-	optimize "Speed"
+	runtimechecks "Off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")

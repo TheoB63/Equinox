@@ -2,6 +2,10 @@
 #include "equinox/scene/Scene.h"
 #include "equinox/scene/Components.h"
 
+#include "equinox/renderer/Material.h"
+#include "equinox/renderer/Texture.h"
+#include "equinox/resources/AssetManager.h"
+
 namespace Equinox
 {
 	using namespace Component;
@@ -19,6 +23,7 @@ namespace Equinox
 
 	void Scene::Clear()
 	{
+		ReleaseAllAssets();
 		m_RootEntities.clear();
 
 		//Destroy every entity individually
@@ -175,11 +180,13 @@ namespace Equinox
 		}
 	}
 
-	void Scene::AddToRoots(Entity entity) {
+	void Scene::AddToRoots(Entity entity) 
+	{
 		m_RootEntities.push_back(entity);
 	}
 
-	void Scene::RemoveFromRoots(Entity entity) {
+	void Scene::RemoveFromRoots(Entity entity) 
+	{
 		m_RootEntities.erase(std::remove(m_RootEntities.begin(), m_RootEntities.end(), entity), m_RootEntities.end());
 	}
 
@@ -189,18 +196,22 @@ namespace Equinox
 
 		// Get the parent of the entity
 		Entity parent;
-		if (entity.HasComponent<Parent>()) {
+		if (entity.HasComponent<Parent>()) 
+		{
 			parent = entity.GetComponent<Parent>().m_Parent;
 		}
 
 		// Get all siblings (children of the parent or root entities)
 		std::vector<Entity> siblings;
-		if (parent.IsValid()) {
-			if (parent.HasComponent<Children>()) {
+		if (parent.IsValid())
+		{
+			if (parent.HasComponent<Children>()) 
+			{
 				siblings = parent.GetComponent<Children>().m_Children;
 			}
 		}
-		else {
+		else
+		{
 			// Assuming GetRootEntities() retrieves all root entities
 			//siblings = GetRootEntities();
 			siblings = m_RootEntities;
@@ -213,7 +224,8 @@ namespace Equinox
 
 		std::regex pattern(R"(^(.*?)\s\((\d+)\)$)");
 		std::smatch matches;
-		if (std::regex_match(name, matches, pattern)) {
+		if (std::regex_match(name, matches, pattern))
+		{
 			base = matches[1].str();
 			originalNumber = std::stoi(matches[2].str());
 		}
@@ -223,19 +235,23 @@ namespace Equinox
 		numbers.push_back(originalNumber); // Include the entity's own number
 
 		std::regex siblingPattern(R"(^(.*?)\s\((\d+)\)$)");
-		for (Entity sibling : siblings) {
+		for (Entity sibling : siblings)
+		{
 			// Skip the entity itself
 			if (sibling == entity)
 				continue;
 
 			std::string siblingName = sibling.GetName();
 
-			if (siblingName == base) {
+			if (siblingName == base) 
+			{
 				numbers.push_back(0);
 			}
-			else {
+			else 
+			{
 				std::smatch siblingMatches;
-				if (std::regex_match(siblingName, siblingMatches, siblingPattern)) {
+				if (std::regex_match(siblingName, siblingMatches, siblingPattern)) 
+				{
 					std::string siblingBase = siblingMatches[1].str();
 					if (siblingBase == base) {
 						int num = std::stoi(siblingMatches[2].str());
@@ -251,5 +267,36 @@ namespace Equinox
 
 		// Generate the new name
 		return base + " (" + std::to_string(newNumber) + ")";
+	}
+
+
+	void Scene::HoldAsset(UUID uuid, std::shared_ptr<Asset> asset)
+	{
+		m_HeldAssets[uuid] = asset;
+
+		// If it's a material, also hold its referenced textures
+		if (asset->GetType() == AssetType::Material)
+		{
+			auto mat = std::static_pointer_cast<Material>(asset);
+			for (const auto& map : mat->GetTextures())
+			{
+				if (map.Uuid.IsValid())
+				{
+					auto tex = AssetManager::GetAsset<Texture>(map.Uuid);
+					if (tex)
+						m_HeldAssets[map.Uuid] = tex;
+				}
+			}
+		}
+	}
+
+	void Scene::ReleaseAsset(UUID uuid)
+	{
+		m_HeldAssets.erase(uuid);
+	}
+
+	void Scene::ReleaseAllAssets()
+	{
+		m_HeldAssets.clear();
 	}
 }

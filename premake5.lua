@@ -17,10 +17,7 @@ workspace "Equinox"
       "Dist"
    }
 
-   flags
-	{
-		"MultiProcessorCompile"
-	}
+   multiprocessorcompile "On"
 
 outputdir = "%{cfg.system}-%{cfg.architecture}/%{cfg.buildcfg}"
 

@@ -23,15 +23,15 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -47,16 +47,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\..\bin\windows-x86_64\Debug\premake\</OutDir>
-    <IntDir>..\..\bin-int\windows-x86_64\Debug\premake\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\windows-x86_64\Debug\premake\</OutDir>
+    <IntDir>$(ProjectDir)..\..\bin-int\windows-x86_64\Debug\premake\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\..\bin\windows-x86_64\Release\premake\</OutDir>
-    <IntDir>..\..\bin-int\windows-x86_64\Release\premake\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\windows-x86_64\Release\premake\</OutDir>
+    <IntDir>$(ProjectDir)..\..\bin-int\windows-x86_64\Release\premake\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
-    <OutDir>..\..\bin\windows-x86_64\Dist\premake\</OutDir>
-    <IntDir>..\..\bin-int\windows-x86_64\Dist\premake\</IntDir>
+    <OutDir>$(ProjectDir)..\..\bin\windows-x86_64\Dist\premake\</OutDir>
+    <IntDir>$(ProjectDir)..\..\bin-int\windows-x86_64\Dist\premake\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
   </ItemDefinitionGroup>

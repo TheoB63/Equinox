@@ -53,7 +53,7 @@ project "EquinoxApp"
 
    postbuildcommands
    {
-      "{COPY} " .. LibraryDir["vulkan"] .. "/shaderc_shared.dll %{cfg.targetdir}"
+      "{COPYFILE} %[" .. LibraryDir["vulkan"] .. "/shaderc_shared.dll] %[%{cfg.targetdir}]"
    }
 
    links

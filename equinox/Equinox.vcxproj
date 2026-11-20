@@ -25,19 +25,19 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -53,20 +53,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\bin\windows-x86_64\Debug\Equinox\</OutDir>
-    <IntDir>..\bin-int\windows-x86_64\Debug\Equinox\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\windows-x86_64\Debug\Equinox\</OutDir>
+    <IntDir>$(ProjectDir)..\bin-int\windows-x86_64\Debug\Equinox\</IntDir>
     <TargetName>Equinox</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\bin\windows-x86_64\Release\Equinox\</OutDir>
-    <IntDir>..\bin-int\windows-x86_64\Release\Equinox\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\windows-x86_64\Release\Equinox\</OutDir>
+    <IntDir>$(ProjectDir)..\bin-int\windows-x86_64\Release\Equinox\</IntDir>
     <TargetName>Equinox</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
-    <OutDir>..\bin\windows-x86_64\Dist\Equinox\</OutDir>
-    <IntDir>..\bin-int\windows-x86_64\Dist\Equinox\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\windows-x86_64\Dist\Equinox\</OutDir>
+    <IntDir>$(ProjectDir)..\bin-int\windows-x86_64\Dist\Equinox\</IntDir>
     <TargetName>Equinox</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
@@ -92,8 +92,10 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -120,8 +122,10 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <ClCompile>
@@ -148,8 +152,10 @@
     </Link>
     <Lib>
       <AdditionalDependencies>vulkan-1.lib;shaderc_shared.lib;ws2_32.lib;dbghelp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>extern\source\vulkan\lib;C:\VulkanSDK\1.4.363.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="source\Equinox.h" />

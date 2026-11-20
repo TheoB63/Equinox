@@ -26,19 +26,19 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -54,20 +54,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>bin\windows-x86_64\Debug\imgui\</OutDir>
-    <IntDir>bin-int\windows-x86_64\Debug\imgui\</IntDir>
+    <OutDir>$(ProjectDir)bin\windows-x86_64\Debug\imgui\</OutDir>
+    <IntDir>$(ProjectDir)bin-int\windows-x86_64\Debug\imgui\</IntDir>
     <TargetName>imgui</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>bin\windows-x86_64\Release\imgui\</OutDir>
-    <IntDir>bin-int\windows-x86_64\Release\imgui\</IntDir>
+    <OutDir>$(ProjectDir)bin\windows-x86_64\Release\imgui\</OutDir>
+    <IntDir>$(ProjectDir)bin-int\windows-x86_64\Release\imgui\</IntDir>
     <TargetName>imgui</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
-    <OutDir>bin\windows-x86_64\Dist\imgui\</OutDir>
-    <IntDir>bin-int\windows-x86_64\Dist\imgui\</IntDir>
+    <OutDir>$(ProjectDir)bin\windows-x86_64\Dist\imgui\</OutDir>
+    <IntDir>$(ProjectDir)bin-int\windows-x86_64\Dist\imgui\</IntDir>
     <TargetName>imgui</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
@@ -89,6 +89,8 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <ProjectReference>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -111,6 +113,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <ProjectReference>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
     <ClCompile>
@@ -127,6 +131,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <ProjectReference>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="source\imgui\backends\imgui_impl_glfw.h" />

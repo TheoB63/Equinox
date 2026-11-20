@@ -2,9 +2,12 @@
     "dependencies": [],
     "type_settings": {
         "compression_format": "BC7",
+        "filter_mag": 0,
+        "filter_min": 0,
         "generate_mipmaps": true,
-        "srgb": true
+        "srgb": true,
+        "wrap_mode": 0
     },
-    "uuid": "4a5d91a6-aee4-40fa-bf8f-4e6d67faa82b",
+    "uuid": "49323621-c229-46b9-a6ab-aa137761e3c2",
     "version": 1
 }
