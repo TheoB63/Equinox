@@ -31,7 +31,7 @@
                     1.0
                 ]
             },
-            "uuid": "1fab2055-7402-471a-be12-5d0010e94273"
+            "uuid": "fb637c3d-0d02-45ba-a3eb-7324a0b94c73"
         },
         {
             "active": true,
@@ -54,17 +54,17 @@
                     1.0
                 ]
             },
-            "uuid": "36238337-3830-4308-85e6-a953fd233603"
+            "uuid": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "53f6e346-c810-4bb7-9af2-c3111e28ea53",
+                "materialUUID": "5dfedecf-91fa-4cee-aa50-df685d4d2e3f",
                 "meshIndex": 0,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Black",
             "transform": {
                 "position": [
@@ -83,17 +83,17 @@
                     1.0
                 ]
             },
-            "uuid": "6529ac3a-c7b0-43d3-ad5f-e49e9d292527"
+            "uuid": "7a99d2f3-9e22-437d-a537-f08eabd00438"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "ce7d2019-fc49-4906-a542-a804c039d65f",
+                "materialUUID": "6c075efb-0be3-4e6d-a2cb-2a30636637e4",
                 "meshIndex": 1,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Chromes",
             "transform": {
                 "position": [
@@ -112,17 +112,17 @@
                     1.0
                 ]
             },
-            "uuid": "c92ca8c9-8d87-47a2-94b7-16c9f52eedda"
+            "uuid": "d8b8870c-1edd-4c52-b2f3-f5e1ef311035"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "31f75090-b920-4a9a-bf24-6e9c245cf366",
+                "materialUUID": "176e29d2-b855-4179-96f0-f35a50e8cbd9",
                 "meshIndex": 2,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Glass",
             "transform": {
                 "position": [
@@ -141,17 +141,17 @@
                     1.0
                 ]
             },
-            "uuid": "db3a6eb2-3fb8-4269-97f7-2f241868bb70"
+            "uuid": "64842a0e-5a64-4565-a478-d4ed9ba71f46"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "7d15b4c6-7624-444a-b89e-ebd63c9245b6",
+                "materialUUID": "e2ea963d-d4dd-4c27-a528-eb68ffb7ee42",
                 "meshIndex": 3,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Lights",
             "transform": {
                 "position": [
@@ -170,17 +170,17 @@
                     1.0
                 ]
             },
-            "uuid": "087ab15b-ed1c-47ed-9ba7-f374a1157b2c"
+            "uuid": "3f2ef89c-424f-4655-80d2-7ab757b4f278"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "3a8f4567-4bc4-4f82-a503-abbf061cad7d",
+                "materialUUID": "bef4c70d-61d3-4bac-80b3-cbc59e8bff1e",
                 "meshIndex": 4,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Lights_Refraction",
             "transform": {
                 "position": [
@@ -199,17 +199,17 @@
                     1.0
                 ]
             },
-            "uuid": "ec9bbf03-d904-46c3-a65d-50ee165b2e25"
+            "uuid": "a2034193-a4c4-4ee9-9667-1e4e8389134f"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "d5ab3666-2c0a-49f4-aa81-89eff15a483f",
+                "materialUUID": "719c0791-33ae-48ea-8e2b-6123a1a2fc8b",
                 "meshIndex": 5,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Paint",
             "transform": {
                 "position": [
@@ -228,17 +228,17 @@
                     1.0
                 ]
             },
-            "uuid": "cbf78b40-14c7-4b30-b4c7-62e4f24df9c8"
+            "uuid": "f86d2063-1a2f-412f-9fdc-0dc36dbda2fc"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "5fd5f246-7e0a-4d32-b072-903947505735",
+                "materialUUID": "195a8471-ad3c-4bb0-9144-59e618cfc269",
                 "meshIndex": 6,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Plastics",
             "transform": {
                 "position": [
@@ -257,17 +257,17 @@
                     1.0
                 ]
             },
-            "uuid": "e666375a-eeac-4020-9898-740f10bdf9a9"
+            "uuid": "db7983d9-a6b6-40f3-b604-c08a15822a48"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "e4adf98e-8aff-40b6-a1db-e835b26fbebe",
+                "materialUUID": "e7de7765-eae2-4c86-b45d-cf36dcfa0a56",
                 "meshIndex": 7,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Plates",
             "transform": {
                 "position": [
@@ -286,17 +286,17 @@
                     1.0
                 ]
             },
-            "uuid": "27262317-a52a-4aa5-9e22-ada0f10dc007"
+            "uuid": "093c7940-43ca-4d56-b074-f80a21e5c7c8"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "1f073c69-6b6d-4c48-98a7-d16de954aa00",
+                "materialUUID": "03f4a763-3789-4562-a18f-b09026292c87",
                 "meshIndex": 8,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Rims",
             "transform": {
                 "position": [
@@ -315,17 +315,17 @@
                     1.0
                 ]
             },
-            "uuid": "89c87aa2-77d5-44a5-9e14-1aded929ca84"
+            "uuid": "898d1967-61c4-4839-8ff3-5fe9843ed083"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "993adf94-43ed-4738-b24d-dc19d798031b",
+                "materialUUID": "7a509eeb-e8ae-466f-a889-3d1b2f83fb3b",
                 "meshIndex": 9,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Shadow",
             "transform": {
                 "position": [
@@ -344,17 +344,17 @@
                     1.0
                 ]
             },
-            "uuid": "a060645a-6771-4565-9cb4-bd648f4797f0"
+            "uuid": "7688d05c-904d-494b-a5e2-b126f873b63f"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "37629d96-0a57-4a9d-a1d7-a27de64d90cf",
+                "materialUUID": "0f5da014-3c64-4382-b9f4-a693378b00b4",
                 "meshIndex": 10,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Stickers",
             "transform": {
                 "position": [
@@ -373,17 +373,17 @@
                     1.0
                 ]
             },
-            "uuid": "b4cdf76a-0be3-4f0f-b1e1-0b9c27079568"
+            "uuid": "bbeb03ed-bb81-42b1-8b0d-49605e8816fe"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "98856393-5d32-4935-8573-22ca4e5fd74e",
+                "materialUUID": "9d1bc9ed-1fc5-43e4-b521-9e5644302f6c",
                 "meshIndex": 11,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Tires",
             "transform": {
                 "position": [
@@ -402,17 +402,17 @@
                     1.0
                 ]
             },
-            "uuid": "cde2eb3f-68dc-49c1-a7f4-0ec50ffa21ad"
+            "uuid": "f2aa883a-3c98-4a3c-9277-a86b2321f947"
         },
         {
             "active": true,
             "meshRenderer": {
                 "isSkinned": false,
-                "materialUUID": "6c7aa54a-58cb-49ff-8a64-e11d1e76bdf7",
+                "materialUUID": "3af34e73-c081-424e-a518-e7ba7ab7301e",
                 "meshIndex": 12,
-                "modelUUID": "feed6493-7122-40da-b11a-b892c27c40c3"
+                "modelUUID": "904f1c69-20e5-4619-b044-abab76a14102"
             },
-            "parent": "36238337-3830-4308-85e6-a953fd233603",
+            "parent": "7e5c4d99-74fb-47a2-9624-3fa5c2b104fb",
             "tag": "Wunderbaum",
             "transform": {
                 "position": [
@@ -431,7 +431,7 @@
                     1.0
                 ]
             },
-            "uuid": "f27c5457-8e25-4494-9065-3f38479aec37"
+            "uuid": "85c778fc-13c8-480c-8a36-d393fd347f3d"
         }
     ],
     "version": 1

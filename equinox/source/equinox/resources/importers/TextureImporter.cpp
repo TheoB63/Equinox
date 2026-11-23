@@ -26,7 +26,7 @@ namespace Equinox
 		}
 
 		int width, height, channels;
-		stbi_set_flip_vertically_on_load(1);
+		stbi_set_flip_vertically_on_load(0);
 
 		// Force 4 channels for now (RGBA)
 		stbi_uc* data = stbi_load(source.string().c_str(), &width, &height, &channels, 4);

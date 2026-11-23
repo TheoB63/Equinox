@@ -376,7 +376,7 @@ namespace Equinox::UI
 
 		if (ImGui::BeginChild("PreviewRegion", { availWidth, 0 })) {
 			ImGui::SetCursorPos(offset);
-			ImGui::Image(GetTextureID(texture), { previewWidth, previewHeight }, { 0, 1 }, { 1, 0 });
+			ImGui::Image(GetTextureID(texture), { previewWidth, previewHeight }, { 0, 0 }, { 1, 1 });
 		}
 		ImGui::EndChild();
 	}
