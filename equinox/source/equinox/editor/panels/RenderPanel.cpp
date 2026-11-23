@@ -4,192 +4,105 @@
 #include "equinox/scene/Systems.h"
 #include "equinox/scene/systems/RenderingSystem.h"
 
+#include "equinox/renderer/PostProcessSettings.h"
+
 #include "equinox/utils/EquinoxIcons.h"
+
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Equinox
 {
-    RenderPanel::RenderPanel() : m_SelectedMode("Final")
-    {
-        EQN_CORE_INFO("Created Render panel");
-    }
+	RenderPanel::RenderPanel() : m_SelectedMode("Final")
+	{
+		EQN_CORE_INFO("Created Render panel");
+	}
 
-    void RenderPanel::OnInit()
-    {
-        m_RS = Systems::GetSystem<RenderingSystem>();
-        if (m_RS) {
-            // TODO: Re-implement with RenderGraph
-            m_SelectedAttachment = 0;
-        }
-    }
+	void RenderPanel::OnInit()
+	{
+		m_RS = Systems::GetSystem<RenderingSystem>();
+		if (m_RS) {
+			// TODO: Re-implement with RenderGraph
+			m_SelectedAttachment = 0;
+		}
+	}
 
-    void RenderPanel::OnRender()
-    {
-        if (!m_RS) return;
+	void RenderPanel::OnRender()
+	{
+		if (!m_RS) return;
 
-        ImGui::PushFont(Editor::GetFASolid());
-        std::string render = ICON_FA_FILM + std::string("  Render");
-        ImGui::Begin(render.c_str());
-        
-        // Tab selector
-        if (ImGui::Button(ICON_FA_LAYER_GROUP, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0))) {
-            m_SelectedTab = 0;
-        }
-        ImGui::SameLine();
-        if (ImGui::Button(ICON_FA_SLIDERS, ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
-            m_SelectedTab = 1;
-        }
-        ImGui::PopFont();
+		ImGui::PushFont(Editor::GetFASolid());
+		std::string render = ICON_FA_FILM + std::string("  Render");
+		ImGui::Begin(render.c_str());
 
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
+		// Tab selector
+		if (ImGui::Button(ICON_FA_LAYER_GROUP, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0))) {
+			m_SelectedTab = 0;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_SLIDERS, ImVec2(ImGui::GetContentRegionAvail().x, 0))) {
+			m_SelectedTab = 1;
+		}
+		ImGui::PopFont();
 
-        // Show the selected content
-        if (m_SelectedTab == 0) {
-            // Model Viewer ==========================
-            ImGui::Text("Model Viewer Settings - Coming Soon");
-        }
-        else {
-            // Post process ==========================
-            /*
-            auto* p = m_RS->GetActivePipeline();
-            auto g_SSAOPass = p->GetPass<SSAOPass>();
-            auto g_PostProcessPass = p->GetPass<PostProcessPass>();
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
 
-            // SSAO
-            if (ImGui::CollapsingHeader("SSAO", ImGuiTreeNodeFlags_DefaultOpen)) {
-                float ssaoRadius = g_SSAOPass->GetRadius();
-                if (ImGui::SliderFloat("Radius", &ssaoRadius, 0.0f, 10.0f)) {
-                    g_SSAOPass->SetRadius(ssaoRadius);
-                }
+		// Show the selected content
+		if (m_SelectedTab == 0)
+		{
+			// Model Viewer ==========================
+			ImGui::Text("Model Viewer Settings - Coming Soon");
+		}
+		else
+		{
+			// Post process ==========================
+			auto& pp = m_RS->GetPostProcessSettings();
 
-                float ssaoIntensity = g_SSAOPass->GetIntensity();
-                if (ImGui::SliderFloat("Intensity", &ssaoIntensity, 0.0f, 1.0f)) {
-                    g_SSAOPass->SetIntensity(ssaoIntensity);
-                }
+			// Bloom
+			if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::SliderFloat("Threshold", &pp.bloomThreshold, 0.0f, 5.0f);
+				ImGui::SliderFloat("Strength", &pp.bloomStrength, 0.0f, 2.0f);
+			}
 
-                float ssaoBias = g_SSAOPass->GetBias();
-                if (ImGui::SliderFloat("Bias", &ssaoBias, 0.05f, 0.5f)) {
-                    g_SSAOPass->SetBias(ssaoBias);
-                }
-            }
+			// Tone Mapping
+			if (ImGui::CollapsingHeader("Tone Mapping", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				const char* operators[] = { "Linear", "Reinhard", "ACES", "Uncharted 2" };
+				int currentOp = static_cast<int>(pp.tonemapOp);
+				if (ImGui::Combo("Operator", &currentOp, operators, IM_ARRAYSIZE(operators)))
+					pp.tonemapOp = static_cast<TonemapOperator>(currentOp);
 
-            // Bloom
-            if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_DefaultOpen)) {
-                float bloomThreshold = g_PostProcessPass->GetBloomThreshold();
-                if (ImGui::SliderFloat("Threshold", &bloomThreshold, 0.0f, 2.0f)) {
-                    g_PostProcessPass->SetBloomThreshold(bloomThreshold);
-                }
+				ImGui::SliderFloat("Exposure", &pp.exposure, 0.1f, 10.0f, "%.2f");
+				ImGui::SliderFloat("Contrast", &pp.contrast, 0.5f, 2.0f, "%.2f");
+				ImGui::SliderFloat("Saturation", &pp.saturation, 0.0f, 2.0f, "%.2f");
+			}
 
-                float bloomStrength = g_PostProcessPass->GetBloomStrength();
-                if (ImGui::SliderFloat("Strength", &bloomStrength, 0.0f, 2.0f)) {
-                    g_PostProcessPass->SetBloomStrength(bloomStrength);
-                }
+			// Color Balance
+			if (ImGui::CollapsingHeader("Color Balance"))
+			{
+				ImGui::ColorEdit3("Shadows", glm::value_ptr(pp.shadowBalance));
+				ImGui::ColorEdit3("Midtones", glm::value_ptr(pp.midtoneBalance));
+				ImGui::ColorEdit3("Highlights", glm::value_ptr(pp.highlightBalance));
+			}
 
-                int bloomPasses = g_PostProcessPass->GetBloomPasses();
-                if (ImGui::SliderInt("Passes", &bloomPasses, 1, 10)) {
-                    g_PostProcessPass->SetBloomPasses(bloomPasses);
-                }
-            }
+			// Vignette
+			if (ImGui::CollapsingHeader("Vignette"))
+			{
+				ImGui::SliderFloat("Amount", &pp.vignetteAmount, 0.0f, 1.0f);
+				ImGui::SliderFloat("Hardness", &pp.vignetteHardness, 0.0f, 1.0f);
+			}
 
-            // Tone Mapping
-            if (ImGui::CollapsingHeader("Tone Mapping", ImGuiTreeNodeFlags_DefaultOpen)) {
-                const char* operators[] = {
-                    "Linear", "Reinhard", "Modified Reinhard",
-                    "ACES", "Filmic", "Uncharted 2"
-                };
+			// Others
+			if (ImGui::CollapsingHeader("Effects"))
+			{
+				ImGui::SliderFloat("Grain", &pp.grainAmount, 0.0f, 0.2f, "%.3f");
+				ImGui::SliderFloat("Sharpness", &pp.sharpness, -1.0f, 1.0f);
+				ImGui::SliderFloat("Chromatic Aberration", &pp.chromaticAberration, 0.0f, 0.02f, "%.4f");
+			}
+		}
 
-                int currentOp = static_cast<int>(g_PostProcessPass->GetToneMapOperator());
-                if (ImGui::Combo("Operator", &currentOp, operators, IM_ARRAYSIZE(operators))) {
-                    g_PostProcessPass->SetToneMapOperator(static_cast<ToneMapOperator>(currentOp));
-                }
-
-                // Exposure control
-                float exposure = g_PostProcessPass->GetExposure();
-                if (ImGui::SliderFloat("Exposure", &exposure, 0.1f, 5.0f, "%.2f")) {
-                    g_PostProcessPass->SetExposure(exposure);
-                }
-
-                // Contrast control
-                float contrast = g_PostProcessPass->GetContrast();
-                if (ImGui::SliderFloat("Contrast", &contrast, 0.5f, 2.0f, "%.2f")) {
-                    g_PostProcessPass->SetContrast(contrast);
-                }
-
-                // Saturation control
-                float saturation = g_PostProcessPass->GetSaturation();
-                if (ImGui::SliderFloat("Saturation", &saturation, 0.0f, 2.0f, "%.2f")) {
-                    g_PostProcessPass->SetSaturation(saturation);
-                }
-            }
-
-            // Color Balance
-            if (ImGui::CollapsingHeader("Color Balance", ImGuiTreeNodeFlags_DefaultOpen)) {
-                glm::vec3 shadows = g_PostProcessPass->GetShadowBalance();
-                if (ImGui::ColorEdit3("Shadows", glm::value_ptr(shadows))) {
-                    g_PostProcessPass->SetColorBalance(
-                        shadows,
-                        g_PostProcessPass->GetMidtoneBalance(),
-                        g_PostProcessPass->GetHighlightBalance()
-                    );
-                }
-
-                glm::vec3 midtones = g_PostProcessPass->GetMidtoneBalance();
-                if (ImGui::ColorEdit3("Midtones", glm::value_ptr(midtones))) {
-                    g_PostProcessPass->SetColorBalance(
-                        g_PostProcessPass->GetShadowBalance(),
-                        midtones,
-                        g_PostProcessPass->GetHighlightBalance()
-                    );
-                }
-
-                glm::vec3 highlights = g_PostProcessPass->GetHighlightBalance();
-                if (ImGui::ColorEdit3("Highlights", glm::value_ptr(highlights))) {
-                    g_PostProcessPass->SetColorBalance(
-                        g_PostProcessPass->GetShadowBalance(),
-                        g_PostProcessPass->GetMidtoneBalance(),
-                        highlights
-                    );
-                }
-            }
-
-            // Vignette
-            if (ImGui::CollapsingHeader("Vignette", ImGuiTreeNodeFlags_DefaultOpen)) {
-                float vignetteAmount = g_PostProcessPass->GetVignetteAmount();
-                if (ImGui::SliderFloat("Amount", &vignetteAmount, 0.0f, 1.0f)) {
-                    g_PostProcessPass->SetVignetteAmount(vignetteAmount);
-                }
-
-                float vignetteHardness = g_PostProcessPass->GetVignetteHardness();
-                if (ImGui::SliderFloat("Hardness", &vignetteHardness, 0.0f, 1.0f)) {
-                    g_PostProcessPass->SetVignetteHardness(vignetteHardness);
-                }
-            }
-
-            // Others
-            if (ImGui::CollapsingHeader("Others", ImGuiTreeNodeFlags_DefaultOpen)) {
-                // Grain
-                float grainAmount = g_PostProcessPass->GetGrainAmount();
-                if (ImGui::SliderFloat("Grain Amount", &grainAmount, 0.0f, 0.2f, "%.3f")) {
-                    g_PostProcessPass->SetGrainAmount(grainAmount);
-                }
-
-                // Sharpness
-                float sharpness = g_PostProcessPass->GetSharpness();
-                if (ImGui::SliderFloat("Sharpness", &sharpness, -1.0f, 1.0f)) {
-                    g_PostProcessPass->SetSharpness(sharpness);
-                }
-
-                // Chromatic Aberration
-                float aberrationOffset = g_PostProcessPass->GetAberrationOffset();
-                if (ImGui::SliderFloat("Chromatic Aberration", &aberrationOffset, 0.0f, 0.02f, "%.4f")) {
-                    g_PostProcessPass->SetAberrationOffset(aberrationOffset);
-                }
-            }
-            */
-            ImGui::Text("Render Graph Settings - Coming Soon");
-        }
-
-        ImGui::End();
-    }
+		ImGui::End();
+	}
 }

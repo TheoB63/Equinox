@@ -30,6 +30,7 @@ namespace Equinox::RG
 	{
 		RGBA8_Unorm,
 		BGRA8_Unorm,
+		RGBA16_Float, // HDR render target
 		D32_Float,
 		D24_Unorm_S8_Uint,
 		// Add more as needed

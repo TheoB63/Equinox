@@ -213,6 +213,7 @@
     <ClInclude Include="source\equinox\renderer\MaterialSystem.h" />
     <ClInclude Include="source\equinox\renderer\Mesh.h" />
     <ClInclude Include="source\equinox\renderer\Model.h" />
+    <ClInclude Include="source\equinox\renderer\PostProcessSettings.h" />
     <ClInclude Include="source\equinox\renderer\RenderBackend.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
     <ClInclude Include="source\equinox\renderer\Shader.h" />

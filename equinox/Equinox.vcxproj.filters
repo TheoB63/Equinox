@@ -374,6 +374,9 @@
     <ClInclude Include="source\equinox\utils\ImGuiUtils.h">
       <Filter>equinox\utils</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\PostProcessSettings.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
