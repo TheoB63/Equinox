@@ -34,49 +34,49 @@
         {
             "type": 0,
             "useTexture": true,
-            "uuid": "547e66eec16878c9",
+            "uuid": "d21d1ad0-e33b-4a7d-9e2f-402b8a89caf9",
             "uv": 0
         },
         {
             "type": 1,
             "useTexture": false,
-            "uuid": "0000000000000003",
+            "uuid": "",
             "uv": 0
         },
         {
             "type": 2,
             "useTexture": true,
-            "uuid": "36138e7a97c73c9e",
+            "uuid": "dd32baa5-ebdb-499c-8496-a830e0fda94a",
             "uv": 0
         },
         {
             "type": 3,
             "useTexture": true,
-            "uuid": "0e07d2dc7b4addbf",
+            "uuid": "5dfb156e-bdc0-43be-ac9b-fce53cbe8076",
             "uv": 0
         },
         {
             "type": 4,
             "useTexture": true,
-            "uuid": "24dc5efa436dd19d",
+            "uuid": "fc9df1ec-cd6d-45b1-bf26-50bb39717057",
             "uv": 0
         },
         {
             "type": 5,
             "useTexture": false,
-            "uuid": "0000000000000003",
+            "uuid": "",
             "uv": 0
         },
         {
             "type": 6,
             "useTexture": true,
-            "uuid": "78cf57fb5b0ac034",
+            "uuid": "3ad36a6f-345b-4193-9d0b-dd7946e98f04",
             "uv": 0
         },
         {
             "type": 7,
             "useTexture": false,
-            "uuid": "0000000000000003",
+            "uuid": "",
             "uv": 0
         }
     ]

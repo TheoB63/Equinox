@@ -24,6 +24,7 @@
 #include "equinox/editor/panels/ScenePanel.h"
 #include "equinox/editor/panels/RenderPanel.h"
 #include "equinox/editor/panels/ProfilerPanel.h"
+#include "equinox/editor/panels/FrameDebuggerPanel.h"
 #include "equinox/editor/UI.h"
 #include "equinox/editor/EditorStyle.h"
 
@@ -118,6 +119,7 @@ namespace Equinox
 		AddPanel(new ScenePanel(rs));
 		AddPanel(new RenderPanel());
 		AddPanel(new ProfilerPanel());
+		AddPanel(new FrameDebuggerPanel());
 
 		// Init all panels
 		for (auto& panel : s_Panels)

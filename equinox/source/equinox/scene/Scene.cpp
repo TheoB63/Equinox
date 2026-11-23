@@ -4,6 +4,7 @@
 
 #include "equinox/renderer/Material.h"
 #include "equinox/renderer/Texture.h"
+
 #include "equinox/resources/AssetManager.h"
 
 namespace Equinox

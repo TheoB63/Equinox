@@ -65,7 +65,7 @@ namespace Equinox
 		s_Backend->OnResize(width, height);
 	}
 
-	void Renderer::ExecuteGraph(RG::RenderGraph& graph, u64 frameIndex)
+	void Renderer::ExecuteGraph(RG::RenderGraph& graph, u64 frameIndex, GPUTimerPool* timers)
 	{
 		// Get the primary command buffer for this frame
 		VkCommandBuffer primaryCmd = (VkCommandBuffer)s_Backend->GetFrameCommandBuffer(frameIndex);
@@ -76,7 +76,7 @@ namespace Equinox
 		vkBeginCommandBuffer(primaryCmd, &beginInfo);
 
 		// Execute the render graph (barriers + recording + secondary)
-		graph.Execute(primaryCmd);
+		graph.Execute(primaryCmd, timers);
 
 		// Present Barrier for Swapchain Image
 		auto* vkBackend = static_cast<VulkanBackend*>(s_Backend.get());

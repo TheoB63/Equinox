@@ -5,8 +5,12 @@
 #include "equinox/memory/Memory.h"
 
 #include "equinox/renderer/rendergraph/RenderGraph.h"
+#include "equinox/renderer/rendergraph/RenderGraphSnapshot.h"
+
 #include "equinox/renderer/backend/vulkan/VulkanPipeline.h"
 #include "equinox/renderer/backend/vulkan/VulkanBuffer.h"
+#include "equinox/renderer/backend/vulkan/GPUTimerPool.h"
+
 #include "equinox/renderer/Texture.h"
 #include "equinox/renderer/Material.h"
 #include "equinox/renderer/Model.h"
@@ -42,7 +46,7 @@ namespace Equinox
 		u32 _pad[3];            // 12 bytes padding (80 total)
 	};
 
-	struct DrawCommand 
+	struct DrawCommand
 	{
 		glm::mat4 modelMatrix;
 		u32 materialSlot;
@@ -92,6 +96,9 @@ namespace Equinox
 		u64 GetFrameAllocatorUsage() const { return m_FrameAllocator->GetUsedMemory(); }
 		u64 GetFrameAllocatorTotal() const { return m_FrameAllocator->GetTotalSize(); }
 
+		const RG::RenderGraphSnapshot& GetGraphSnapshot() const { return m_GraphSnapshot; }
+		std::shared_ptr<Texture> GetNamedTexture(const std::string& name) const;
+
 	private:
 		void InitGlobalUniforms();
 		void InitShadowResources();
@@ -102,6 +109,9 @@ namespace Equinox
 		void UpdatePostProcessDescriptors();
 		void CreatePipelines();
 		u32  EnsureMaterialRegistered(std::shared_ptr<Material> material);
+
+		RG::RenderGraphSnapshot CaptureSnapshot(const RG::RenderGraph& rg);
+		void RegisterNamedTextures();
 
 		RG::ResourceHandle AddShadowPass(RG::RenderGraph& rg, entt::registry& registry);
 		RG::ResourceHandle AddGeometryPass(RG::RenderGraph& rg, entt::registry& registry, RG::ResourceHandle shadowMapHandle);
@@ -188,5 +198,10 @@ namespace Equinox
 		FileWatcher m_ShaderWatcher;
 		std::mutex m_ReloadMutex;
 		std::set<std::string> m_PendingReloads;
+
+		// Frame debugger data
+		RG::RenderGraphSnapshot m_GraphSnapshot;
+		GPUTimerPool m_GPUTimers;
+		std::unordered_map<std::string, std::shared_ptr<Texture>> m_NamedTextures;
 	};
 }

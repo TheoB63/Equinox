@@ -8,6 +8,7 @@
 #include "equinox/renderer/backend/vulkan/VulkanAllocator.h"
 #include "equinox/renderer/backend/vulkan/VulkanBackend.h"
 #include "equinox/renderer/backend/vulkan/RenderPassJob.h"
+#include "equinox/renderer/backend/vulkan/GPUTimerPool.h"
 
 #include <vma/vk_mem_alloc.h>
 
@@ -329,10 +330,14 @@ namespace Equinox::RG
 	// This ensures barriers are correct (serial ordering) while recording
 	// is parallelized (worker threads record secondary buffers).
 
-	void RenderGraph::Execute(VkCommandBuffer primaryCmd)
+	void RenderGraph::Execute(VkCommandBuffer primaryCmd, Equinox::GPUTimerPool* timers)
 	{
 		EQN_PROFILE_FUNCTION();
 		AllocatePhysicalResources();
+
+		if (timers) timers->ResetForFrame(primaryCmd);
+
+		u32 timerPassIdx = 0;
 
 		for (size_t i = 0; i < m_Passes.size(); ++i)
 		{
@@ -454,10 +459,15 @@ namespace Equinox::RG
 					rpInfo.RenderArea = { { 0, 0 },{ m_Resources[h.index - 1].desc.width, m_Resources[h.index - 1].desc.height } };
 				}
 
+				if (timers) timers->WriteTimestamp(primaryCmd, timerPassIdx, true);
+
 				DynamicRendering::BeginRendering(primaryCmd, rpInfo);
 				vkCmdExecuteCommands(primaryCmd, 1, &job.CommandBuffer);
 				DynamicRendering::EndRendering(primaryCmd);
+
+				if (timers) timers->WriteTimestamp(primaryCmd, timerPassIdx, false);
 			}
+			timerPassIdx++;
 		}
 
 		CleanupPhysicalResources();

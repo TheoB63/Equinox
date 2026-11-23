@@ -172,6 +172,7 @@
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\editor\EditorSelection.h" />
     <ClInclude Include="source\equinox\editor\EditorStyle.h" />
+    <ClInclude Include="source\equinox\editor\panels\FrameDebuggerPanel.h" />
     <ClInclude Include="source\equinox\editor\UI.h" />
     <ClInclude Include="source\equinox\editor\inspectors\MaterialEditor.h" />
     <ClInclude Include="source\equinox\editor\inspectors\ModelViewer.h" />
@@ -207,6 +208,7 @@
     <ClInclude Include="source\equinox\platform\RenderEvent.h" />
     <ClInclude Include="source\equinox\platform\WinWindow.h" />
     <ClInclude Include="source\equinox\platform\Window.h" />
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\GPUTimerPool.h" />
     <ClInclude Include="source\equinox\renderer\Buffer.h" />
     <ClInclude Include="source\equinox\renderer\FrameData.h" />
     <ClInclude Include="source\equinox\renderer\Material.h" />
@@ -216,6 +218,7 @@
     <ClInclude Include="source\equinox\renderer\PostProcessSettings.h" />
     <ClInclude Include="source\equinox\renderer\RenderBackend.h" />
     <ClInclude Include="source\equinox\renderer\Renderer.h" />
+    <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraphSnapshot.h" />
     <ClInclude Include="source\equinox\renderer\Shader.h" />
     <ClInclude Include="source\equinox\renderer\ShaderCompiler.h" />
     <ClInclude Include="source\equinox\renderer\ShaderLibrary.h" />
@@ -276,6 +279,7 @@
     <ClCompile Include="source\equinox\core\UUID.cpp" />
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
     <ClCompile Include="source\equinox\editor\EditorStyle.cpp" />
+    <ClCompile Include="source\equinox\editor\panels\FrameDebuggerPanel.cpp" />
     <ClCompile Include="source\equinox\editor\UI.cpp" />
     <ClCompile Include="source\equinox\editor\inspectors\MaterialEditor.cpp" />
     <ClCompile Include="source\equinox\editor\inspectors\ModelViewer.cpp" />
@@ -295,6 +299,7 @@
     <ClCompile Include="source\equinox\platform\Input.cpp" />
     <ClCompile Include="source\equinox\platform\WinWindow.cpp" />
     <ClCompile Include="source\equinox\platform\Window.cpp" />
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\GPUTimerPool.cpp" />
     <ClCompile Include="source\equinox\renderer\Buffer.cpp" />
     <ClCompile Include="source\equinox\renderer\Material.cpp" />
     <ClCompile Include="source\equinox\renderer\MaterialSystem.cpp" />

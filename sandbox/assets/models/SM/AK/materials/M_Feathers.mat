@@ -34,19 +34,19 @@
         {
             "type": 0,
             "useTexture": true,
-            "uuid": "ac15f3c3da5ec3e5",
+            "uuid": "2b220fc4-c7a3-4f77-9271-7e18c1f72110",
             "uv": 0
         },
         {
             "type": 2,
             "useTexture": true,
-            "uuid": "769b75c3bf93bb9c",
+            "uuid": "2f12f3d0-3520-4f54-8e7e-b17ea1565899",
             "uv": 0
         },
         {
             "type": 6,
             "useTexture": true,
-            "uuid": "89a845f81a9c1f37",
+            "uuid": "df0865f6-e277-45df-b315-9d93c2f80e0b",
             "uv": 0
         }
     ]

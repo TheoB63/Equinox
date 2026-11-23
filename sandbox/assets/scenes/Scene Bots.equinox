@@ -1,0 +1,148 @@
+{
+    "entities": [
+        {
+            "active": true,
+            "directionalLight": {
+                "castShadows": true,
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "intensity": 1.0,
+                "shadowBias": 0.004999999888241291
+            },
+            "parent": "",
+            "tag": "Directional Light",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    -45.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "c5995a06-b33b-4ac5-997b-7b926a697dd9"
+        },
+        {
+            "active": true,
+            "parent": "",
+            "tag": "bots",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "c0a3ce50-5cec-4124-b3f5-4921faa3b472"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "3832494b-d1d1-4aed-89ee-79bc57ffbfe3",
+                "meshIndex": 0,
+                "modelUUID": "98bac7b7-212d-423e-82e4-02c0eaffc6e5"
+            },
+            "parent": "c0a3ce50-5cec-4124-b3f5-4921faa3b472",
+            "tag": "meshId0",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "2076ba89-923a-429d-9cc4-f4fec1771b2e"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "0cd96150-9204-4538-b110-ab5fe90eef40",
+                "meshIndex": 1,
+                "modelUUID": "98bac7b7-212d-423e-82e4-02c0eaffc6e5"
+            },
+            "parent": "c0a3ce50-5cec-4124-b3f5-4921faa3b472",
+            "tag": "meshId1",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "899df8f6-6111-4247-a5ac-2755e02af880"
+        },
+        {
+            "active": true,
+            "meshRenderer": {
+                "isSkinned": false,
+                "materialUUID": "6c9f7efc-a599-4caa-b894-36d5cf12d671",
+                "meshIndex": 2,
+                "modelUUID": "98bac7b7-212d-423e-82e4-02c0eaffc6e5"
+            },
+            "parent": "c0a3ce50-5cec-4124-b3f5-4921faa3b472",
+            "tag": "meshId2",
+            "transform": {
+                "position": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "rotation": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "uuid": "18a1fdd2-aaf3-4146-91db-279e151d9699"
+        }
+    ],
+    "version": 1
+}

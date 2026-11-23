@@ -15,6 +15,8 @@
 // Forward declare VMA struct
 struct VmaAllocation_T;
 
+namespace Equinox { class GPUTimerPool; }
+
 namespace Equinox::RG
 {
 	class RenderGraph;
@@ -166,7 +168,7 @@ namespace Equinox::RG
 		void Compile();
 
 		// Execute: Serial pass iteration with parallel inner recording
-		void Execute(VkCommandBuffer primaryCmd);
+		void Execute(VkCommandBuffer primaryCmd, Equinox::GPUTimerPool* timers = nullptr);
 
 		// Internal API for Builder
 		ResourceHandle RegisterResource(const TextureDesc& desc);
