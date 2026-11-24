@@ -10,7 +10,8 @@ namespace Equinox
 {
 	enum class TextureFormat {
 		None = 0,
-		R8, RGB8, RGBA8, RGBA16F, RGBA32F,
+		R8, RGB8, RGBA8, RGBA16F, RGBA32F, 
+		RG16F,
 		D32_Float, D24_Unorm_S8_Uint // Added Depth formats
 	};
 

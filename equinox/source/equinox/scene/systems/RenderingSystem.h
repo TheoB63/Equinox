@@ -55,6 +55,12 @@ namespace Equinox
 		u32 meshIndex;
 	};
 
+	struct GeometryOutput 
+	{
+		RG::ResourceHandle color;
+		RG::ResourceHandle depth;
+	};
+
 	// ---- Light data structs (mirrored in pbr.frag Set 3) ----
 
 	struct DirectionalLightData
@@ -104,10 +110,13 @@ namespace Equinox
 		void InitGlobalUniforms();
 		void InitShadowResources();
 		void InitPostProcessResources();
+		void InitIBLResources();
+
 		void UpdateGlobalUniforms();
 		void UpdateLightUniforms(Scene* scene);
 		void UpdatePostProcessUBO();
 		void UpdatePostProcessDescriptors();
+
 		void CreatePipelines();
 		u32  EnsureMaterialRegistered(std::shared_ptr<Material> material);
 
@@ -115,7 +124,8 @@ namespace Equinox
 		void RegisterNamedTextures();
 
 		RG::ResourceHandle AddShadowPass(RG::RenderGraph& rg, entt::registry& registry);
-		RG::ResourceHandle AddGeometryPass(RG::RenderGraph& rg, entt::registry& registry, RG::ResourceHandle shadowMapHandle);
+		GeometryOutput AddGeometryPass(RG::RenderGraph& rg, entt::registry& registry, RG::ResourceHandle shadowMapHandle);
+		RG::ResourceHandle AddSkyboxPass(RG::RenderGraph& rg, RG::ResourceHandle sceneColor, RG::ResourceHandle sceneDepth);
 		RG::ResourceHandle AddBloomPasses(RG::RenderGraph& rg, RG::ResourceHandle sceneColor);
 		RG::ResourceHandle AddPostProcessPass(RG::RenderGraph& rg, RG::ResourceHandle sceneColor, RG::ResourceHandle bloomResult);
 		void AddImGuiPass(RG::RenderGraph& rg, RG::ResourceHandle sceneColor);
@@ -123,8 +133,9 @@ namespace Equinox
 		// Memory
 		std::unique_ptr<Memory::LinearAllocator> m_FrameAllocator;
 
-		// Scene color output
+		// Scene color + depth output
 		std::shared_ptr<Texture> m_SceneColor;
+		std::shared_ptr<Texture> m_SceneDepth;
 
 		// Global UBO (Set 0)
 		std::shared_ptr<VKUniformBuffer> m_GlobalUniformBuffer;
@@ -194,6 +205,18 @@ namespace Equinox
 		std::vector<u32> m_BloomExtractFragSpv;
 		std::vector<u32> m_BloomBlurFragSpv;
 		std::vector<u32> m_PostProcessFragSpv;
+
+		// IBL resources
+		std::shared_ptr<Texture> m_IrradianceMap;    // 32x32 cubemap, RGBA16F
+		std::shared_ptr<Texture> m_PrefilteredMap;    // 128x128 cubemap, RGBA16F, 5 mips
+		std::shared_ptr<Texture> m_BRDFLut;           // 512x512 2D, RG16F
+		VkSampler m_IBLSampler = VK_NULL_HANDLE;
+
+		// Skybox resources
+		std::unique_ptr<VKPipeline> m_SkyboxPipeline;
+		std::shared_ptr<VKVertexBuffer> m_SkyboxVB;
+		std::vector<u32> m_SkyboxVertSpv;
+		std::vector<u32> m_SkyboxFragSpv;
 
 		// Shader hot-reload
 		FileWatcher m_ShaderWatcher;

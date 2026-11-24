@@ -11,7 +11,7 @@ layout(location = 0) out vec4 outColor;
 // ---------- Descriptor Sets ----------
 
 // Set 0: Global Uniforms
-layout(set = 0, binding = 0) uniform GlobalUniforms 
+layout(set = 0, binding = 0) uniform GlobalUniforms
 {
     mat4 viewProjection;
     mat4 view;
@@ -22,6 +22,11 @@ layout(set = 0, binding = 0) uniform GlobalUniforms
     float shadowBias;
     float _pad[3];
 } ubo;
+
+// Set 0: IBL textures
+layout(set = 0, binding = 1) uniform samplerCube irradianceMap;
+layout(set = 0, binding = 2) uniform samplerCube prefilteredMap;
+layout(set = 0, binding = 3) uniform sampler2D   brdfLUT;
 
 // Set 1: Bindless Textures
 layout(set = 1, binding = 0) uniform sampler2D globalTextures[];
@@ -46,7 +51,7 @@ layout(std430, set = 2, binding = 0) readonly buffer MaterialBuffer
 };
 
 // Set 3: Lights + Shadow
-struct DirectionalLightData 
+struct DirectionalLightData
 {
     vec3  direction;
     float intensity;
@@ -54,7 +59,7 @@ struct DirectionalLightData
     float _pad;
 };
 
-struct PointLightData 
+struct PointLightData
 {
     vec3  position;
     float range;
@@ -62,7 +67,7 @@ struct PointLightData
     float intensity;
 };
 
-layout(set = 3, binding = 0) uniform LightUBO 
+layout(set = 3, binding = 0) uniform LightUBO
 {
     DirectionalLightData dirLight;
     PointLightData       pointLights[64];
@@ -72,7 +77,7 @@ layout(set = 3, binding = 0) uniform LightUBO
 layout(set = 3, binding = 1) uniform sampler2DShadow shadowMap;
 
 // Push Constants
-layout(push_constant) uniform PushConstants 
+layout(push_constant) uniform PushConstants
 {
     mat4 model;
     uint materialIndex;
@@ -130,6 +135,12 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
+// Fresnel-Schlick with roughness (for IBL — accounts for rough surfaces reducing reflections)
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
 // Calculate contribution of a single light
 vec3 CalculateLight(vec3 L, vec3 radiance, vec3 V, vec3 N, vec3 albedo, float metallic, float roughness)
 {
@@ -175,7 +186,7 @@ float ComputeShadow(vec3 worldPos)
     // Apply bias to reduce shadow acne
     proj.z -= ubo.shadowBias;
 
-    // PCF 3x3 (manual texel offsets � textureOffset requires constant expressions)
+    // PCF 3x3 (manual texel offsets — textureOffset requires constant expressions)
     vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
     float shadow = 0.0;
     for (int x = -1; x <= 1; ++x)
@@ -264,8 +275,23 @@ void main()
             Lo += CalculateLight(normalize(toLight), ptRadiance, V, N, albedo.rgb, metallic, roughness);
     }
 
-    // Ambient (constant; IBL comes later)
-    vec3 ambient = vec3(0.03) * albedo.rgb * ao;
+    // IBL ambient lighting
+    vec3 F0 = mix(vec3(0.04), albedo.rgb, metallic);
+    vec3 F  = FresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+    vec3 kD = (1.0 - F) * (1.0 - metallic);
+
+    // Diffuse IBL
+    vec3 irradiance = texture(irradianceMap, N).rgb;
+    vec3 diffuseIBL = irradiance * albedo.rgb;
+
+    // Specular IBL
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 R = reflect(-V, N);
+    vec3 prefilteredColor = textureLod(prefilteredMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+    vec2 brdf = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    vec3 specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
+
+    vec3 ambient = (kD * diffuseIBL + specularIBL) * ao;
 
     vec3 color = ambient + Lo;
 
