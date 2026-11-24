@@ -47,7 +47,7 @@ jobs:
 
     - name: Build ${{ matrix.config }} x64
       run: >
-        msbuild Equinox.sln
+        msbuild Equinox.slnx
         /p:Configuration=${{ matrix.config }}
         /p:Platform=x64
         /p:WindowsTargetPlatformVersion=10.0

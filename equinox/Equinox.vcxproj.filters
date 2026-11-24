@@ -107,6 +107,9 @@
     <ClInclude Include="source\equinox\editor\inspectors\TextureEditor.h">
       <Filter>equinox\editor\inspectors</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\editor\panels\FrameDebuggerPanel.h">
+      <Filter>equinox\editor\panels</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\editor\panels\HierarchyPanel.h">
       <Filter>equinox\editor\panels</Filter>
     </ClInclude>
@@ -218,6 +221,9 @@
     <ClInclude Include="source\equinox\renderer\Model.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
+    <ClInclude Include="source\equinox\renderer\PostProcessSettings.h">
+      <Filter>equinox\renderer</Filter>
+    </ClInclude>
     <ClInclude Include="source\equinox\renderer\RenderBackend.h">
       <Filter>equinox\renderer</Filter>
     </ClInclude>
@@ -246,6 +252,9 @@
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\DynamicRendering.h">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\backend\vulkan\GPUTimerPool.h">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\backend\vulkan\RenderPassJob.h">
@@ -294,6 +303,9 @@
       <Filter>equinox\renderer\rendergraph</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraphResources.h">
+      <Filter>equinox\renderer\rendergraph</Filter>
+    </ClInclude>
+    <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraphSnapshot.h">
       <Filter>equinox\renderer\rendergraph</Filter>
     </ClInclude>
     <ClInclude Include="source\equinox\renderer\rendergraph\RenderResourceCache.h">
@@ -374,18 +386,6 @@
     <ClInclude Include="source\equinox\utils\ImGuiUtils.h">
       <Filter>equinox\utils</Filter>
     </ClInclude>
-    <ClInclude Include="source\equinox\renderer\PostProcessSettings.h">
-      <Filter>equinox\renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraphSnapshot.h">
-      <Filter>equinox\renderer\rendergraph</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\renderer\backend\vulkan\GPUTimerPool.h">
-      <Filter>equinox\renderer\backend\vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="source\equinox\editor\panels\FrameDebuggerPanel.h">
-      <Filter>equinox\editor\panels</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\eqnpch.cpp" />
@@ -415,6 +415,9 @@
     </ClCompile>
     <ClCompile Include="source\equinox\editor\inspectors\TextureEditor.cpp">
       <Filter>equinox\editor\inspectors</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\editor\panels\FrameDebuggerPanel.cpp">
+      <Filter>equinox\editor\panels</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\editor\panels\HierarchyPanel.cpp">
       <Filter>equinox\editor\panels</Filter>
@@ -501,6 +504,9 @@
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.cpp">
+      <Filter>equinox\renderer\backend\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="source\equinox\renderer\backend\vulkan\GPUTimerPool.cpp">
       <Filter>equinox\renderer\backend\vulkan</Filter>
     </ClCompile>
     <ClCompile Include="source\equinox\renderer\backend\vulkan\TimelineSemaphore.cpp">
@@ -595,12 +601,6 @@
     </ClCompile>
     <ClCompile Include="source\equinox\utils\ImageUtils.cpp">
       <Filter>equinox\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\renderer\backend\vulkan\GPUTimerPool.cpp">
-      <Filter>equinox\renderer\backend\vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="source\equinox\editor\panels\FrameDebuggerPanel.cpp">
-      <Filter>equinox\editor\panels</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
