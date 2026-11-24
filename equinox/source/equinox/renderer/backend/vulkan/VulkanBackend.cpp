@@ -1,6 +1,7 @@
 #include "eqnpch.h"
 #include "VulkanBackend.h"
 #include "VulkanContext.h"
+#include "PipelineCache.h"
 
 #include "equinox/core/Log.h"
 
@@ -11,6 +12,7 @@ namespace Equinox
 	void VulkanBackend::Init(void* windowHandle)
 	{
 		VulkanContext::Init(windowHandle);
+		PipelineCache::Init();
 		m_Swapchain = std::make_unique<VulkanSwapchain>(windowHandle);
 		m_Swapchain->Init();
 		CreateSyncObjects();
@@ -38,6 +40,7 @@ namespace Equinox
 
 		m_FrameTimeline.Shutdown();
 		m_Swapchain.reset();
+		PipelineCache::Shutdown();
 		VulkanContext::Shutdown();
 	}
 

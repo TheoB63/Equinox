@@ -1,6 +1,7 @@
 #include "eqnpch.h"
 #include "VulkanPipeline.h"
 #include "VulkanContext.h"
+#include "PipelineCache.h"
 #include "equinox/core/Log.h"
 #include <fstream>
 
@@ -155,7 +156,7 @@ namespace Equinox
 		pipelineInfo.pDynamicState = &dynamicState;
 		pipelineInfo.layout = m_PipelineLayout;
 
-		if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_Pipeline) != VK_SUCCESS) {
+		if (vkCreateGraphicsPipelines(m_Device, PipelineCache::Get(), 1, &pipelineInfo, nullptr, &m_Pipeline) != VK_SUCCESS) {
 			EQN_CORE_CRITICAL("Failed to create graphics pipeline!");
 		}
 
