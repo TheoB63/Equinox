@@ -50,6 +50,7 @@ namespace Equinox
 
 		static void SetCustomStyle();
 		static void SetBubblegumStyle();
+		static void SetRiderStyle();
 		static void SetRandomStyle();
 
 		static ImFont* GetMainFont() { return m_MainFont; }

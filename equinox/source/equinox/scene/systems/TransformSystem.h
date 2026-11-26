@@ -9,122 +9,133 @@
 
 namespace Equinox
 {
-	class TransformSystem : public System
-	{
-	public:
-		TransformSystem() {}
+    class TransformSystem : public System
+    {
+    public:
+        TransformSystem()
+        {
+        }
 
-		struct TransformJobData
-		{
-			entt::registry* registry;
-			std::vector<entt::entity>* entities;
-		};
+        struct TransformJobData
+        {
+            entt::registry* registry;
+            std::vector<entt::entity>* entities;
+            u32 totalCount;
+            u32 groupSize;
+        };
 
-		static void UpdateTransformsJob(JobSystem::JobArgs args)
-		{
-			TransformJobData* data = (TransformJobData*)args.data;
-			entt::entity entity = (*data->entities)[args.jobIndex];
-			entt::registry& reg = *data->registry;
+        static void UpdateTransformsJob(JobSystem::JobArgs args)
+        {
+            TransformJobData* data = (TransformJobData*)args.data;
+            entt::registry& reg = *data->registry;
 
-			// Safety check: Ensure entity is valid and has required components
-			if (!reg.valid(entity) || !reg.all_of<Component::Transform, Component::WorldTransform>(entity)) return;
+            // Dispatch creates one job per group. Each job processes a range of entities.
+            u32 start = args.jobIndex;
+            u32 end = std::min(start + data->groupSize, data->totalCount);
 
-			auto& transform = reg.get<Component::Transform>(entity);
-			auto& world = reg.get<Component::WorldTransform>(entity);
+            for (u32 i = start; i < end; i++)
+            {
+                entt::entity entity = (*data->entities)[i];
 
-			// 1. Update Local
-			if (transform.IsDirty)
-			{
-				glm::mat4 rotation = glm::toMat4(glm::quat(glm::radians(transform.Rotation)));
-				transform.LocalMatrix = glm::translate(glm::mat4(1.0f), transform.Position)
-					* rotation
-					* glm::scale(glm::mat4(1.0f), transform.Scale);
-			}
+                // Safety check: Ensure entity is valid and has required components
+                if (!reg.valid(entity) || !reg.all_of<Component::Transform, Component::WorldTransform>(entity))
+                    continue
+                        ;
 
-			// 2. Update World
-			// Parent is guaranteed to be updated because we process by levels
-			if (reg.any_of<Component::Parent>(entity))
-			{
-				entt::entity parent = reg.get<Component::Parent>(entity).m_Parent;
-				const auto& parentWorld = reg.get<Component::WorldTransform>(parent);
+                auto& transform = reg.get<Component::Transform>(entity);
+                auto& world = reg.get<Component::WorldTransform>(entity);
 
-				// Optimization: Check if parent changed? 
-				// For now, simple matrix mult. 
-				// Ideally we track IsDirty propagation, but in parallel we can't easily read parent's dirty flag 
-				// if we cleared it in the previous level's job.
-				// So we just recompute. Matrix mult is cheap.
-				world.Matrix = parentWorld.Matrix * transform.LocalMatrix;
-			}
-			else
-			{
-				world.Matrix = transform.LocalMatrix;
-			}
-			transform.IsDirty = false;
-		}
+                // 1. Update Local
+                if (transform.IsDirty)
+                {
+                    glm::mat4 rotation = glm::toMat4(glm::quat(glm::radians(transform.Rotation)));
+                    transform.LocalMatrix = glm::translate(glm::mat4(1.0f), transform.Position)
+                        * rotation
+                        * glm::scale(glm::mat4(1.0f), transform.Scale);
+                }
 
-		void Update(Scene* scene) override
-		{
-			EQN_PROFILE_FUNCTION();
+                // 2. Update World
+                // Parent is guaranteed to be updated because we process by levels
+                if (reg.any_of<Component::Parent>(entity))
+                {
+                    entt::entity parent = reg.get<Component::Parent>(entity).m_Parent;
+                    const auto& parentWorld = reg.get<Component::WorldTransform>(parent);
+                    world.Matrix = parentWorld.Matrix * transform.LocalMatrix;
+                }
+                else
+                {
+                    world.Matrix = transform.LocalMatrix;
+                }
 
-			// Rebuild if version changed OR if we have roots but no levels (first frame init)
-			if (scene->GetHierarchyVersion() != m_LastHierarchyVersion || (m_Levels.empty() && !scene->GetRootEntities().empty()))
-			{
-				RebuildHierarchy(scene);
-				m_LastHierarchyVersion = scene->GetHierarchyVersion();
-			}
+                transform.IsDirty = false;
+            }
+        }
 
-			JobSystem::Counter counter;
-			TransformJobData jobData;
-			jobData.registry = &scene->Registry();
+        void Update(Scene* scene) override
+        {
+            EQN_PROFILE_FUNCTION();
 
-			for (auto& level : m_Levels)
-			{
-				if (level.empty()) continue;
+            // Rebuild if version changed OR if we have roots but no levels (first frame init)
+            if (scene->GetHierarchyVersion() != m_LastHierarchyVersion || (m_Levels.empty() && !scene->GetRootEntities()
+                .empty()))
+            {
+                RebuildHierarchy(scene);
+                m_LastHierarchyVersion = scene->GetHierarchyVersion();
+            }
 
-				jobData.entities = &level;
-				// Group size 64 seems reasonable for matrix mults
-				JobSystem::Dispatch((u32)level.size(), 64, UpdateTransformsJob, &jobData, &counter);
-				JobSystem::WaitForCounter(&counter);
-			}
-		}
+            JobSystem::Counter counter;
+            TransformJobData jobData;
+            jobData.registry = &scene->Registry();
+            jobData.groupSize = 64;
 
-	private:
-		void RebuildHierarchy(Scene* scene)
-		{
-			EQN_PROFILE_FUNCTION();
-			m_Levels.clear();
+            for (auto& level : m_Levels)
+            {
+                if (level.empty()) continue;
 
-			// Level 0: Roots
-			m_Levels.push_back({});
-			for (auto entity : scene->GetRootEntities())
-				m_Levels[0].push_back((entt::entity)entity);
+                jobData.entities = &level;
+                jobData.totalCount = (u32)level.size();
+                JobSystem::Dispatch(jobData.totalCount, jobData.groupSize, UpdateTransformsJob, &jobData, &counter);
+                JobSystem::WaitForCounter(&counter);
+            }
+        }
 
-			// BFS
-			size_t currentLevel = 0;
-			entt::registry& reg = scene->Registry();
+    private:
+        void RebuildHierarchy(Scene* scene)
+        {
+            EQN_PROFILE_FUNCTION();
+            m_Levels.clear();
 
-			while (true)
-			{
-				std::vector<entt::entity> nextLevel;
-				// Reserve optimization?
+            // Level 0: Roots
+            m_Levels.push_back({});
+            for (auto entity : scene->GetRootEntities())
+                m_Levels[0].push_back((entt::entity)entity);
 
-				for (auto parent : m_Levels[currentLevel])
-				{
-					if (reg.any_of<Component::Children>(parent))
-					{
-						const auto& children = reg.get<Component::Children>(parent).m_Children;
-						for (auto child : children)
-							nextLevel.push_back((entt::entity)child);
-					}
-				}
+            // BFS
+            size_t currentLevel = 0;
+            entt::registry& reg = scene->Registry();
 
-				if (nextLevel.empty()) break;
-				m_Levels.push_back(std::move(nextLevel));
-				currentLevel++;
-			}
-		}
+            while (true)
+            {
+                std::vector<entt::entity> nextLevel;
+                // Reserve optimization?
 
-		std::vector<std::vector<entt::entity>> m_Levels;
-		u32 m_LastHierarchyVersion = 0;
-	};
+                for (auto parent : m_Levels[currentLevel])
+                {
+                    if (reg.any_of<Component::Children>(parent))
+                    {
+                        const auto& children = reg.get<Component::Children>(parent).m_Children;
+                        for (auto child : children)
+                            nextLevel.push_back((entt::entity)child);
+                    }
+                }
+
+                if (nextLevel.empty()) break;
+                m_Levels.push_back(std::move(nextLevel));
+                currentLevel++;
+            }
+        }
+
+        std::vector<std::vector<entt::entity>> m_Levels;
+        u32 m_LastHierarchyVersion = 0;
+    };
 }

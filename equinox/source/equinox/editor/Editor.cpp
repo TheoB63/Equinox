@@ -35,477 +35,487 @@
 
 namespace Equinox
 {
-	void Editor::Init(Window* window)
-	{
-		s_Window = window;
-		EQN_CORE_INFO("Initializing Equinox Editor");
-		IMGUI_CHECKVERSION();
-		EQN_CORE_TRACE(" - Initialized ImGui context for OpenGL");
-		s_Context = ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		EQN_CORE_TRACE(" - Enabled ImGui docking support");
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-		EQN_CORE_TRACE(" - Enabled ImGui multi-viewport support");
+    void Editor::Init(Window* window)
+    {
+        s_Window = window;
+        EQN_CORE_INFO("Initializing Equinox Editor");
+        IMGUI_CHECKVERSION();
+        EQN_CORE_TRACE(" - Initialized ImGui context for OpenGL");
+        s_Context = ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        EQN_CORE_TRACE(" - Enabled ImGui docking support");
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+        EQN_CORE_TRACE(" - Enabled ImGui multi-viewport support");
 
-		SetCustomStyle();
+        SetCustomStyle();
+        //SetBubblegumStyle();
+        //SetRiderStyle();
 
 #ifdef _WIN32
-		window->SetWindowColors({ 21, 21, 21 }, { 40, 40, 40 }, { 255, 255, 255 });
+        //window->SetWindowColors({ 21, 21, 21 }, { 40, 40, 40 }, { 255, 255, 255 });
+        window->SetWindowColors({30, 31, 34}, {67, 69, 74}, {223, 225, 229});
 #endif
 
-		// TODO: Set Render specific Imgui Backends (GL/VK)
-		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
-		{
-			EQN_CORE_TRACE(" - Initialized ImGui GLFW/Vulkan backend");
-			// We install callbacks manually in WinWindow to handle event routing
-			ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->GetNativeWindow(), false);
-
-			auto& ctx = VulkanContext::Get();
-			auto* vkRenderer = static_cast<VulkanBackend*>(Renderer::GetBackend()); // Need access to swapchain info
-
-			ImGui_ImplVulkan_InitInfo init_info = {};
-			init_info.Instance = ctx.GetInstance();
-			init_info.PhysicalDevice = ctx.GetPhysicalDevice();
-			init_info.Device = ctx.GetDevice();
-			init_info.QueueFamily = ctx.GetGraphicsFamily();
-			init_info.Queue = ctx.GetGraphicsQueue();
-			init_info.PipelineCache = VK_NULL_HANDLE;
-			init_info.DescriptorPool = ctx.GetBindlessSet().GetPool(); // Reuse bindless pool or create specific one? 
-			// Better create specific one for ImGui to avoid running out of sets
-			// For now, let's assume we create a small pool here or use a dedicated one in Context.
-			// Ideally: init_info.DescriptorPool = ctx.GetImGuiPool();
-
-			// Hack: Create a temporary pool for ImGui
-			VkDescriptorPoolSize pool_sizes[] = { { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2000 } };
-			VkDescriptorPoolCreateInfo pool_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO };
-			pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-			pool_info.maxSets = 2000;
-			pool_info.poolSizeCount = 1;
-			pool_info.pPoolSizes = pool_sizes;
-			vkCreateDescriptorPool(ctx.GetDevice(), &pool_info, nullptr, &init_info.DescriptorPool);
-			s_ImGuiPool = init_info.DescriptorPool;
-
-			init_info.Subpass = 0;
-			init_info.MinImageCount = MAX_FRAMES_IN_FLIGHT;
-			init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
-			init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-			init_info.Allocator = nullptr;
-			init_info.CheckVkResultFn = nullptr;
-
-			// Dynamic Rendering: No RenderPass
-			init_info.UseDynamicRendering = true;
-
-			// Setup dynamic rendering info
-			static const VkFormat swapChainFormat = vkRenderer->GetSwapchain().GetImageFormat();
-			init_info.PipelineRenderingCreateInfo = { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
-			init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
-			init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = &swapChainFormat;
-
-			ImGui_ImplVulkan_Init(&init_info);
-
-			// Upload Fonts
-			ImGui_ImplVulkan_CreateFontsTexture();
-		}
-
-		auto rs = Systems::GetSystem<RenderingSystem>();
-
-		// Set Panels
-		AddPanel(new HierarchyPanel());
-		AddPanel(new InspectorPanel());
-		AddPanel(new ProjectPanel());
-		AddPanel(new ResourcePanel());
-		AddPanel(new ScenePanel(rs));
-		AddPanel(new RenderPanel());
-		AddPanel(new ProfilerPanel());
-		AddPanel(new FrameDebuggerPanel());
-
-		// Init all panels
-		for (auto& panel : s_Panels)
-			panel->OnInit();
-	}
-
-	void Editor::Shutdown()
-	{
-		EQN_CORE_TRACE("Cleaning up {} panels", s_Panels.size());
-		s_Panels.clear();
-		UI::ClearTextureCache();
-
-		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan) {
-			// Clear GLFW callbacks that forward to ImGui BEFORE destroying
-			// the backend. We installed these manually (install_callbacks=false),
-			// so ImGui_ImplGlfw_Shutdown won't remove them. Without this,
-			// Win32 focus messages during Vulkan teardown dispatch into freed
-			// ImGui backend data.
-			if (s_Window)
-			{
-				GLFWwindow* win = (GLFWwindow*)s_Window->GetNativeWindow();
-				if (win)
-				{
-					glfwSetWindowFocusCallback(win, nullptr);
-					glfwSetCursorEnterCallback(win, nullptr);
-					glfwSetKeyCallback(win, nullptr);
-					glfwSetMouseButtonCallback(win, nullptr);
-					glfwSetScrollCallback(win, nullptr);
-					glfwSetCursorPosCallback(win, nullptr);
-					glfwSetCharCallback(win, nullptr);
-				}
-			}
-
-			ImGui_ImplVulkan_Shutdown();
-			ImGui_ImplGlfw_Shutdown();
-			ImGui::DestroyContext();
-
-			if (s_ImGuiPool != VK_NULL_HANDLE)
-			{
-				vkDestroyDescriptorPool(VulkanContext::Get().GetDevice(), s_ImGuiPool, nullptr);
-				s_ImGuiPool = VK_NULL_HANDLE;
-			}
-		}
-
-		s_Context = nullptr;
-		s_Window = nullptr;
-		s_ActiveScene.reset();
-		EQN_CORE_INFO("Editor system shutdown completed");
-	}
-
-	void Editor::BeginFrame()
-	{
-		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
-		{
-			ImGui_ImplVulkan_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-		}
-	}
-
-	void Editor::EndFrame()
-	{
-		ImGuiIO& io = ImGui::GetIO();
-
-		if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
-		{
-			ImGui::Render();
-
-			// [ARCHITECTURAL DEBT] Phase 1 Bootstrap
-			// TODO: Remove this immediate rendering.
-			// ImGui rendering must be moved to an 'ImGuiPass' in the RenderGraph.
-			// This current implementation bypasses the graph to verify the JobSystem/Windowing.
-
-			// NOTE: We removed the immediate rendering here because it's now handled by RenderingSystem::AddImGuiPass
-			// inside the RenderGraph execution.
-			// So Editor::EndFrame just finalizes the ImGui frame data.
-		}
-	}
-
-	void Editor::Render()
-	{
-		EQN_PROFILE_FUNCTION();
-
-		// Skip rendering if context is null (Vulkan case)
-		if (!s_Context) return;
-
-		// Create dockspace
-		static bool dockspaceOpen = true;
-		static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
-
-		// Fullscreen parent window for dockspace
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->WorkPos);
-		ImGui::SetNextWindowSize(viewport->WorkSize);
-		ImGui::SetNextWindowViewport(viewport->ID);
-
-		ImGuiWindowFlags hostWindowFlags =
-			ImGuiWindowFlags_NoTitleBar |
-			ImGuiWindowFlags_NoCollapse |
-			ImGuiWindowFlags_NoResize |
-			ImGuiWindowFlags_NoMove |
-			ImGuiWindowFlags_NoDocking |
-			ImGuiWindowFlags_NoBringToFrontOnFocus |
-			ImGuiWindowFlags_NoBackground |
-			ImGuiWindowFlags_MenuBar;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-		ImGui::Begin("DockSpaceHost", &dockspaceOpen, hostWindowFlags);
-		ImGui::PopStyleVar(3);
-
-		// Menu bar
-		DrawMenuBar();
-
-		// Create dockspace
-		ImGuiID dockspaceID = ImGui::GetID("MainDockSpace");
-		ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockspaceFlags);
-
-		// Keyboard shortcuts
-		ProcessShortcuts();
-
-		// Dirty detection via hierarchy version
-		if (s_ActiveScene)
-		{
-			u32 currentVersion = s_ActiveScene->GetHierarchyVersion();
-			if (currentVersion != s_LastHierarchyVersion)
-			{
-				s_LastHierarchyVersion = currentVersion;
-				s_IsDirty = true;
-			}
-		}
-
-		// Update window title
-		UpdateWindowTitle();
-
-		// Render all panels
-		for (auto& panel : s_Panels)
-			panel->OnRender();
-
-		ImGui::End();
-	}
-
-	bool Editor::WantCaptureMouse()
-	{
-		if (!s_Context) return false;
-		return ImGui::GetIO().WantCaptureMouse;
-	}
-
-	bool Editor::WantCaptureKeyboard()
-	{
-		if (!s_Context) return false;
-		return ImGui::GetIO().WantCaptureKeyboard;
-	}
-
-	void Editor::AddPanel(Panel* panel)
-	{
-		EQN_CORE_ASSERT(panel, "Tried to add null panel");
-		s_Panels.emplace_back(panel);
-	}
-
-	void Editor::SetCustomStyle()
-	{
-		EditorStyle::LoadFonts({ "Roboto-Regular.ttf", 15.0f, true, 14.0f });
-		EditorStyle::Apply(EditorStyle::Custom());
-	}
-
-	void Editor::SetBubblegumStyle()
-	{
-		EditorStyle::LoadFonts({ "HoneySalt.otf", 14.0f, false, 48.0f });
-		EditorStyle::Apply(EditorStyle::Bubblegum());
-	}
-
-	void Editor::SetRandomStyle()
-	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		ImVec4* colors = style.Colors;
-
-		// Seed with current time
-		static std::mt19937 rng(std::chrono::system_clock::now().time_since_epoch().count());
-		std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-		std::uniform_real_distribution<float> colorDist(0.2f, 0.8f);
-		std::uniform_real_distribution<float> propDist(0.5f, 3.0f);
-
-		// Generate random base hue
-		float hue = dist(rng);
-		ImVec4 baseColor = ImColor::HSV(hue, 0.7f, 0.7f);
-
-		// Random style properties
-		style.WindowRounding = propDist(rng);
-		style.ChildRounding = propDist(rng);
-		style.FrameRounding = propDist(rng);
-		style.GrabRounding = propDist(rng);
-		style.PopupRounding = propDist(rng);
-		style.ScrollbarRounding = propDist(rng);
-
-		style.WindowBorderSize = dist(rng) > 0.5f ? 1.0f : 0.0f;
-		style.FrameBorderSize = dist(rng) > 0.3f ? 1.0f : 0.0f;
-
-		// Random color scheme
-		colors[ImGuiCol_Text] = ImVec4(dist(rng), dist(rng), dist(rng), 1.00f);
-		colors[ImGuiCol_WindowBg] = ImColor::HSV(hue, 0.2f, 0.2f);
-		colors[ImGuiCol_ChildBg] = ImColor::HSV(hue, 0.25f, 0.25f);
-		colors[ImGuiCol_PopupBg] = ImColor::HSV(hue, 0.2f, 0.3f);
-		colors[ImGuiCol_Border] = ImColor::HSV(hue, 0.4f, 0.6f);
-		colors[ImGuiCol_FrameBg] = ImColor::HSV(hue, 0.3f, 0.3f);
-		colors[ImGuiCol_FrameBgHovered] = ImColor::HSV(hue, 0.4f, 0.4f);
-		colors[ImGuiCol_FrameBgActive] = ImColor::HSV(hue, 0.5f, 0.5f);
-		colors[ImGuiCol_TitleBg] = ImColor::HSV(hue, 0.6f, 0.3f);
-		colors[ImGuiCol_TitleBgActive] = ImColor::HSV(hue, 0.7f, 0.4f);
-		colors[ImGuiCol_CheckMark] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-		colors[ImGuiCol_SliderGrab] = ImColor::HSV(hue, 0.8f, 0.8f);
-		colors[ImGuiCol_SliderGrabActive] = ImColor::HSV(hue, 0.9f, 0.9f);
-		colors[ImGuiCol_Button] = ImColor::HSV(hue, 0.6f, 0.4f);
-		colors[ImGuiCol_ButtonHovered] = ImColor::HSV(hue, 0.7f, 0.5f);
-		colors[ImGuiCol_ButtonActive] = ImColor::HSV(hue, 0.8f, 0.6f);
-		colors[ImGuiCol_Header] = ImColor::HSV(hue, 0.5f, 0.3f);
-		colors[ImGuiCol_HeaderHovered] = ImColor::HSV(hue, 0.6f, 0.4f);
-		colors[ImGuiCol_HeaderActive] = ImColor::HSV(hue, 0.7f, 0.5f);
-
-		// Random spacing/padding
-		style.WindowPadding = ImVec2(propDist(rng), propDist(rng));
-		style.FramePadding = ImVec2(propDist(rng), propDist(rng));
-		style.ItemSpacing = ImVec2(propDist(rng), propDist(rng));
-		style.ItemInnerSpacing = ImVec2(propDist(rng), propDist(rng));
-
-		// Random window transparency
-		style.Alpha = 0.8f + dist(rng) * 0.2f;
-
-		EQN_CORE_INFO("Applied random style - Hue: {0}, WindowRounding: {1}",
-			hue, style.WindowRounding);
-	}
-
-	// ================================================================
-	// Scene Management
-	// ================================================================
-
-	void Editor::SetActiveScene(std::shared_ptr<Scene> scene)
-	{
-		s_ActiveScene = scene;
-		s_LastHierarchyVersion = scene ? scene->GetHierarchyVersion() : 0;
-
-		// Update Systems raw pointer so TransformSystem/RenderingSystem use the correct scene
-		Systems::SetScene(scene.get());
-
-		// Update panels that hold scene context
-		if (auto* hp = GetPanel<HierarchyPanel>())
-			hp->SetContext(scene);
-	}
-
-	void Editor::NewScene()
-	{
-		if (!s_ActiveScene) return;
-
-		// Clear all entities
-		s_ActiveScene->Clear();
-
-		s_ScenePath.clear();
-		s_IsDirty = false;
-		s_LastHierarchyVersion = s_ActiveScene->GetHierarchyVersion();
-
-		EQN_CORE_INFO("New scene created");
-	}
-
-	void Editor::OpenScene()
-	{
-		auto path = FileDialog::OpenFile("Equinox Scene (*.equinox)\0*.equinox\0All Files (*.*)\0*.*\0");
-		if (!path.has_value()) return;
-		OpenScene(path.value());
-	}
-
-	void Editor::OpenScene(const fs::path& path)
-	{
-		if (!s_ActiveScene) return;
-
-		if (SceneSerializer::Load(*s_ActiveScene, path))
-		{
-			s_ScenePath = path;
-			s_IsDirty = false;
-			s_LastHierarchyVersion = s_ActiveScene->GetHierarchyVersion();
-		}
-	}
-
-	void Editor::SaveScene()
-	{
-		if (!s_ActiveScene) return;
-
-		if (s_ScenePath.empty())
-		{
-			SaveSceneAs();
-			return;
-		}
-
-		if (SceneSerializer::Save(*s_ActiveScene, s_ScenePath))
-		{
-			s_IsDirty = false;
-
-			// Ensure .meta file exists
-			fs::path metaPath = s_ScenePath;
-			metaPath += ".meta";
-			if (!fs::exists(metaPath))
-			{
-				MetaFile::Create(s_ScenePath, AssetType::Scene);
-			}
-		}
-	}
-
-	void Editor::SaveSceneAs()
-	{
-		auto path = FileDialog::SaveFile("Equinox Scene (*.equinox)\0*.equinox\0All Files (*.*)\0*.*\0");
-		if (!path.has_value()) return;
-
-		s_ScenePath = path.value();
-		SaveScene();
-	}
-
-	void Editor::MarkDirty()
-	{
-		s_IsDirty = true;
-	}
-
-	void Editor::ProcessShortcuts()
-	{
-		bool ctrl = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
-		bool shift = ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift);
-
-		if (ctrl)
-		{
-			if (ImGui::IsKeyPressed(ImGuiKey_N, false))
-				NewScene();
-			else if (ImGui::IsKeyPressed(ImGuiKey_O, false))
-				OpenScene();
-			else if (ImGui::IsKeyPressed(ImGuiKey_S, false))
-			{
-				if (shift)
-					SaveSceneAs();
-				else
-					SaveScene();
-			}
-		}
-	}
-
-	void Editor::DrawMenuBar()
-	{
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("File"))
-			{
-				if (ImGui::MenuItem("New Scene", "Ctrl+N"))
-					NewScene();
-				if (ImGui::MenuItem("Open Scene", "Ctrl+O"))
-					OpenScene();
-				ImGui::Separator();
-				if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
-					SaveScene();
-				if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
-					SaveSceneAs();
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenuBar();
-		}
-	}
-
-	void Editor::UpdateWindowTitle()
-	{
-		if (!s_Window) return;
-
-		std::string title = "Equinox 0.1 [Vulkan]";
-		if (!s_ScenePath.empty())
-		{
-			title += " - " + s_ScenePath.filename().string();
-		}
-		else
-		{
-			title += " - Untitled";
-		}
-		if (s_IsDirty)
-		{
-			title += "*";
-		}
-
-		GLFWwindow* win = (GLFWwindow*)s_Window->GetNativeWindow();
-		if (win)
-		{
-			glfwSetWindowTitle(win, title.c_str());
-		}
-	}
+        // TODO: Set Render specific Imgui Backends (GL/VK)
+        if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
+        {
+            EQN_CORE_TRACE(" - Initialized ImGui GLFW/Vulkan backend");
+            // We install callbacks manually in WinWindow to handle event routing
+            ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->GetNativeWindow(), false);
+
+            auto& ctx = VulkanContext::Get();
+            auto* vkRenderer = static_cast<VulkanBackend*>(Renderer::GetBackend()); // Need access to swapchain info
+
+            ImGui_ImplVulkan_InitInfo init_info = {};
+            init_info.Instance = ctx.GetInstance();
+            init_info.PhysicalDevice = ctx.GetPhysicalDevice();
+            init_info.Device = ctx.GetDevice();
+            init_info.QueueFamily = ctx.GetGraphicsFamily();
+            init_info.Queue = ctx.GetGraphicsQueue();
+            init_info.PipelineCache = VK_NULL_HANDLE;
+            init_info.DescriptorPool = ctx.GetBindlessSet().GetPool(); // Reuse bindless pool or create specific one? 
+            // Better create specific one for ImGui to avoid running out of sets
+            // For now, let's assume we create a small pool here or use a dedicated one in Context.
+            // Ideally: init_info.DescriptorPool = ctx.GetImGuiPool();
+
+            // Hack: Create a temporary pool for ImGui
+            VkDescriptorPoolSize pool_sizes[] = {{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 2000}};
+            VkDescriptorPoolCreateInfo pool_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
+            pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+            pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+            pool_info.maxSets = 2000;
+            pool_info.poolSizeCount = 1;
+            pool_info.pPoolSizes = pool_sizes;
+            vkCreateDescriptorPool(ctx.GetDevice(), &pool_info, nullptr, &init_info.DescriptorPool);
+            s_ImGuiPool = init_info.DescriptorPool;
+
+            init_info.Subpass = 0;
+            init_info.MinImageCount = MAX_FRAMES_IN_FLIGHT;
+            init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
+            init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+            init_info.Allocator = nullptr;
+            init_info.CheckVkResultFn = nullptr;
+
+            // Dynamic Rendering: No RenderPass
+            init_info.UseDynamicRendering = true;
+
+            // Setup dynamic rendering info
+            static const VkFormat swapChainFormat = vkRenderer->GetSwapchain().GetImageFormat();
+            init_info.PipelineRenderingCreateInfo = {VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO};
+            init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
+            init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = &swapChainFormat;
+
+            ImGui_ImplVulkan_Init(&init_info);
+
+            // Upload Fonts
+            ImGui_ImplVulkan_CreateFontsTexture();
+        }
+
+        auto rs = Systems::GetSystem<RenderingSystem>();
+
+        // Set Panels
+        AddPanel(new HierarchyPanel());
+        AddPanel(new InspectorPanel());
+        AddPanel(new ProjectPanel());
+        AddPanel(new ResourcePanel());
+        AddPanel(new ScenePanel(rs));
+        AddPanel(new RenderPanel());
+        AddPanel(new ProfilerPanel());
+        AddPanel(new FrameDebuggerPanel());
+
+        // Init all panels
+        for (auto& panel : s_Panels)
+            panel->OnInit();
+    }
+
+    void Editor::Shutdown()
+    {
+        EQN_CORE_TRACE("Cleaning up {} panels", s_Panels.size());
+        s_Panels.clear();
+        UI::ClearTextureCache();
+
+        if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
+        {
+            // Clear GLFW callbacks that forward to ImGui BEFORE destroying
+            // the backend. We installed these manually (install_callbacks=false),
+            // so ImGui_ImplGlfw_Shutdown won't remove them. Without this,
+            // Win32 focus messages during Vulkan teardown dispatch into freed
+            // ImGui backend data.
+            if (s_Window)
+            {
+                GLFWwindow* win = (GLFWwindow*)s_Window->GetNativeWindow();
+                if (win)
+                {
+                    glfwSetWindowFocusCallback(win, nullptr);
+                    glfwSetCursorEnterCallback(win, nullptr);
+                    glfwSetKeyCallback(win, nullptr);
+                    glfwSetMouseButtonCallback(win, nullptr);
+                    glfwSetScrollCallback(win, nullptr);
+                    glfwSetCursorPosCallback(win, nullptr);
+                    glfwSetCharCallback(win, nullptr);
+                }
+            }
+
+            ImGui_ImplVulkan_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImGui::DestroyContext();
+
+            if (s_ImGuiPool != VK_NULL_HANDLE)
+            {
+                vkDestroyDescriptorPool(VulkanContext::Get().GetDevice(), s_ImGuiPool, nullptr);
+                s_ImGuiPool = VK_NULL_HANDLE;
+            }
+        }
+
+        s_Context = nullptr;
+        s_Window = nullptr;
+        s_ActiveScene.reset();
+        EQN_CORE_INFO("Editor system shutdown completed");
+    }
+
+    void Editor::BeginFrame()
+    {
+        if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
+        {
+            ImGui_ImplVulkan_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+        }
+    }
+
+    void Editor::EndFrame()
+    {
+        ImGuiIO& io = ImGui::GetIO();
+
+        if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
+        {
+            ImGui::Render();
+
+            // [ARCHITECTURAL DEBT] Phase 1 Bootstrap
+            // TODO: Remove this immediate rendering.
+            // ImGui rendering must be moved to an 'ImGuiPass' in the RenderGraph.
+            // This current implementation bypasses the graph to verify the JobSystem/Windowing.
+
+            // NOTE: We removed the immediate rendering here because it's now handled by RenderingSystem::AddImGuiPass
+            // inside the RenderGraph execution.
+            // So Editor::EndFrame just finalizes the ImGui frame data.
+        }
+    }
+
+    void Editor::Render()
+    {
+        EQN_PROFILE_FUNCTION();
+
+        // Skip rendering if context is null (Vulkan case)
+        if (!s_Context) return;
+
+        // Create dockspace
+        static bool dockspaceOpen = true;
+        static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
+
+        // Fullscreen parent window for dockspace
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiWindowFlags hostWindowFlags =
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoDocking |
+            ImGuiWindowFlags_NoBringToFrontOnFocus |
+            ImGuiWindowFlags_NoBackground |
+            ImGuiWindowFlags_MenuBar;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("DockSpaceHost", &dockspaceOpen, hostWindowFlags);
+        ImGui::PopStyleVar(3);
+
+        // Menu bar
+        DrawMenuBar();
+
+        // Create dockspace
+        ImGuiID dockspaceID = ImGui::GetID("MainDockSpace");
+        ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockspaceFlags);
+
+        // Keyboard shortcuts
+        ProcessShortcuts();
+
+        // Dirty detection via hierarchy version
+        if (s_ActiveScene)
+        {
+            u32 currentVersion = s_ActiveScene->GetHierarchyVersion();
+            if (currentVersion != s_LastHierarchyVersion)
+            {
+                s_LastHierarchyVersion = currentVersion;
+                s_IsDirty = true;
+            }
+        }
+
+        // Update window title
+        UpdateWindowTitle();
+
+        // Render all panels
+        for (auto& panel : s_Panels)
+            panel->OnRender();
+
+        ImGui::End();
+    }
+
+    bool Editor::WantCaptureMouse()
+    {
+        if (!s_Context) return false;
+        return ImGui::GetIO().WantCaptureMouse;
+    }
+
+    bool Editor::WantCaptureKeyboard()
+    {
+        if (!s_Context) return false;
+        return ImGui::GetIO().WantCaptureKeyboard;
+    }
+
+    void Editor::AddPanel(Panel* panel)
+    {
+        EQN_CORE_ASSERT(panel, "Tried to add null panel");
+        s_Panels.emplace_back(panel);
+    }
+
+    void Editor::SetRiderStyle()
+    {
+        EditorStyle::LoadFonts({"JetBrainsMono-Regular.ttf", 18.0f, true, 13.0f});
+        EditorStyle::Apply(EditorStyle::Rider());
+    }
+    
+    void Editor::SetCustomStyle()
+    {
+        EditorStyle::LoadFonts({"Roboto-Regular.ttf", 15.0f, true, 14.0f});
+        EditorStyle::Apply(EditorStyle::Custom());
+    }
+
+    void Editor::SetBubblegumStyle()
+    {
+        EditorStyle::LoadFonts({"HoneySalt.otf", 14.0f, false, 48.0f});
+        EditorStyle::Apply(EditorStyle::Bubblegum());
+    }
+
+    void Editor::SetRandomStyle()
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+        ImVec4* colors = style.Colors;
+
+        // Seed with current time
+        static std::mt19937 rng(std::chrono::system_clock::now().time_since_epoch().count());
+        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+        std::uniform_real_distribution<float> colorDist(0.2f, 0.8f);
+        std::uniform_real_distribution<float> propDist(0.5f, 3.0f);
+
+        // Generate random base hue
+        float hue = dist(rng);
+        ImVec4 baseColor = ImColor::HSV(hue, 0.7f, 0.7f);
+
+        // Random style properties
+        style.WindowRounding = propDist(rng);
+        style.ChildRounding = propDist(rng);
+        style.FrameRounding = propDist(rng);
+        style.GrabRounding = propDist(rng);
+        style.PopupRounding = propDist(rng);
+        style.ScrollbarRounding = propDist(rng);
+
+        style.WindowBorderSize = dist(rng) > 0.5f ? 1.0f : 0.0f;
+        style.FrameBorderSize = dist(rng) > 0.3f ? 1.0f : 0.0f;
+
+        // Random color scheme
+        colors[ImGuiCol_Text] = ImVec4(dist(rng), dist(rng), dist(rng), 1.00f);
+        colors[ImGuiCol_WindowBg] = ImColor::HSV(hue, 0.2f, 0.2f);
+        colors[ImGuiCol_ChildBg] = ImColor::HSV(hue, 0.25f, 0.25f);
+        colors[ImGuiCol_PopupBg] = ImColor::HSV(hue, 0.2f, 0.3f);
+        colors[ImGuiCol_Border] = ImColor::HSV(hue, 0.4f, 0.6f);
+        colors[ImGuiCol_FrameBg] = ImColor::HSV(hue, 0.3f, 0.3f);
+        colors[ImGuiCol_FrameBgHovered] = ImColor::HSV(hue, 0.4f, 0.4f);
+        colors[ImGuiCol_FrameBgActive] = ImColor::HSV(hue, 0.5f, 0.5f);
+        colors[ImGuiCol_TitleBg] = ImColor::HSV(hue, 0.6f, 0.3f);
+        colors[ImGuiCol_TitleBgActive] = ImColor::HSV(hue, 0.7f, 0.4f);
+        colors[ImGuiCol_CheckMark] = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+        colors[ImGuiCol_SliderGrab] = ImColor::HSV(hue, 0.8f, 0.8f);
+        colors[ImGuiCol_SliderGrabActive] = ImColor::HSV(hue, 0.9f, 0.9f);
+        colors[ImGuiCol_Button] = ImColor::HSV(hue, 0.6f, 0.4f);
+        colors[ImGuiCol_ButtonHovered] = ImColor::HSV(hue, 0.7f, 0.5f);
+        colors[ImGuiCol_ButtonActive] = ImColor::HSV(hue, 0.8f, 0.6f);
+        colors[ImGuiCol_Header] = ImColor::HSV(hue, 0.5f, 0.3f);
+        colors[ImGuiCol_HeaderHovered] = ImColor::HSV(hue, 0.6f, 0.4f);
+        colors[ImGuiCol_HeaderActive] = ImColor::HSV(hue, 0.7f, 0.5f);
+
+        // Random spacing/padding
+        style.WindowPadding = ImVec2(propDist(rng), propDist(rng));
+        style.FramePadding = ImVec2(propDist(rng), propDist(rng));
+        style.ItemSpacing = ImVec2(propDist(rng), propDist(rng));
+        style.ItemInnerSpacing = ImVec2(propDist(rng), propDist(rng));
+
+        // Random window transparency
+        style.Alpha = 0.8f + dist(rng) * 0.2f;
+
+        EQN_CORE_INFO("Applied random style - Hue: {0}, WindowRounding: {1}",
+                      hue, style.WindowRounding);
+    }
+
+    // ================================================================
+    // Scene Management
+    // ================================================================
+
+    void Editor::SetActiveScene(std::shared_ptr<Scene> scene)
+    {
+        s_ActiveScene = scene;
+        s_LastHierarchyVersion = scene ? scene->GetHierarchyVersion() : 0;
+
+        // Update Systems raw pointer so TransformSystem/RenderingSystem use the correct scene
+        Systems::SetScene(scene.get());
+
+        // Update panels that hold scene context
+        if (auto* hp = GetPanel<HierarchyPanel>())
+            hp->SetContext(scene);
+    }
+
+    void Editor::NewScene()
+    {
+        if (!s_ActiveScene) return;
+
+        // Clear all entities
+        s_ActiveScene->Clear();
+
+        s_ScenePath.clear();
+        s_IsDirty = false;
+        s_LastHierarchyVersion = s_ActiveScene->GetHierarchyVersion();
+
+        EQN_CORE_INFO("New scene created");
+    }
+
+    void Editor::OpenScene()
+    {
+        auto path = FileDialog::OpenFile("Equinox Scene (*.equinox)\0*.equinox\0All Files (*.*)\0*.*\0");
+        if (!path.has_value()) return;
+        OpenScene(path.value());
+    }
+
+    void Editor::OpenScene(const fs::path& path)
+    {
+        if (!s_ActiveScene) return;
+
+        if (SceneSerializer::Load(*s_ActiveScene, path))
+        {
+            s_ScenePath = path;
+            s_IsDirty = false;
+            s_LastHierarchyVersion = s_ActiveScene->GetHierarchyVersion();
+        }
+    }
+
+    void Editor::SaveScene()
+    {
+        if (!s_ActiveScene) return;
+
+        if (s_ScenePath.empty())
+        {
+            SaveSceneAs();
+            return;
+        }
+
+        if (SceneSerializer::Save(*s_ActiveScene, s_ScenePath))
+        {
+            s_IsDirty = false;
+
+            // Ensure .meta file exists
+            fs::path metaPath = s_ScenePath;
+            metaPath += ".meta";
+            if (!fs::exists(metaPath))
+            {
+                MetaFile::Create(s_ScenePath, AssetType::Scene);
+            }
+        }
+    }
+
+    void Editor::SaveSceneAs()
+    {
+        auto path = FileDialog::SaveFile("Equinox Scene (*.equinox)\0*.equinox\0All Files (*.*)\0*.*\0");
+        if (!path.has_value()) return;
+
+        s_ScenePath = path.value();
+        SaveScene();
+    }
+
+    void Editor::MarkDirty()
+    {
+        s_IsDirty = true;
+    }
+
+    void Editor::ProcessShortcuts()
+    {
+        bool ctrl = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
+        bool shift = ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift);
+
+        if (ctrl)
+        {
+            if (ImGui::IsKeyPressed(ImGuiKey_N, false))
+                NewScene();
+            else if (ImGui::IsKeyPressed(ImGuiKey_O, false))
+                OpenScene();
+            else if (ImGui::IsKeyPressed(ImGuiKey_S, false))
+            {
+                if (shift)
+                    SaveSceneAs();
+                else
+                    SaveScene();
+            }
+        }
+    }
+
+    void Editor::DrawMenuBar()
+    {
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New Scene", "Ctrl+N"))
+                    NewScene();
+                if (ImGui::MenuItem("Open Scene", "Ctrl+O"))
+                    OpenScene();
+                ImGui::Separator();
+                if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
+                    SaveScene();
+                if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
+                    SaveSceneAs();
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+    }
+
+    void Editor::UpdateWindowTitle()
+    {
+        if (!s_Window) return;
+
+        std::string title = "Equinox 0.1 [Vulkan]";
+        if (!s_ScenePath.empty())
+        {
+            title += " - " + s_ScenePath.filename().string();
+        }
+        else
+        {
+            title += " - Untitled";
+        }
+        if (s_IsDirty)
+        {
+            title += "*";
+        }
+
+        GLFWwindow* win = (GLFWwindow*)s_Window->GetNativeWindow();
+        if (win)
+        {
+            glfwSetWindowTitle(win, title.c_str());
+        }
+    }
 }

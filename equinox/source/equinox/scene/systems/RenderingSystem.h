@@ -43,7 +43,7 @@ namespace Equinox
 	struct ObjectPushConstants
 	{
 		glm::mat4 modelMatrix;  // 64 bytes
-		u32 materialIndex;      // 4 bytes — index into material SSBO
+		u32 materialIndex;      // 4 bytes ï¿½ index into material SSBO
 		u32 _pad[3];            // 12 bytes padding (80 total)
 	};
 
@@ -146,6 +146,8 @@ namespace Equinox
 		glm::mat4 m_CachedLightSpaceMatrix = glm::mat4(1.0f);
 		float     m_CachedShadowBias = 0.005f;
 		bool      m_CachedCastShadows = true;
+		float     m_CachedShadowOrtho = 200.0f;
+		float     m_CachedShadowDist  = 200.0f;
 
 		// Shadow map
 		std::shared_ptr<Texture> m_ShadowMap;

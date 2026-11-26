@@ -32,6 +32,9 @@ namespace Equinox
 
 		void SetViewportSize(float width, float height);
 		void SetFocalPoint(glm::vec3 focalPoint);
+		float GetFlySpeed() const { return m_FlySpeed; }
+		void  SetFlySpeed(float speed) { m_FlySpeed = glm::clamp(speed, 0.1f, 200.0f); }
+		float& GetFlySpeedRef() { return m_FlySpeed; }
 
 		glm::vec3 GetForwardDirection() const;
 		glm::vec3 GetRightDirection() const;
@@ -107,7 +110,7 @@ namespace Equinox
 		bool m_IsFocused = false;
 		bool m_IsHovered = false;
 
-		// Scene viewport texture tracking (must not be static — leaks on shutdown)
+		// Scene viewport texture tracking (must not be static ï¿½ leaks on shutdown)
 		VkDescriptorSet m_SceneDS = VK_NULL_HANDLE;
 		std::shared_ptr<Texture> m_LastSceneTex = nullptr;
 

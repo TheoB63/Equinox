@@ -17,375 +17,410 @@
 
 namespace Equinox
 {
-	using namespace Component;
+    using namespace Component;
 
-	InspectorPanel::InspectorPanel()
-	{
-		EQN_CORE_INFO("Created Inspector panel");
-	}
+    InspectorPanel::InspectorPanel()
+    {
+        EQN_CORE_INFO("Created Inspector panel");
+    }
 
-	void InspectorPanel::OnInit() {}
+    void InspectorPanel::OnInit()
+    {
+    }
 
-	void InspectorPanel::OnRender()
-	{
-		ImGui::PushFont(Editor::GetFASolid());
-		std::string inspector = ICON_FA_CIRCLE_INFO + std::string("  Inspector");
+    void InspectorPanel::OnRender()
+    {
+        ImGui::PushFont(Editor::GetFASolid());
+        std::string inspector = ICON_FA_CIRCLE_INFO + std::string("  Inspector");
 
-		if (ImGui::Begin(inspector.c_str()))
-		{
-			Entity selectedEntity = EditorSelection::GetSelectedEntity();
-			UUID selectedResource = EditorSelection::GetSelectedResource();
+        if (ImGui::Begin(inspector.c_str()))
+        {
+            Entity selectedEntity = EditorSelection::GetSelectedEntity();
+            UUID selectedResource = EditorSelection::GetSelectedResource();
 
-			if (selectedEntity)
-			{
-				DrawEntityComponents(selectedEntity);
-			}
-			else if (selectedResource.IsValid())
-			{
-				DrawResourceProperties(selectedResource);
-			}
-		}
-		ImGui::End();
-		ImGui::PopFont();
-	}
+            if (selectedEntity)
+            {
+                DrawEntityComponents(selectedEntity);
+            }
+            else if (selectedResource.IsValid())
+            {
+                DrawResourceProperties(selectedResource);
+            }
+        }
+        ImGui::End();
+        ImGui::PopFont();
+    }
 
-	void InspectorPanel::DrawEntityComponents(Entity m_SelectedEntity)
-	{
-		// Display and edit the entity's Tag component (name)
-		if (m_SelectedEntity.HasComponent<Tag>())
-		{
-			auto& tag = m_SelectedEntity.GetComponent<Tag>();
+    void InspectorPanel::DrawEntityComponents(Entity m_SelectedEntity)
+    {
+        // Display and edit the entity's Tag component (name)
+        if (m_SelectedEntity.HasComponent<Tag>())
+        {
+            auto& tag = m_SelectedEntity.GetComponent<Tag>();
 
-			// Create a horizontal group for checkbox + name
-			ImGui::BeginGroup();
+            // Create a horizontal group for checkbox + name
+            ImGui::BeginGroup();
 
-			// Checkbox for active state
-			bool isActive = m_SelectedEntity.IsActive();
-			if (ImGui::Checkbox("##Active", &isActive))
-			{
-				m_SelectedEntity.SetActive(isActive);
-			}
+            // Checkbox for active state
+            bool isActive = m_SelectedEntity.IsActive();
+            if (ImGui::Checkbox("##Active", &isActive))
+            {
+                m_SelectedEntity.SetActive(isActive);
+            }
 
-			// Tooltip and spacing
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Toggle Entity Active State");
-			}
-			ImGui::SameLine();
+            // Tooltip and spacing
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Toggle Entity Active State");
+            }
+            ImGui::SameLine();
 
-			// Name field
-			char buffer[256];
-			strncpy(buffer, tag.m_Tag.c_str(), sizeof(buffer) - 1);
-			buffer[sizeof(buffer) - 1] = 0;
-			ImGui::PushItemWidth(-1);
-			if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
-			{
-				tag.m_Tag = std::string(buffer);
-			}
+            // Name field
+            char buffer[256];
+            strncpy(buffer, tag.m_Tag.c_str(), sizeof(buffer) - 1);
+            buffer[sizeof(buffer) - 1] = 0;
+            ImGui::PushItemWidth(-1);
+            if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
+            {
+                tag.m_Tag = std::string(buffer);
+            }
 
-			ImGui::EndGroup();
-			ImGui::Dummy({ 0, 4 });
-		}
+            ImGui::EndGroup();
+            ImGui::Dummy({0, 4});
+        }
 
-		// Draw each component with a collapsible UI section
+        // Draw each component with a collapsible UI section
 #if defined(DEBUG)
-		DrawComponent<ID>("ID", m_SelectedEntity, [](Entity entity, ID& component)
-			{
-				ImGui::Text("ID: %llu", component.m_ID);
-			});
+        DrawComponent<ID>("ID", m_SelectedEntity, [](Entity entity, ID& component)
+        {
+            ImGui::Text("ID: %llu", component.m_ID);
+        });
 
-		DrawComponent<Parent>("Parent", m_SelectedEntity, [](Entity entity, Parent& component)
-			{
-				if (component.m_Parent && component.m_Parent.IsValid())
-				{
-					ImGui::Text("Parent: %s", component.m_Parent.GetName().c_str());
-					if (ImGui::Button("Clear Parent"))
-					{
-						entity.SetParent({});
-					}
-				}
-				else
-				{
-					ImGui::Text("No Parent");
-				}
-			});
+        DrawComponent<Parent>("Parent", m_SelectedEntity, [](Entity entity, Parent& component)
+        {
+            if (component.m_Parent && component.m_Parent.IsValid())
+            {
+                ImGui::Text("Parent: %s", component.m_Parent.GetName().c_str());
+                if (ImGui::Button("Clear Parent"))
+                {
+                    entity.SetParent({});
+                }
+            }
+            else
+            {
+                ImGui::Text("No Parent");
+            }
+        });
 
-		DrawComponent<Children>("Children", m_SelectedEntity, [](Entity entity, Children& component)
-			{
-				ImGui::Text("Children: %d", component.m_Children.size());
-				for (auto& child : component.m_Children)
-				{
-					if (child.IsValid())
-					{
-						ImGui::BulletText("%s", child.GetName().c_str());
-					}
-					else
-					{
-						ImGui::BulletText("Invalid Entity");
-					}
-				}
-			});
+        DrawComponent<Children>("Children", m_SelectedEntity, [](Entity entity, Children& component)
+        {
+            ImGui::Text("Children: %d", component.m_Children.size());
+            for (auto& child : component.m_Children)
+            {
+                if (child.IsValid())
+                {
+                    ImGui::BulletText("%s", child.GetName().c_str());
+                }
+                else
+                {
+                    ImGui::BulletText("Invalid Entity");
+                }
+            }
+        });
 
-		DrawComponent<WorldTransform>("World Transform", m_SelectedEntity, [](Entity entity, WorldTransform& transform) {});
+        DrawComponent<WorldTransform>("World Transform", m_SelectedEntity, [](Entity entity, WorldTransform& transform)
+        {
+        });
 #endif
 
-		DrawComponent<Transform>("Transform", m_SelectedEntity, [](Entity entity, Transform& transform)
-			{
-				UI::BeginProperties();
-				if (UI::Property("Position", transform.Position)) transform.IsDirty = true;
-				if (UI::Property("Rotation", transform.Rotation)) transform.IsDirty = true;
-				if (UI::Property("Scale", transform.Scale, 0.1f, 1.0f)) transform.IsDirty = true;
-				UI::EndProperties();
-			});
+        DrawComponent<Transform>("Transform", m_SelectedEntity, [](Entity entity, Transform& transform)
+        {
+            UI::BeginProperties();
+            if (UI::Property("Position", transform.Position)) transform.IsDirty = true;
+            if (UI::Property("Rotation", transform.Rotation)) transform.IsDirty = true;
+            if (UI::Property("Scale", transform.Scale, 0.1f, 1.0f)) transform.IsDirty = true;
+            UI::EndProperties();
+        });
 
-		DrawComponent<Camera>("Camera", m_SelectedEntity, [](Entity e, Camera& camera)
-			{
-				// Projection type combo box
-				const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
-				const char* currentProjectionType = projectionTypeStrings[(int)camera.Projection];
+        DrawComponent<Camera>("Camera", m_SelectedEntity, [](Entity e, Camera& camera)
+        {
+            // Projection type combo box
+            const char* projectionTypeStrings[] = {"Perspective", "Orthographic"};
+            const char* currentProjectionType = projectionTypeStrings[(int)camera.Projection];
 
-				ImGui::Text("Projection"); ImGui::SameLine();
-				if (ImGui::BeginCombo("##Projection", currentProjectionType))
-				{
-					for (int i = 0; i < 2; i++)
-					{
-						bool isSelected = currentProjectionType == projectionTypeStrings[i];
-						if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
-						{
-							camera.Projection = (Camera::ProjectionType)i;
-							camera.IsDirty = true;
-						}
-						if (isSelected)
-						{
-							ImGui::SetItemDefaultFocus();
-						}
-					}
-					ImGui::EndCombo();
-				}
+            ImGui::Text("Projection");
+            ImGui::SameLine();
+            if (ImGui::BeginCombo("##Projection", currentProjectionType))
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    bool isSelected = currentProjectionType == projectionTypeStrings[i];
+                    if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
+                    {
+                        camera.Projection = (Camera::ProjectionType)i;
+                        camera.IsDirty = true;
+                    }
+                    if (isSelected)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
 
-				// Perspective settings
-				if (camera.Projection == Camera::ProjectionType::Perspective)
-				{
-					bool changed = false;
-					ImGui::Text("FOV "); ImGui::SameLine();
-					changed |= ImGui::DragFloat("##FOV", &camera.VerticalFOV, 0.1f, 1.0f, 180.0f);
-					ImGui::Text("Near"); ImGui::SameLine();
-					changed |= ImGui::DragFloat("##Near", &camera.NearClip, 0.01f, 0.01f, camera.FarClip);
-					ImGui::Text("Far "); ImGui::SameLine();
-					changed |= ImGui::DragFloat("##Far", &camera.FarClip, 0.1f, camera.NearClip, 10000.0f);
+            // Perspective settings
+            if (camera.Projection == Camera::ProjectionType::Perspective)
+            {
+                bool changed = false;
+                ImGui::Text("FOV ");
+                ImGui::SameLine();
+                changed |= ImGui::DragFloat("##FOV", &camera.VerticalFOV, 0.1f, 1.0f, 180.0f);
+                ImGui::Text("Near");
+                ImGui::SameLine();
+                changed |= ImGui::DragFloat("##Near", &camera.NearClip, 0.01f, 0.01f, camera.FarClip);
+                ImGui::Text("Far ");
+                ImGui::SameLine();
+                changed |= ImGui::DragFloat("##Far", &camera.FarClip, 0.1f, camera.NearClip, 10000.0f);
 
-					if (changed) camera.IsDirty = true;
-				}
-				// Orthographic settings
-				else
-				{
-					bool changed = false;
-					ImGui::Text("Size"); ImGui::SameLine();
-					changed |= ImGui::DragFloat("##Size", &camera.OrthographicSize, 0.1f, 0.1f, 100.0f);
-					ImGui::Text("Near"); ImGui::SameLine();
-					changed |= ImGui::DragFloat("##Near", &camera.OrthographicNear, 0.01f);
-					ImGui::Text("Far "); ImGui::SameLine();
-					changed |= ImGui::DragFloat("##Far", &camera.OrthographicFar, 0.01f);
+                if (changed) camera.IsDirty = true;
+            }
+            // Orthographic settings
+            else
+            {
+                bool changed = false;
+                ImGui::Text("Size");
+                ImGui::SameLine();
+                changed |= ImGui::DragFloat("##Size", &camera.OrthographicSize, 0.1f, 0.1f, 100.0f);
+                ImGui::Text("Near");
+                ImGui::SameLine();
+                changed |= ImGui::DragFloat("##Near", &camera.OrthographicNear, 0.01f);
+                ImGui::Text("Far ");
+                ImGui::SameLine();
+                changed |= ImGui::DragFloat("##Far", &camera.OrthographicFar, 0.01f);
 
-					if (changed) camera.IsDirty = true;
-				}
+                if (changed) camera.IsDirty = true;
+            }
 
-				// Aspect ratio (could be auto-calculated from viewport)
-				ImGui::Text("Aspect"); ImGui::SameLine();
-				if (ImGui::DragFloat("##Aspect", &camera.AspectRatio, 0.01f, 0.1f, 10.0f)) camera.IsDirty = true;
-			});
+            // Aspect ratio (could be auto-calculated from viewport)
+            ImGui::Text("Aspect");
+            ImGui::SameLine();
+            if (ImGui::DragFloat("##Aspect", &camera.AspectRatio, 0.01f, 0.1f, 10.0f)) camera.IsDirty = true;
+        });
 
-		DrawComponent<MeshRenderer>("Mesh Renderer", m_SelectedEntity, [](Entity entity, MeshRenderer& meshRenderer)
-			{
-				UI::BeginProperties();
+        DrawComponent<MeshRenderer>("Mesh Renderer", m_SelectedEntity, [](Entity entity, MeshRenderer& meshRenderer)
+        {
+            UI::BeginProperties();
 
-				UI::PropertyAsset("Model", meshRenderer.ModelUUID, AssetType::Model);
+            UI::PropertyAsset("Model", meshRenderer.ModelUUID, AssetType::Model);
 
-				// Ensure model is loaded to get mesh count
-				if (meshRenderer.ModelUUID.IsValid() && !AssetManager::IsLoaded(meshRenderer.ModelUUID) && !AssetManager::IsLoading(meshRenderer.ModelUUID))
-					AssetManager::LoadAsync(meshRenderer.ModelUUID);
+            // Ensure model is loaded to get mesh count
+            if (meshRenderer.ModelUUID.IsValid() && !AssetManager::IsLoaded(meshRenderer.ModelUUID) && !
+                AssetManager::IsLoading(meshRenderer.ModelUUID))
+                AssetManager::LoadAsync(meshRenderer.ModelUUID);
 
-				if (auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID))
-				{
-					int meshIndex = (int)meshRenderer.MeshIndex;
-					if (UI::Property("Mesh Index", meshIndex, 0, (int)model->GetMeshes().size() - 1))
-						meshRenderer.MeshIndex = (u32)meshIndex;
-				}
+            if (auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID))
+            {
+                int meshIndex = (int)meshRenderer.MeshIndex;
+                if (UI::Property("Mesh Index", meshIndex, 0, (int)model->GetMeshes().size() - 1))
+                    meshRenderer.MeshIndex = (u32)meshIndex;
+            }
 
-				if (UI::PropertyAsset("Material", meshRenderer.MaterialUUID, AssetType::Material))
-				{
-					// Update model's material list if possible
-					if (auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID))
-					{
-						model->AddMaterial(meshRenderer.MaterialUUID, meshRenderer.MeshIndex);
-					}
-				}
+            if (UI::PropertyAsset("Material", meshRenderer.MaterialUUID, AssetType::Material))
+            {
+                // Update model's material list if possible
+                if (auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID))
+                {
+                    model->AddMaterial(meshRenderer.MaterialUUID, meshRenderer.MeshIndex);
+                }
+            }
 
-				UI::EndProperties();
-			});
+            UI::EndProperties();
+        });
 
-		DrawComponent<Animation>("Animation", m_SelectedEntity, [](Entity entity, Animation& animation)
-			{
-				// TODO: Implement animation component properties
-				ImGui::SliderInt("##Animation Index", &animation.AnimationIndex, 0, 20, "Index: %d", ImGuiSliderFlags_AlwaysClamp);
-			});
+        DrawComponent<Animation>("Animation", m_SelectedEntity, [](Entity entity, Animation& animation)
+        {
+            // TODO: Implement animation component properties
+            ImGui::SliderInt("##Animation Index", &animation.AnimationIndex, 0, 20, "Index: %d",
+                             ImGuiSliderFlags_AlwaysClamp);
+        });
 
-		DrawComponent<DirectionalLight>("Directional Light", m_SelectedEntity, [](Entity entity, DirectionalLight& dirLight)
-			{
-				UI::BeginProperties();
-				UI::PropertyColor("Color", dirLight.Color);
-				UI::Property("Intensity", dirLight.Intensity, 0.1f, 0.0f, 1000.0f);
-				UI::Property("Cast Shadows", dirLight.CastShadows);
-				if (dirLight.CastShadows) {
-					UI::Property("Shadow Bias", dirLight.ShadowBias, 0.0001f, 0.0f, 0.05f);
-				}
-				UI::EndProperties();
-			});
+        DrawComponent<DirectionalLight>("Directional Light", m_SelectedEntity,
+                                        [](Entity entity, DirectionalLight& dirLight)
+                                        {
+                                            UI::BeginProperties();
+                                            UI::PropertyColor("Color", dirLight.Color);
+                                            UI::Property("Intensity", dirLight.Intensity, 0.1f, 0.0f, 1000.0f);
+                                            UI::Property("Cast Shadows", dirLight.CastShadows);
+                                            if (dirLight.CastShadows)
+                                            {
+                                                UI::Property("Shadow Bias", dirLight.ShadowBias, 0.0001f, 0.0f, 0.05f);
+                                                UI::Property("Shadow Size", dirLight.ShadowOrthoSize, 1.0f, 10.0f,
+                                                             2000.0f);
+                                                UI::Property("Shadow Distance", dirLight.ShadowDistance, 1.0f, 10.0f,
+                                                             2000.0f);
+                                            }
+                                            UI::EndProperties();
+                                        });
 
-		DrawComponent<PointLight>("Point Light", m_SelectedEntity, [](Entity entity, PointLight& pointLight)
-			{
-				UI::BeginProperties();
-				UI::PropertyColor("Color", pointLight.Color);
-				UI::Property("Intensity", pointLight.Intensity, 0.1f, 0.0f, 1000.0f);
-				UI::Property("Range", pointLight.Range, 0.1f, 0.0f, 10000.0f);
-				UI::EndProperties();
-			});
+        DrawComponent<PointLight>("Point Light", m_SelectedEntity, [](Entity entity, PointLight& pointLight)
+        {
+            UI::BeginProperties();
+            UI::PropertyColor("Color", pointLight.Color);
+            UI::Property("Intensity", pointLight.Intensity, 0.1f, 0.0f, 1000.0f);
+            UI::Property("Range", pointLight.Range, 0.1f, 0.0f, 10000.0f);
+            UI::EndProperties();
+        });
 
-		// Add Component button
-		ImGui::Separator();
-		ImGui::Dummy({ 0, 4 });
-		AlignItemToCenter(100);
-		ButtonDropdown("Add Component", "inspector_addcomponent", [&m_SelectedEntity]()
-			{
+        // Add Component button
+        ImGui::Separator();
+        ImGui::Dummy({0, 4});
+        AlignItemToCenter(100);
+        ButtonDropdown("Add Component", "inspector_addcomponent", [&m_SelectedEntity]()
+        {
 #if defined(DEBUG)
-				if (!m_SelectedEntity.HasComponent<Tag>() && ImGui::MenuItem("Tag"))
-				{
-					m_SelectedEntity.AddOrReplaceComponent<Tag>();
-					ImGui::CloseCurrentPopup();
-				}
-				if (!m_SelectedEntity.HasComponent<Parent>() && ImGui::MenuItem("Parent"))
-				{
-					m_SelectedEntity.AddOrReplaceComponent<Parent>();
-					ImGui::CloseCurrentPopup();
-				}
-				if (!m_SelectedEntity.HasComponent<Children>() && ImGui::MenuItem("Children"))
-				{
-					m_SelectedEntity.AddOrReplaceComponent<Children>();
-					ImGui::CloseCurrentPopup();
-				}
+            if (!m_SelectedEntity.HasComponent<Tag>() && ImGui::MenuItem("Tag"))
+            {
+                m_SelectedEntity.AddOrReplaceComponent<Tag>();
+                ImGui::CloseCurrentPopup();
+            }
+            if (!m_SelectedEntity.HasComponent<Parent>() && ImGui::MenuItem("Parent"))
+            {
+                m_SelectedEntity.AddOrReplaceComponent<Parent>();
+                ImGui::CloseCurrentPopup();
+            }
+            if (!m_SelectedEntity.HasComponent<Children>() && ImGui::MenuItem("Children"))
+            {
+                m_SelectedEntity.AddOrReplaceComponent<Children>();
+                ImGui::CloseCurrentPopup();
+            }
 #endif
-				if (!m_SelectedEntity.HasComponent<Camera>() && ImGui::MenuItem("Camera"))
-				{
-					m_SelectedEntity.AddOrReplaceComponent<Camera>();
-					ImGui::CloseCurrentPopup();
-				}
-				if (!m_SelectedEntity.HasComponent<DirectionalLight>() && ImGui::MenuItem("Directional Light"))
-				{
-					m_SelectedEntity.AddOrReplaceComponent<DirectionalLight>();
-					ImGui::CloseCurrentPopup();
-				}
-				if (!m_SelectedEntity.HasComponent<PointLight>() && ImGui::MenuItem("Point Light"))
-				{
-					m_SelectedEntity.AddOrReplaceComponent<PointLight>();
-					ImGui::CloseCurrentPopup();
-				}
-				if (!m_SelectedEntity.HasComponent<MeshRenderer>() && ImGui::MenuItem("Mesh Renderer"))
-				{
-					m_SelectedEntity.AddOrReplaceComponent<MeshRenderer>();
-					ImGui::CloseCurrentPopup();
-				}
-				if (!m_SelectedEntity.HasComponent<Animation>() && ImGui::MenuItem("Animation"))
-				{
-					m_SelectedEntity.AddOrReplaceComponent<Animation>();
-					ImGui::CloseCurrentPopup();
-				}
-			});
-	}
+            if (!m_SelectedEntity.HasComponent<Camera>() && ImGui::MenuItem("Camera"))
+            {
+                m_SelectedEntity.AddOrReplaceComponent<Camera>();
+                ImGui::CloseCurrentPopup();
+            }
+            if (!m_SelectedEntity.HasComponent<DirectionalLight>() && ImGui::MenuItem("Directional Light"))
+            {
+                m_SelectedEntity.AddOrReplaceComponent<DirectionalLight>();
+                ImGui::CloseCurrentPopup();
+            }
+            if (!m_SelectedEntity.HasComponent<PointLight>() && ImGui::MenuItem("Point Light"))
+            {
+                m_SelectedEntity.AddOrReplaceComponent<PointLight>();
+                ImGui::CloseCurrentPopup();
+            }
+            if (!m_SelectedEntity.HasComponent<MeshRenderer>() && ImGui::MenuItem("Mesh Renderer"))
+            {
+                m_SelectedEntity.AddOrReplaceComponent<MeshRenderer>();
+                ImGui::CloseCurrentPopup();
+            }
+            if (!m_SelectedEntity.HasComponent<Animation>() && ImGui::MenuItem("Animation"))
+            {
+                m_SelectedEntity.AddOrReplaceComponent<Animation>();
+                ImGui::CloseCurrentPopup();
+            }
+        });
+    }
 
-	template<typename T, typename UIFunction>
-	void InspectorPanel::DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction)
-	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed
-			| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+    template <typename T, typename UIFunction>
+    void InspectorPanel::DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction)
+    {
+        const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed
+            | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
-		if (entity.HasComponent<T>())
-		{
-			bool open = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags);
+        if (entity.HasComponent<T>())
+        {
+            bool open = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags);
 
-			// Right-click to open context menu
-			std::string popId = "##Pop_" + name;
-			if (ImGui::BeginPopupContextItem(popId.c_str()))
-			{
-				constexpr bool enabled = (std::is_same_v<T, Transform> || std::is_same_v<T, ID>) ? false : true;
-				if (ImGui::MenuItem("Remove component", nullptr, nullptr, enabled))
-				{
-					entity.RemoveComponent<T>();
-				}
-				ImGui::EndPopup();
-			}
+            // Right-click to open context menu
+            std::string popId = "##Pop_" + name;
+            if (ImGui::BeginPopupContextItem(popId.c_str()))
+            {
+                constexpr bool enabled = (std::is_same_v<T, Transform> || std::is_same_v<T, ID>) ? false : true;
+                if (ImGui::MenuItem("Remove component", nullptr, nullptr, enabled))
+                {
+                    entity.RemoveComponent<T>();
+                }
+                ImGui::EndPopup();
+            }
 
-			if (open)
-			{
-				uiFunction(entity, entity.GetComponent<T>());
-				ImGui::TreePop();
-			}
+            if (open)
+            {
+                uiFunction(entity, entity.GetComponent<T>());
+                ImGui::TreePop();
+            }
 
-			ImGui::Dummy({ 0, 4 });
-		}
-	}
+            ImGui::Dummy({0, 4});
+        }
+    }
 
-	void InspectorPanel::DrawResourceProperties(UUID m_SelectedResource)
-	{
-		const auto& meta = AssetDatabase::GetMetadata(m_SelectedResource);
+    void InspectorPanel::DrawResourceProperties(UUID m_SelectedResource)
+    {
+        const auto& meta = AssetDatabase::GetMetadata(m_SelectedResource);
 
-		// Handle invalid/deleted assets
-		if (meta.Type == AssetType::None)
-		{
-			if (m_SelectedResource.IsValid())
-				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Asset not found (UUID: %s)", m_SelectedResource.ToString().c_str());
-			return;
-		}
+        // Handle invalid/deleted assets, silently clear stale selection
+        if (meta.Type == AssetType::None)
+        {
+            EditorSelection::ClearSelection();
+            return;
+        }
 
-		AssetType type = meta.Type;
+        AssetType type = meta.Type;
 
-		// Always show Metadata
-		if (ImGui::CollapsingHeader("Asset Metadata", ImGuiTreeNodeFlags_DefaultOpen))
-		{
-			if (ImGui::BeginTable("Metadata", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
-			{
-				ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text("Name"); ImGui::TableSetColumnIndex(1); ImGui::Text("%s", meta.Path.filename().string().c_str());
-				ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text("Type"); ImGui::TableSetColumnIndex(1); ImGui::Text("%s", FileSystem::GetTypeInfo().at(type).name.c_str());
-				ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text("UUID"); ImGui::TableSetColumnIndex(1); ImGui::TextDisabled("%s", m_SelectedResource.ToString().c_str());
-				ImGui::TableNextRow(); ImGui::TableSetColumnIndex(0); ImGui::Text("Path"); ImGui::TableSetColumnIndex(1); ImGui::TextWrapped("%s", meta.Path.string().c_str());
-				ImGui::EndTable();
-			}
-		}
-		ImGui::Dummy({ 0, 4 });
+        // Always show Metadata
+        if (ImGui::CollapsingHeader("Asset Metadata", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            if (ImGui::BeginTable("Metadata", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            {
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Name");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s", meta.Path.filename().string().c_str());
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Type");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::Text("%s", FileSystem::GetTypeInfo().at(type).name.c_str());
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("UUID");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextDisabled("%s", m_SelectedResource.ToString().c_str());
+                ImGui::TableNextRow();
+                ImGui::TableSetColumnIndex(0);
+                ImGui::Text("Path");
+                ImGui::TableSetColumnIndex(1);
+                ImGui::TextWrapped("%s", meta.Path.string().c_str());
+                ImGui::EndTable();
+            }
+        }
+        ImGui::Dummy({0, 4});
 
-		// Load on inspect if not loaded
-		if (!AssetManager::IsLoaded(m_SelectedResource))
-		{
-			if (!AssetManager::IsLoading(m_SelectedResource))
-			{
-				AssetManager::LoadAsync(m_SelectedResource);
-			}
+        // Load on inspect if not loaded
+        if (!AssetManager::IsLoaded(m_SelectedResource))
+        {
+            if (!AssetManager::IsLoading(m_SelectedResource))
+            {
+                AssetManager::LoadAsync(m_SelectedResource);
+            }
 
-			ImGui::Text("Loading Asset Data...");
-			return;
-		}
+            ImGui::Text("Loading Asset Data...");
+            return;
+        }
 
-		// Delegate to specialized editors
-		if (type == AssetType::Model)
-		{
-			if (auto model = AssetManager::GetAsset<Model>(m_SelectedResource)) m_ModelViewer.Draw(*model);
-		}
-		else if (type == AssetType::Material)
-		{
-			if (auto mat = AssetManager::GetAsset<Material>(m_SelectedResource)) m_MaterialEditor.Draw(*mat);
-		}
-		else if (type == AssetType::Texture)
-		{
-			if (auto tex = AssetManager::GetAsset<Texture>(m_SelectedResource)) m_TextureEditor.Draw(*tex);
-		}
-	}
+        // Delegate to specialized editors
+        if (type == AssetType::Model)
+        {
+            if (auto model = AssetManager::GetAsset<Model>(m_SelectedResource)) m_ModelViewer.Draw(*model);
+        }
+        else if (type == AssetType::Material)
+        {
+            if (auto mat = AssetManager::GetAsset<Material>(m_SelectedResource)) m_MaterialEditor.Draw(*mat);
+        }
+        else if (type == AssetType::Texture)
+        {
+            if (auto tex = AssetManager::GetAsset<Texture>(m_SelectedResource)) m_TextureEditor.Draw(*tex);
+        }
+    }
 }
