@@ -1,5 +1,5 @@
 #include "eqnpch.h"
-#include "equinox/core/UUID.h"
+#include "UI.h"
 #include "equinox/editor/Editor.h"
 #include "equinox/resources/AssetDatabase.h"
 #include "equinox/resources/AssetManager.h"
@@ -10,8 +10,9 @@
 #include "equinox/utils/EquinoxIcons.h"
 
 #include <imgui.h>
-#include <backends/imgui_impl_vulkan.h>s
+#include <backends/imgui_impl_vulkan.h>
 #include <imgui/imgui_internal.h>
+
 
 namespace Equinox::UI
 {
@@ -120,7 +121,8 @@ namespace Equinox::UI
 
         bool changed = false;
         const char* axisLabels[] = {"X", "Y", "Z", "W"};
-        const ImVec4 axisColors[] = {
+        const ImVec4 axisColors[] =
+        {
             {0.8f, 0.1f, 0.15f, 1.0f}, // Red
             {0.2f, 0.7f, 0.2f, 1.0f}, // Green
             {0.1f, 0.25f, 0.8f, 1.0f}, // Blue
@@ -315,6 +317,38 @@ namespace Equinox::UI
         ImGui::EndTable();
     }
 
+    void TexturePreview(const std::shared_ptr<Texture>& texture, float maxWidth)
+    {
+        if (!texture) return;
+
+        float imageAR = (float)texture->GetHeight() / (float)texture->GetWidth();
+        float availWidth = maxWidth > 0.0f ? maxWidth : ImGui::GetContentRegionAvail().x;
+        float availHeight = ImGui::GetContentRegionAvail().y;
+        float availAR = availHeight / availWidth;
+        float previewWidth, previewHeight;
+        ImVec2 offset;
+
+        if (availAR > 1.0f)
+        {
+            previewWidth = availWidth;
+            previewHeight = previewWidth * imageAR;
+            offset = {0, (availHeight - previewHeight) / 2.0f};
+        }
+        else
+        {
+            previewHeight = availHeight;
+            previewWidth = previewHeight / imageAR;
+            offset = {(availWidth - previewWidth) / 2.0f, 0};
+        }
+
+        if (ImGui::BeginChild("PreviewRegion", {availWidth, 0}))
+        {
+            ImGui::SetCursorPos(offset);
+            ImGui::Image(GetTextureID(texture), {previewWidth, previewHeight}, {0, 1}, {1, 0});
+        }
+        ImGui::EndChild();
+    }
+
     // File-scope so ClearTextureCache() can access it
     static std::unordered_map<void*, std::pair<VkDescriptorSet, std::weak_ptr<Texture>>> s_TextureCache;
 
@@ -365,37 +399,5 @@ namespace Equinox::UI
             ImGui_ImplVulkan_RemoveTexture(entry.first);
         }
         s_TextureCache.clear();
-    }
-
-    void TexturePreview(const std::shared_ptr<Texture>& texture, float maxWidth)
-    {
-        if (!texture) return;
-
-        float imageAR = (float)texture->GetHeight() / (float)texture->GetWidth();
-        float availWidth = maxWidth > 0.0f ? maxWidth : ImGui::GetContentRegionAvail().x;
-        float availHeight = ImGui::GetContentRegionAvail().y;
-        float availAR = availHeight / availWidth;
-        float previewWidth, previewHeight;
-        ImVec2 offset;
-
-        if (availAR > 1.0f)
-        {
-            previewWidth = availWidth;
-            previewHeight = previewWidth * imageAR;
-            offset = {0, (availHeight - previewHeight) / 2.0f};
-        }
-        else
-        {
-            previewHeight = availHeight;
-            previewWidth = previewHeight / imageAR;
-            offset = {(availWidth - previewWidth) / 2.0f, 0};
-        }
-
-        if (ImGui::BeginChild("PreviewRegion", {availWidth, 0}))
-        {
-            ImGui::SetCursorPos(offset);
-            ImGui::Image(GetTextureID(texture), {previewWidth, previewHeight}, {0, 0}, {1, 1});
-        }
-        ImGui::EndChild();
     }
 }

@@ -325,6 +325,7 @@ namespace Equinox
 
 				if (newAsset) {
 					newAsset->Handle = upload.Handle;
+					newAsset->LastAccessedTime = Time::GetTime();
 					s_Assets[upload.Handle] = newAsset;
 				}
 			}

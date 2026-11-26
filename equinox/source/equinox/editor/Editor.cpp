@@ -13,9 +13,11 @@
 #include "equinox/renderer/RenderBackend.h"
 #include "equinox/renderer/backend/vulkan/VulkanContext.h"
 #include "equinox/renderer/backend/vulkan/VulkanBackend.h"
+#include "equinox/renderer/Material.h"
 
 #include "equinox/resources/FileSystem.h"
 #include "equinox/resources/MetaFile.h"
+#include "equinox/resources/AssetManager.h"
 
 #include "equinox/editor/panels/HierarchyPanel.h"
 #include "equinox/editor/panels/InspectorPanel.h"
@@ -291,7 +293,7 @@ namespace Equinox
         EditorStyle::LoadFonts({"JetBrainsMono-Regular.ttf", 18.0f, true, 13.0f});
         EditorStyle::Apply(EditorStyle::Rider());
     }
-    
+
     void Editor::SetCustomStyle()
     {
         EditorStyle::LoadFonts({"Roboto-Regular.ttf", 15.0f, true, 14.0f});
@@ -411,6 +413,25 @@ namespace Equinox
             s_ScenePath = path;
             s_IsDirty = false;
             s_LastHierarchyVersion = s_ActiveScene->GetHierarchyVersion();
+
+            auto view = s_ActiveScene->GetAllEntitiesWith<Component::MeshRenderer>();
+            for (auto entity : view)
+            {
+                const auto& mr = view.get<Component::MeshRenderer>(entity);
+                if (mr.ModelUUID.IsValid())
+                    AssetManager::LoadAsync(mr.ModelUUID);
+                if (mr.MaterialUUID.IsValid())
+                {
+                    auto mat = std::static_pointer_cast<Material>(
+                        AssetManager::LoadImmediate(mr.MaterialUUID));
+                    if (mat)
+                    {
+                        for (const auto& mapInfo : mat->GetTextures())
+                            if (mapInfo.Uuid.IsValid())
+                                AssetManager::LoadAsync(mapInfo.Uuid);
+                    }
+                }
+            }
         }
     }
 

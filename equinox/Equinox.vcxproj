@@ -223,7 +223,6 @@
     <ClInclude Include="source\equinox\renderer\ShaderCompiler.h" />
     <ClInclude Include="source\equinox\renderer\ShaderLibrary.h" />
     <ClInclude Include="source\equinox\renderer\Texture.h" />
-    <ClInclude Include="source\equinox\renderer\VertexArray.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocator.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\DynamicRendering.h" />
@@ -241,7 +240,6 @@
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanSwapchain.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanTexture.h" />
     <ClInclude Include="source\equinox\renderer\backend\vulkan\VulkanWaitJob.h" />
-    <ClInclude Include="source\equinox\renderer\null\NullResources.h" />
     <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraph.h" />
     <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraphResources.h" />
     <ClInclude Include="source\equinox\renderer\rendergraph\RenderGraphSnapshot.h" />
@@ -314,7 +312,6 @@
     <ClCompile Include="source\equinox\renderer\ShaderCompiler.cpp" />
     <ClCompile Include="source\equinox\renderer\ShaderLibrary.cpp" />
     <ClCompile Include="source\equinox\renderer\Texture.cpp" />
-    <ClCompile Include="source\equinox\renderer\VertexArray.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocator.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\CommandAllocatorPool.cpp" />
     <ClCompile Include="source\equinox\renderer\backend\vulkan\GPUTimerPool.cpp" />
