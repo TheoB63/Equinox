@@ -55,6 +55,18 @@ namespace Equinox
         if (GetTextureByType(MapType::Occlusion) && IsUseMapEnabled(MapType::Occlusion)) m_GPUData.flags |= (1 << 2);
         if (GetTextureByType(MapType::Diffuse) && IsUseMapEnabled(MapType::Diffuse)) m_GPUData.flags |= (1 << 3);
         if (GetTextureByType(MapType::Emissive) && IsUseMapEnabled(MapType::Emissive)) m_GPUData.flags |= (1 << 4);
+
+        // Pack per-texture UV indices into flags bits 8-15 (2 bits each, values 0-3)
+        auto PackUV = [&](MapType type, u32 bitOffset)
+        {
+            auto idx = GetUVIndex(type);
+            if (idx.has_value())
+                m_GPUData.flags |= ((idx.value() & 0x3u) << bitOffset);
+        };
+        PackUV(MapType::Diffuse, 8);
+        PackUV(MapType::Normal, 10);
+        PackUV(MapType::Metalness, 12);
+        PackUV(MapType::Occlusion, 14);
     }
 
     void Material::Serialize(nlohmann::json& json) const
@@ -66,6 +78,7 @@ namespace Equinox
         json["blend_src"] = static_cast<int>(m_BlendSrc);
         json["blend_dst"] = static_cast<int>(m_BlendDst);
         json["alpha_from_diffuse"] = static_cast<int>(m_AlphaFromDiffuse);
+        json["cull_mode"] = static_cast<int>(m_CullMode);
 
         // Serialize color
         json["color"] = {m_GPUData.color.r, m_GPUData.color.g, m_GPUData.color.b, m_GPUData.color.a};
@@ -141,6 +154,7 @@ namespace Equinox
         m_BlendDst = static_cast<BlendFactor>(json.value("blend_dst",
                                                          static_cast<int>(BlendFactor::OneMinusSrcAlpha)));
         m_AlphaFromDiffuse = static_cast<bool>(json.value("alpha_from_diffuse", 0));
+        m_CullMode = static_cast<CullMode>(json.value("cull_mode", static_cast<int>(CullMode::Back)));
 
         if (json.contains("color") && json["color"].is_array() && json["color"].size() == 4)
             m_GPUData.color = glm::vec4(json["color"][0], json["color"][1], json["color"][2], json["color"][3]);

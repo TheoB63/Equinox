@@ -1,5 +1,7 @@
 #pragma once
 
+#include "equinox/core/UUID.h"
+
 namespace Equinox
 {
     class Model;
@@ -8,5 +10,10 @@ namespace Equinox
     {
     public:
         void Draw(Model& model);
+
+    private:
+        UUID m_LastModelUUID;
+        float m_ScaleFactor = 1.0f;
+        int m_UpAxis = 1; // 0=X, 1=Y, 2=Z
     };
 }

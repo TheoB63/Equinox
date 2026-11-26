@@ -3,47 +3,49 @@
 
 namespace Equinox
 {
-	void PipelineManager::Init(const std::vector<VkDescriptorSetLayout>& layouts, ConfigFactory factory)
-	{
-		m_Layouts = layouts;
-		m_ConfigFactory = std::move(factory);
-	}
+    void PipelineManager::Init(const std::vector<VkDescriptorSetLayout>& layouts, ConfigFactory factory)
+    {
+        m_Layouts = layouts;
+        m_ConfigFactory = std::move(factory);
+    }
 
-	void PipelineManager::Shutdown()
-	{
-		Clear();
-	}
+    void PipelineManager::Shutdown()
+    {
+        Clear();
+    }
 
-	VKPipeline* PipelineManager::GetOrCreate(const UUID& shaderUUID, Material::RenderMode mode,
-		const std::vector<u32>& vertSpv, const std::vector<u32>& fragSpv)
-	{
-		PipelineKey key{ shaderUUID, mode };
-		auto it = m_Pipelines.find(key);
-		if (it != m_Pipelines.end())
-			return it->second.get();
+    VKPipeline* PipelineManager::GetOrCreate(const UUID& shaderUUID, Material::RenderMode mode,
+                                             Material::CullMode cullMode,
+                                             const std::vector<u32>& vertSpv, const std::vector<u32>& fragSpv)
+    {
+        PipelineKey key{shaderUUID, mode, cullMode};
+        auto it = m_Pipelines.find(key);
+        if (it != m_Pipelines.end())
+            return it->second.get();
 
-		PipelineConfig config = m_ConfigFactory(mode);
-		auto pipeline = std::make_unique<VKPipeline>(config, vertSpv, fragSpv, m_Layouts);
-		VKPipeline* ptr = pipeline.get();
-		m_Pipelines.emplace(key, std::move(pipeline));
+        PipelineConfig config = m_ConfigFactory(mode, cullMode);
+        auto pipeline = std::make_unique<VKPipeline>(config, vertSpv, fragSpv, m_Layouts);
+        VKPipeline* ptr = pipeline.get();
+        m_Pipelines.emplace(key, std::move(pipeline));
 
-		EQN_CORE_INFO("Created pipeline variant: shader={} mode={}", shaderUUID.ToString(), static_cast<int>(mode));
-		return ptr;
-	}
+        EQN_CORE_INFO("Created pipeline variant: shader={} mode={} cull={}", shaderUUID.ToString(),
+                      static_cast<int>(mode), static_cast<int>(cullMode));
+        return ptr;
+    }
 
-	void PipelineManager::InvalidateShader(const UUID& shaderUUID)
-	{
-		size_t count = std::erase_if(m_Pipelines, [&](const auto& entry)
-			{
-				return entry.first.shaderUUID == shaderUUID;
-			});
+    void PipelineManager::InvalidateShader(const UUID& shaderUUID)
+    {
+        size_t count = std::erase_if(m_Pipelines, [&](const auto& entry)
+        {
+            return entry.first.shaderUUID == shaderUUID;
+        });
 
-		if (count > 0)
-			EQN_CORE_INFO("Invalidated {} pipeline(s) for shader {}", count, shaderUUID.ToString());
-	}
+        if (count > 0)
+            EQN_CORE_INFO("Invalidated {} pipeline(s) for shader {}", count, shaderUUID.ToString());
+    }
 
-	void PipelineManager::Clear()
-	{
-		m_Pipelines.clear();
-	}
+    void PipelineManager::Clear()
+    {
+        m_Pipelines.clear();
+    }
 }

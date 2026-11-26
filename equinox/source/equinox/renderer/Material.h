@@ -64,7 +64,8 @@ namespace Equinox
 
 		enum class RenderMode { Opaque, Cutout, Transparent, Fade };
 		enum class BlendFactor { Zero, One, SrcAlpha, OneMinusSrcAlpha, DstAlpha, OneMinusDstAlpha };
-
+		enum class CullMode { Back, Front, None };
+		
 		// Shader management
 		void SetShader(const UUID& uuid);
 		UUID GetShaderUUID() const { return m_ShaderUUID; }
@@ -145,6 +146,10 @@ namespace Equinox
 		void SetBlendDst(BlendFactor factor) { m_BlendDst = factor; }
 		BlendFactor GetBlendDst() const { return m_BlendDst; }
 
+		// Face culling
+		CullMode GetCullMode() const { return m_CullMode; }
+		void SetCullMode(CullMode mode) { m_CullMode = mode; }
+		
 		void EnableAlphaFromDiffuse(bool enable) { m_AlphaFromDiffuse = enable; }
 		bool IsAlphaFromDiffuseEnabled() const { return m_AlphaFromDiffuse; }
 
@@ -164,7 +169,7 @@ namespace Equinox
 
 		const std::vector<uint8_t>& GetUniformStorage() const { return m_UniformStorage; }
 
-		// Albedo color (direct access — bypasses uniform storage)
+		// Albedo color (direct access ï¿½ bypasses uniform storage)
 		glm::vec4 GetColor() const { return m_GPUData.color; }
 		void SetColor(const glm::vec4& color) { m_GPUData.color = color; }
 
@@ -202,6 +207,7 @@ namespace Equinox
 		BlendFactor m_BlendSrc = BlendFactor::SrcAlpha;
 		BlendFactor m_BlendDst = BlendFactor::OneMinusSrcAlpha;
 		float m_AlphaCutoff = 0.5f;
+		CullMode m_CullMode = CullMode::Back;
 		bool m_AlphaFromDiffuse = false;
 		bool m_Dirty = false;
 	};

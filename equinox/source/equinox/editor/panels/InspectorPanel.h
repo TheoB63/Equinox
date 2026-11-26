@@ -5,6 +5,9 @@
 #include "equinox/editor/inspectors/ModelViewer.h"
 #include "equinox/editor/inspectors/MaterialEditor.h"
 #include "equinox/editor/inspectors/TextureEditor.h"
+#include "equinox/editor/inspectors/ShaderEditor.h"
+#include "equinox/editor/inspectors/SceneViewer.h"
+#include "equinox/editor/inspectors/FontViewer.h"
 
 namespace Equinox
 {
@@ -30,5 +33,8 @@ namespace Equinox
 		ModelViewer    m_ModelViewer;
 		MaterialEditor m_MaterialEditor;
 		TextureEditor  m_TextureEditor;
+		ShaderEditor   m_ShaderEditor;
+		SceneViewer    m_SceneViewer;
+		FontViewer     m_FontViewer;
 	};
 }

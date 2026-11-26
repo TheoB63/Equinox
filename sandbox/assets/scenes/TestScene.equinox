@@ -10,7 +10,9 @@
                     1.0
                 ],
                 "intensity": 1.0,
-                "shadowBias": 0.004999999888241291
+                "shadowBias": 0.004999999888241291,
+                "shadowDistance": 200.0,
+                "shadowOrthoSize": 200.0
             },
             "parent": "",
             "tag": "Directional Light",

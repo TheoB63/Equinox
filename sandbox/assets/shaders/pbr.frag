@@ -3,7 +3,8 @@
 
 layout(location = 0) in vec3 v_WorldPos;
 layout(location = 1) in vec3 v_Normal;
-layout(location = 2) in vec2 v_TexCoord;
+layout(location = 2) in vec2 v_TexCoord0;
+layout(location = 6) in vec2 v_TexCoord1;
 layout(location = 3) in mat3 v_TBN;    // locations 3, 4, 5
 
 layout(location = 0) out vec4 outColor;
@@ -90,6 +91,18 @@ const uint FLAG_HAS_METALROUGH = (1u << 1);
 const uint FLAG_HAS_OCCLUSION  = (1u << 2);
 const uint FLAG_HAS_DIFFUSE    = (1u << 3);
 const uint FLAG_HAS_EMISSIVE   = (1u << 4);
+
+// UV index bit positions within flags (2 bits each)
+const uint UV_SHIFT_DIFFUSE    = 8u;
+const uint UV_SHIFT_NORMAL     = 10u;
+const uint UV_SHIFT_METALROUGH = 12u;
+const uint UV_SHIFT_OCCLUSION  = 14u;
+
+vec2 selectUV(uint flags, uint shift) 
+{
+    uint idx = (flags >> shift) & 0x3u;
+    return (idx == 0u) ? v_TexCoord0 : v_TexCoord1;
+}
 
 const float PI = 3.14159265359;
 
@@ -210,7 +223,7 @@ void main()
     vec4 albedo = mat.color;
     if ((mat.flags & FLAG_HAS_DIFFUSE) != 0u)
     {
-        vec4 texColor = texture(globalTextures[nonuniformEXT(mat.diffuseIndex)], v_TexCoord);
+        vec4 texColor = texture(globalTextures[nonuniformEXT(mat.diffuseIndex)], selectUV(mat.flags, UV_SHIFT_DIFFUSE));
         albedo *= texColor;
     }
 
@@ -222,7 +235,7 @@ void main()
     vec3 N;
     if ((mat.flags & FLAG_HAS_NORMAL) != 0u)
     {
-        vec3 tangentNormal = texture(globalTextures[nonuniformEXT(mat.normalIndex)], v_TexCoord).rgb;
+        vec3 tangentNormal = texture(globalTextures[nonuniformEXT(mat.normalIndex)], selectUV(mat.flags, UV_SHIFT_NORMAL)).rgb;
         tangentNormal = tangentNormal * 2.0 - 1.0;
         N = normalize(v_TBN * tangentNormal);
     }
@@ -237,7 +250,7 @@ void main()
     if ((mat.flags & FLAG_HAS_METALROUGH) != 0u)
     {
         // glTF convention: G = roughness, B = metallic
-        vec3 mrSample = texture(globalTextures[nonuniformEXT(mat.metalRoughIndex)], v_TexCoord).rgb;
+        vec3 mrSample = texture(globalTextures[nonuniformEXT(mat.metalRoughIndex)], selectUV(mat.flags, UV_SHIFT_METALROUGH)).rgb;
         roughness *= mrSample.g;
         metallic  *= mrSample.b;
     }
@@ -247,7 +260,7 @@ void main()
     float ao = 1.0;
     if ((mat.flags & FLAG_HAS_OCCLUSION) != 0u)
     {
-        ao = texture(globalTextures[nonuniformEXT(mat.occlusionIndex)], v_TexCoord).r;
+        ao = texture(globalTextures[nonuniformEXT(mat.occlusionIndex)], selectUV(mat.flags, UV_SHIFT_OCCLUSION)).r;
     }
 
     // --- Lighting ---

@@ -18,6 +18,9 @@ namespace Equinox
     {
         const char* Name;
 
+        // Docking
+        float DockingSeparatorSize;
+        
         // Rounding
         float WindowRounding, ChildRounding, FrameRounding, GrabRounding;
         float PopupRounding, ScrollbarRounding, TabRounding;

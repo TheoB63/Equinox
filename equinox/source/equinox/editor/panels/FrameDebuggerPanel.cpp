@@ -16,12 +16,12 @@ namespace Equinox
     {
         switch (fmt)
         {
-        case RG::TextureFormat::RGBA8_Unorm:        return "RGBA8";
-        case RG::TextureFormat::BGRA8_Unorm:        return "BGRA8";
-        case RG::TextureFormat::RGBA16_Float:       return "RGBA16F";
-        case RG::TextureFormat::D32_Float:          return "D32F";
-        case RG::TextureFormat::D24_Unorm_S8_Uint:  return "D24S8";
-        default:                                    return "Unknown";
+        case RG::TextureFormat::RGBA8_Unorm: return "RGBA8";
+        case RG::TextureFormat::BGRA8_Unorm: return "BGRA8";
+        case RG::TextureFormat::RGBA16_Float: return "RGBA16F";
+        case RG::TextureFormat::D32_Float: return "D32F";
+        case RG::TextureFormat::D24_Unorm_S8_Uint: return "D24S8";
+        default: return "Unknown";
         }
     }
 
@@ -34,10 +34,10 @@ namespace Equinox
     {
         switch (mode)
         {
-        case VK_CULL_MODE_NONE:      return "None";
+        case VK_CULL_MODE_NONE: return "None";
         case VK_CULL_MODE_FRONT_BIT: return "Front";
-        case VK_CULL_MODE_BACK_BIT:  return "Back";
-        default:                     return "Both";
+        case VK_CULL_MODE_BACK_BIT: return "Back";
+        default: return "Both";
         }
     }
 
@@ -155,7 +155,8 @@ namespace Equinox
         // Event slider — takes most of the space
         float arrowsWidth = 60.0f;
         float timeWidth = 80.0f;
-        float sliderWidth = ImGui::GetContentRegionAvail().x - arrowsWidth - timeWidth - ImGui::GetStyle().ItemSpacing.x * 3;
+        float sliderWidth = ImGui::GetContentRegionAvail().x - arrowsWidth - timeWidth - ImGui::GetStyle().ItemSpacing.x
+            * 3;
         if (sliderWidth < 80.0f) sliderWidth = 80.0f;
 
         ImGui::SetNextItemWidth(sliderWidth);
@@ -240,7 +241,7 @@ namespace Equinox
                 if (pass.gpuTimeMs >= 0.0f)
                 {
                     if (pass.drawCalls > 0)
-                        snprintf(infoBuf, sizeof(infoBuf), "%u draws  %.2f ms", pass.drawCalls, pass.gpuTimeMs);
+                        snprintf(infoBuf, sizeof(infoBuf), "%u %.2f ms", pass.drawCalls, pass.gpuTimeMs);
                     else
                         snprintf(infoBuf, sizeof(infoBuf), "%.2f ms", pass.gpuTimeMs);
                 }
@@ -345,9 +346,21 @@ namespace Equinox
                     ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 130.0f);
                     ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-                    ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Render Target"); ImGui::TableNextColumn(); ImGui::Text("%s", res.name.c_str());
-                    ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Size");          ImGui::TableNextColumn(); ImGui::Text("%ux%u", res.width, res.height);
-                    ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Format");        ImGui::TableNextColumn(); ImGui::Text("%s", FormatToString(res.format));
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TextDisabled("Render Target");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", res.name.c_str());
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TextDisabled("Size");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%ux%u", res.width, res.height);
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TextDisabled("Format");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", FormatToString(res.format));
 
                     ImGui::EndTable();
                 }
@@ -362,10 +375,26 @@ namespace Equinox
                 ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 130.0f);
                 ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-                ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Depth Test");  ImGui::TableNextColumn(); ImGui::Text("%s", pass.depthTest ? "On" : "Off");
-                ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Depth Write"); ImGui::TableNextColumn(); ImGui::Text("%s", pass.depthWrite ? "On" : "Off");
-                ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Blend");       ImGui::TableNextColumn(); ImGui::Text("%s", pass.blendEnabled ? "On" : "Off");
-                ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Cull Mode");   ImGui::TableNextColumn(); ImGui::Text("%s", CullModeToString(pass.cullMode));
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::TextDisabled("Depth Test");
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", pass.depthTest ? "On" : "Off");
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::TextDisabled("Depth Write");
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", pass.depthWrite ? "On" : "Off");
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::TextDisabled("Blend");
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", pass.blendEnabled ? "On" : "Off");
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::TextDisabled("Cull Mode");
+                ImGui::TableNextColumn();
+                ImGui::Text("%s", CullModeToString(pass.cullMode));
 
                 ImGui::EndTable();
             }
@@ -379,10 +408,18 @@ namespace Equinox
                 ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 130.0f);
                 ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-                ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Draw Calls"); ImGui::TableNextColumn(); ImGui::Text("%u", pass.drawCalls);
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::TextDisabled("Draw Calls");
+                ImGui::TableNextColumn();
+                ImGui::Text("%u", pass.drawCalls);
                 if (pass.indices > 0)
                 {
-                    ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Indices"); ImGui::TableNextColumn(); ImGui::Text("%u", pass.indices);
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TextDisabled("Indices");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%u", pass.indices);
                 }
 
                 ImGui::EndTable();
@@ -399,11 +436,19 @@ namespace Equinox
 
                 if (!pass.shaderName.empty())
                 {
-                    ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("Shader"); ImGui::TableNextColumn(); ImGui::Text("%s", pass.shaderName.c_str());
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TextDisabled("Shader");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", pass.shaderName.c_str());
                 }
                 if (pass.gpuTimeMs >= 0.0f)
                 {
-                    ImGui::TableNextRow(); ImGui::TableNextColumn(); ImGui::TextDisabled("GPU Time"); ImGui::TableNextColumn(); ImGui::Text("%.3f ms", pass.gpuTimeMs);
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::TextDisabled("GPU Time");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%.3f ms", pass.gpuTimeMs);
                 }
 
                 ImGui::EndTable();

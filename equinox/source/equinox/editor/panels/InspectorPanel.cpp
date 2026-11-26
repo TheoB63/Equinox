@@ -11,6 +11,7 @@
 #include "equinox/renderer/Model.h"
 #include "equinox/renderer/Material.h"
 #include "equinox/renderer/Texture.h"
+#include "equinox/renderer/Shader.h"
 
 #include "equinox/utils/ImGuiUtils.h"
 #include "equinox/utils/EquinoxIcons.h"
@@ -397,6 +398,18 @@ namespace Equinox
         }
         ImGui::Dummy({0, 4});
 
+        // Scene and Font don't go through the asset pipeline, display directly
+        if (type == AssetType::Scene)
+        {
+            m_SceneViewer.Draw(m_SelectedResource, meta.Path);
+            return;
+        }
+        if (type == AssetType::Font)
+        {
+            m_FontViewer.Draw(m_SelectedResource, meta.Path);
+            return;
+        }
+
         // Load on inspect if not loaded
         if (!AssetManager::IsLoaded(m_SelectedResource))
         {
@@ -421,6 +434,10 @@ namespace Equinox
         else if (type == AssetType::Texture)
         {
             if (auto tex = AssetManager::GetAsset<Texture>(m_SelectedResource)) m_TextureEditor.Draw(*tex);
+        }
+        else if (type == AssetType::Shader)
+        {
+            if (auto shader = AssetManager::GetAsset<Shader>(m_SelectedResource)) m_ShaderEditor.Draw(*shader);
         }
     }
 }

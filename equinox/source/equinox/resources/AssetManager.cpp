@@ -16,320 +16,327 @@
 
 namespace Equinox
 {
-	std::unordered_map<UUID, std::shared_ptr<Asset>, UUIDHash> AssetManager::s_Assets;
-	std::unordered_set<UUID, UUIDHash> AssetManager::s_LoadingAssets;
-	std::unordered_map<AssetType, std::unique_ptr<AssetImporter>> AssetManager::s_Importers;
-	std::mutex AssetManager::s_AssetMutex;
-	std::mutex AssetManager::s_UploadMutex;
-	std::vector<AssetManager::PendingUpload> AssetManager::s_UploadQueue;
+    std::unordered_map<UUID, std::shared_ptr<Asset>, UUIDHash> AssetManager::s_Assets;
+    std::unordered_set<UUID, UUIDHash> AssetManager::s_LoadingAssets;
+    std::unordered_map<AssetType, std::unique_ptr<AssetImporter>> AssetManager::s_Importers;
+    std::mutex AssetManager::s_AssetMutex;
+    std::mutex AssetManager::s_UploadMutex;
+    std::vector<AssetManager::PendingUpload> AssetManager::s_UploadQueue;
 
-	static float s_GCTimer = 0.0f;
-	static const float k_GCInterval = 2.0f; // Run GC every 2 seconds
+    static float s_GCTimer = 0.0f;
+    static const float k_GCInterval = 2.0f; // Run GC every 2 seconds
 
-	void AssetManager::Init()
-	{
-		s_Importers[AssetType::Texture] = std::make_unique<TextureImporter>();
-		s_Importers[AssetType::Model] = std::make_unique<ModelImporter>();
-		s_Importers[AssetType::Material] = std::make_unique<MaterialImporter>();
-		s_Importers[AssetType::Shader] = std::make_unique<ShaderImporter>();
-	}
+    void AssetManager::Init()
+    {
+        s_Importers[AssetType::Texture] = std::make_unique<TextureImporter>();
+        s_Importers[AssetType::Model] = std::make_unique<ModelImporter>();
+        s_Importers[AssetType::Material] = std::make_unique<MaterialImporter>();
+        s_Importers[AssetType::Shader] = std::make_unique<ShaderImporter>();
+    }
 
-	void AssetManager::Shutdown()
-	{
-		s_Assets.clear();
-		s_LoadingAssets.clear();
-		s_Importers.clear();
-		s_UploadQueue.clear();
-	}
+    void AssetManager::Shutdown()
+    {
+        s_Assets.clear();
+        s_LoadingAssets.clear();
+        s_Importers.clear();
+        s_UploadQueue.clear();
+    }
 
-	void AssetManager::LoadAsync(UUID handle)
-	{
-		std::lock_guard<std::mutex> lock(s_AssetMutex);
+    void AssetManager::LoadAsync(UUID handle)
+    {
+        std::lock_guard<std::mutex> lock(s_AssetMutex);
 
-		// Check if already loaded or currently loading
-		if (s_Assets.find(handle) != s_Assets.end()) return;
-		if (s_LoadingAssets.find(handle) != s_LoadingAssets.end()) return;
+        // Check if already loaded or currently loading
+        if (s_Assets.find(handle) != s_Assets.end()) return;
+        if (s_LoadingAssets.find(handle) != s_LoadingAssets.end()) return;
 
-		const auto& info = AssetDatabase::GetMetadata(handle);
-		if (info.Path.empty())
-		{
-			EQN_CORE_ERROR("AssetManager: UUID {0} not found in DB", handle.ToString());
-			return;
-		}
+        const auto& info = AssetDatabase::GetMetadata(handle);
+        if (info.Path.empty())
+        {
+            EQN_CORE_ERROR("AssetManager: UUID {0} not found in DB", handle.ToString());
+            return;
+        }
 
-		// Mark as loading to prevent duplicate requests
-		s_LoadingAssets.insert(handle);
+        // Mark as loading to prevent duplicate requests
+        s_LoadingAssets.insert(handle);
 
-		LoadRequest* req = new LoadRequest{ handle, info.Path, info.Type };
+        LoadRequest* req = new LoadRequest{handle, info.Path, info.Type};
 
-		// Dispatch to JobSystem
-		JobSystem::Execute(LoadJob, req);
-	}
+        // Dispatch to JobSystem
+        JobSystem::Execute(LoadJob, req);
+    }
 
-	std::shared_ptr<Asset> AssetManager::LoadImmediate(UUID handle)
-	{
-		// Check cache first
-		if (auto asset = GetAsset<Asset>(handle)) return asset;
+    std::shared_ptr<Asset> AssetManager::LoadImmediate(UUID handle)
+    {
+        // Check cache first
+        if (auto asset = GetAsset<Asset>(handle)) return asset;
 
-		const auto& info = AssetDatabase::GetMetadata(handle);
-		if (info.Path.empty()) return nullptr;
+        const auto& info = AssetDatabase::GetMetadata(handle);
+        if (info.Path.empty()) return nullptr;
 
-		// 1. Check/Create Artifact
-		fs::path artifactPath = AssetDatabase::GetArtifactPath(handle);
-		bool artifactReady = fs::exists(artifactPath);
+        // 1. Check/Create Artifact
+        fs::path artifactPath = AssetDatabase::GetArtifactPath(handle);
+        bool artifactReady = fs::exists(artifactPath);
 
-		if (!artifactReady)
-		{
-			if (s_Importers.find(info.Type) != s_Importers.end())
-			{
-				artifactReady = s_Importers[info.Type]->Import(info.Path, artifactPath);
-			}
-		}
+        if (!artifactReady)
+        {
+            if (s_Importers.find(info.Type) != s_Importers.end())
+            {
+                artifactReady = s_Importers[info.Type]->Import(info.Path, artifactPath);
+            }
+        }
 
-		if (!artifactReady) return nullptr;
+        if (!artifactReady) return nullptr;
 
-		// 2. Load Data from Artifact
-		std::unique_ptr<AssetData> data = nullptr;
-		if (info.Type == AssetType::Texture) {
-			auto texData = std::make_unique<TextureAssetData>();
-			if (AssetSerializer::DeserializeTexture(artifactPath, *texData)) data = std::move(texData);
-		}
-		else if (info.Type == AssetType::Model) {
-			auto modelData = std::make_unique<ModelAssetData>();
-			if (AssetSerializer::DeserializeModel(artifactPath, *modelData)) data = std::move(modelData);
-		}
-		else if (info.Type == AssetType::Material)
-		{
-			auto matData = std::make_unique<MaterialAssetData>();
-			if (AssetSerializer::DeserializeMaterial(artifactPath, *matData)) data = std::move(matData);
-		}
-		else if (info.Type == AssetType::Shader)
-		{
-			auto shaderData = std::make_unique<ShaderAssetData>();
-			if (AssetSerializer::DeserializeShader(artifactPath, *shaderData)) data = std::move(shaderData);
-		}
+        // 2. Load Data from Artifact
+        std::unique_ptr<AssetData> data = nullptr;
+        if (info.Type == AssetType::Texture)
+        {
+            auto texData = std::make_unique<TextureAssetData>();
+            if (AssetSerializer::DeserializeTexture(artifactPath, *texData)) data = std::move(texData);
+        }
+        else if (info.Type == AssetType::Model)
+        {
+            auto modelData = std::make_unique<ModelAssetData>();
+            if (AssetSerializer::DeserializeModel(artifactPath, *modelData)) data = std::move(modelData);
+        }
+        else if (info.Type == AssetType::Material)
+        {
+            auto matData = std::make_unique<MaterialAssetData>();
+            if (AssetSerializer::DeserializeMaterial(artifactPath, *matData)) data = std::move(matData);
+        }
+        else if (info.Type == AssetType::Shader)
+        {
+            auto shaderData = std::make_unique<ShaderAssetData>();
+            if (AssetSerializer::DeserializeShader(artifactPath, *shaderData)) data = std::move(shaderData);
+        }
 
-		if (!data) return nullptr;
+        if (!data) return nullptr;
 
-		// Create Asset (Main Thread)
-		std::shared_ptr<Asset> newAsset = nullptr;
-		if (info.Type == AssetType::Texture)
-		{
-			auto* texData = static_cast<TextureAssetData*>(data.get());
-			newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data(), texData->Settings);
-		}
-		else if (info.Type == AssetType::Model)
-		{
-			auto* modelData = static_cast<ModelAssetData*>(data.get());
-			newAsset = Model::Create(modelData->Meshes, modelData->Materials);
-		}
-		else if (info.Type == AssetType::Material)
-		{
-			auto* matData = static_cast<MaterialAssetData*>(data.get());
-			auto material = std::make_shared<Material>();
-			material->Deserialize(matData->JsonData);
-			newAsset = material;
-		}
-		else if (info.Type == AssetType::Shader)
-		{
-			auto* shaderData = static_cast<ShaderAssetData*>(data.get());
-			newAsset = Shader::Create(shaderData->VertexSpirV, shaderData->FragmentSpirV, info.Path);
-		}
+        // Create Asset (Main Thread)
+        std::shared_ptr<Asset> newAsset = nullptr;
+        if (info.Type == AssetType::Texture)
+        {
+            auto* texData = static_cast<TextureAssetData*>(data.get());
+            newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data(),
+                                       texData->Settings);
+        }
+        else if (info.Type == AssetType::Model)
+        {
+            auto* modelData = static_cast<ModelAssetData*>(data.get());
+            newAsset = Model::Create(modelData->Meshes, modelData->Materials);
+        }
+        else if (info.Type == AssetType::Material)
+        {
+            auto* matData = static_cast<MaterialAssetData*>(data.get());
+            auto material = std::make_shared<Material>();
+            material->Deserialize(matData->JsonData);
+            newAsset = material;
+        }
+        else if (info.Type == AssetType::Shader)
+        {
+            auto* shaderData = static_cast<ShaderAssetData*>(data.get());
+            newAsset = Shader::Create(shaderData->VertexSpirV, shaderData->FragmentSpirV, info.Path);
+        }
 
-		if (newAsset)
-		{
-			newAsset->Handle = handle;
-			newAsset->LastAccessedTime = Time::GetTime();
-			s_Assets[handle] = newAsset;
-		}
-		return newAsset;
-	}
+        if (newAsset)
+        {
+            newAsset->Handle = handle;
+            newAsset->LastAccessedTime = Time::GetTime();
+            s_Assets[handle] = newAsset;
+        }
+        return newAsset;
+    }
 
-	void AssetManager::Import(UUID handle)
-	{
-		const auto& info = AssetDatabase::GetMetadata(handle);
-		if (info.Path.empty()) return;
+    void AssetManager::Import(UUID handle)
+    {
+        const auto& info = AssetDatabase::GetMetadata(handle);
+        if (info.Path.empty()) return;
 
-		fs::path artifactPath = AssetDatabase::GetArtifactPath(handle);
+        fs::path artifactPath = AssetDatabase::GetArtifactPath(handle);
 
-		if (s_Importers.find(info.Type) != s_Importers.end())
-		{
-			EQN_CORE_INFO("Importing Asset: {0}", info.Path.string());
-			if (!s_Importers[info.Type]->Import(info.Path, artifactPath))
-			{
-				EQN_CORE_ERROR("Failed to import asset: {0}", info.Path.string());
-			}
-		}
-	}
+        if (s_Importers.find(info.Type) != s_Importers.end())
+        {
+            EQN_CORE_INFO("Importing Asset: {0}", info.Path.string());
+            if (!s_Importers[info.Type]->Import(info.Path, artifactPath))
+            {
+                EQN_CORE_ERROR("Failed to import asset: {0}", info.Path.string());
+            }
+        }
+    }
 
-	bool AssetManager::IsLoaded(UUID handle)
-	{
-		std::lock_guard<std::mutex> lock(s_AssetMutex);
-		return s_Assets.find(handle) != s_Assets.end();
-	}
+    bool AssetManager::IsLoaded(UUID handle)
+    {
+        std::lock_guard<std::mutex> lock(s_AssetMutex);
+        return s_Assets.find(handle) != s_Assets.end();
+    }
 
-	bool AssetManager::IsLoading(UUID handle)
-	{
-		std::lock_guard<std::mutex> lock(s_AssetMutex);
-		return s_LoadingAssets.find(handle) != s_LoadingAssets.end();
-	}
+    bool AssetManager::IsLoading(UUID handle)
+    {
+        std::lock_guard<std::mutex> lock(s_AssetMutex);
+        return s_LoadingAssets.find(handle) != s_LoadingAssets.end();
+    }
 
-	bool AssetManager::HasImporter(AssetType type)
-	{
-		return s_Importers.find(type) != s_Importers.end();
-	}
+    bool AssetManager::HasImporter(AssetType type)
+    {
+        return s_Importers.find(type) != s_Importers.end();
+    }
 
-	void AssetManager::Evict(UUID handle)
-	{
-		std::lock_guard<std::mutex> lock(s_AssetMutex);
-		s_Assets.erase(handle);
-		s_LoadingAssets.erase(handle);
-	}
+    void AssetManager::Evict(UUID handle)
+    {
+        std::lock_guard<std::mutex> lock(s_AssetMutex);
+        s_Assets.erase(handle);
+        s_LoadingAssets.erase(handle);
+    }
 
-	void AssetManager::Trim()
-	{
-		std::lock_guard<std::mutex> lock(s_AssetMutex);
-		f32 currentTime = Time::GetTime();
-		const f32 timeout = 5.0f; // Keep unused assets for 5 seconds
+    void AssetManager::Trim()
+    {
+        std::lock_guard<std::mutex> lock(s_AssetMutex);
+        f32 currentTime = Time::GetTime();
+        const f32 timeout = 5.0f; // Keep unused assets for 5 seconds
 
-		for (auto it = s_Assets.begin(); it != s_Assets.end(); )
-		{
-			// If use_count is 1, it means only s_Assets holds a reference
-			if (it->second.use_count() == 1 && (currentTime - it->second->LastAccessedTime > timeout))
-			{
-				it = s_Assets.erase(it);
-			}
-			else
-			{
-				++it;
-			}
-		}
-	}
+        for (auto it = s_Assets.begin(); it != s_Assets.end();)
+        {
+            // If use_count is 1, it means only s_Assets holds a reference
+            if (it->second.use_count() == 1 && (currentTime - it->second->LastAccessedTime > timeout))
+            {
+                it = s_Assets.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
 
-	void AssetManager::LoadJob(JobSystem::JobArgs args)
-	{
-		EQN_PROFILE_FUNCTION();
+    void AssetManager::LoadJob(JobSystem::JobArgs args)
+    {
+        EQN_PROFILE_FUNCTION();
 
-		LoadRequest* req = (LoadRequest*)args.data;
-		EQN_PROFILE_TAG("Asset", req->Path.string().c_str());
+        LoadRequest* req = (LoadRequest*)args.data;
+        EQN_PROFILE_TAG("Asset", req->Path.string().c_str());
 
-		fs::path artifactPath = AssetDatabase::GetArtifactPath(req->Handle);
-		bool artifactReady = fs::exists(artifactPath);
+        fs::path artifactPath = AssetDatabase::GetArtifactPath(req->Handle);
+        bool artifactReady = fs::exists(artifactPath);
 
-		// 1. Import if missing
-		if (!artifactReady)
-		{
-			if (HasImporter(req->Type))
-			{
-				auto& importer = s_Importers[req->Type];
-				artifactReady = importer->Import(req->Path, artifactPath);
-			}
-			else
-			{
-				EQN_CORE_ERROR("AssetManager: No importer for type {0}", (int)req->Type);
-			}
-		}
+        // 1. Import if missing
+        if (!artifactReady)
+        {
+            if (HasImporter(req->Type))
+            {
+                auto& importer = s_Importers[req->Type];
+                artifactReady = importer->Import(req->Path, artifactPath);
+            }
+            else
+            {
+                // Font and Scene types are handled directly
+                if (req->Type != AssetType::Font && req->Type != AssetType::Scene)
+                    EQN_CORE_ERROR("AssetManager: No importer for type {0}", (int)req->Type);
+            }
+        }
 
-		// 2. Load from Artifact
-		std::unique_ptr<AssetData> data = nullptr;
-		if (artifactReady)
-		{
-			if (req->Type == AssetType::Texture)
-			{
-				auto texData = std::make_unique<TextureAssetData>();
-				if (AssetSerializer::DeserializeTexture(artifactPath, *texData)) data = std::move(texData);
-			}
-			else if (req->Type == AssetType::Model)
-			{
-				auto modelData = std::make_unique<ModelAssetData>();
-				if (AssetSerializer::DeserializeModel(artifactPath, *modelData)) data = std::move(modelData);
-			}
-			else if (req->Type == AssetType::Material)
-			{
-				auto matData = std::make_unique<MaterialAssetData>();
-				if (AssetSerializer::DeserializeMaterial(artifactPath, *matData)) data = std::move(matData);
-			}
-			else if (req->Type == AssetType::Shader)
-			{
-				auto shaderData = std::make_unique<ShaderAssetData>();
-				if (AssetSerializer::DeserializeShader(artifactPath, *shaderData)) data = std::move(shaderData);
-			}
-		}
+        // 2. Load from Artifact
+        std::unique_ptr<AssetData> data = nullptr;
+        if (artifactReady)
+        {
+            if (req->Type == AssetType::Texture)
+            {
+                auto texData = std::make_unique<TextureAssetData>();
+                if (AssetSerializer::DeserializeTexture(artifactPath, *texData)) data = std::move(texData);
+            }
+            else if (req->Type == AssetType::Model)
+            {
+                auto modelData = std::make_unique<ModelAssetData>();
+                if (AssetSerializer::DeserializeModel(artifactPath, *modelData)) data = std::move(modelData);
+            }
+            else if (req->Type == AssetType::Material)
+            {
+                auto matData = std::make_unique<MaterialAssetData>();
+                if (AssetSerializer::DeserializeMaterial(artifactPath, *matData)) data = std::move(matData);
+            }
+            else if (req->Type == AssetType::Shader)
+            {
+                auto shaderData = std::make_unique<ShaderAssetData>();
+                if (AssetSerializer::DeserializeShader(artifactPath, *shaderData)) data = std::move(shaderData);
+            }
+        }
 
-		// Push to upload queue regardless of success to clear the loading flag on main thread
-		{
-			std::lock_guard<std::mutex> lock(s_UploadMutex);
-			s_UploadQueue.push_back({ req->Handle, std::move(data), req->Type });
-		}
+        // Push to upload queue regardless of success to clear the loading flag on main thread
+        {
+            std::lock_guard<std::mutex> lock(s_UploadMutex);
+            s_UploadQueue.push_back({req->Handle, std::move(data), req->Type});
+        }
 
-		delete req;
-	}
+        delete req;
+    }
 
-	void AssetManager::Update()
-	{
-		EQN_PROFILE_FUNCTION();
+    void AssetManager::Update()
+    {
+        EQN_PROFILE_FUNCTION();
 
-		// Automatic Garbage Collection
-		s_GCTimer += Time::UnscaledDeltaTime();
-		if (s_GCTimer >= k_GCInterval)
-		{
-			Trim();
-			s_GCTimer = 0.0f;
-		}
+        // Automatic Garbage Collection
+        s_GCTimer += Time::UnscaledDeltaTime();
+        if (s_GCTimer >= k_GCInterval)
+        {
+            Trim();
+            s_GCTimer = 0.0f;
+        }
 
-		std::lock_guard<std::mutex> lock(s_UploadMutex);
-		if (s_UploadQueue.empty()) return;
+        std::lock_guard<std::mutex> lock(s_UploadMutex);
+        if (s_UploadQueue.empty()) return;
 
-		for (auto& upload : s_UploadQueue)
-		{
-			std::shared_ptr<Asset> newAsset = nullptr;
+        for (auto& upload : s_UploadQueue)
+        {
+            std::shared_ptr<Asset> newAsset = nullptr;
 
-			if (upload.Data)
-			{
-				if (upload.Type == AssetType::Texture)
-				{
-					auto* texData = static_cast<TextureAssetData*>(upload.Data.get());
-					newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data(), texData->Settings);
-				}
-				else if (upload.Type == AssetType::Model)
-				{
-					auto* modelData = static_cast<ModelAssetData*>(upload.Data.get());
-					newAsset = Model::Create(modelData->Meshes, modelData->Materials);
-				}
-				else if (upload.Type == AssetType::Material)
-				{
-					auto* matData = static_cast<MaterialAssetData*>(upload.Data.get());
-					auto material = std::make_shared<Material>();
-					material->Deserialize(matData->JsonData);
-					newAsset = material;
+            if (upload.Data)
+            {
+                if (upload.Type == AssetType::Texture)
+                {
+                    auto* texData = static_cast<TextureAssetData*>(upload.Data.get());
+                    newAsset = Texture::Create(texData->Width, texData->Height, texData->Format, texData->Pixels.data(),
+                                               texData->Settings);
+                }
+                else if (upload.Type == AssetType::Model)
+                {
+                    auto* modelData = static_cast<ModelAssetData*>(upload.Data.get());
+                    newAsset = Model::Create(modelData->Meshes, modelData->Materials);
+                }
+                else if (upload.Type == AssetType::Material)
+                {
+                    auto* matData = static_cast<MaterialAssetData*>(upload.Data.get());
+                    auto material = std::make_shared<Material>();
+                    material->Deserialize(matData->JsonData);
+                    newAsset = material;
 
-					// Load texture dependencies referenced by this material
-					for (const auto& map : material->GetTextures())
-					{
-						if (map.Uuid.IsValid())
-							LoadAsync(map.Uuid);
-					}
-				}
-				else if (upload.Type == AssetType::Shader)
-				{
-					auto* shaderData = static_cast<ShaderAssetData*>(upload.Data.get());
-					newAsset = Shader::Create(shaderData->VertexSpirV, shaderData->FragmentSpirV, {});
-				}
-			}
+                    // Load texture dependencies referenced by this material
+                    for (const auto& map : material->GetTextures())
+                    {
+                        if (map.Uuid.IsValid())
+                            LoadAsync(map.Uuid);
+                    }
+                }
+                else if (upload.Type == AssetType::Shader)
+                {
+                    auto* shaderData = static_cast<ShaderAssetData*>(upload.Data.get());
+                    newAsset = Shader::Create(shaderData->VertexSpirV, shaderData->FragmentSpirV, {});
+                }
+            }
 
-			{
-				std::lock_guard<std::mutex> assetLock(s_AssetMutex);
+            {
+                std::lock_guard<std::mutex> assetLock(s_AssetMutex);
 
-				// Clear loading flag
-				s_LoadingAssets.erase(upload.Handle);
+                // Clear loading flag
+                s_LoadingAssets.erase(upload.Handle);
 
-				if (newAsset) {
-					newAsset->Handle = upload.Handle;
-					newAsset->LastAccessedTime = Time::GetTime();
-					s_Assets[upload.Handle] = newAsset;
-				}
-			}
-		}
-		s_UploadQueue.clear();
-	}
+                if (newAsset)
+                {
+                    newAsset->Handle = upload.Handle;
+                    newAsset->LastAccessedTime = Time::GetTime();
+                    s_Assets[upload.Handle] = newAsset;
+                }
+            }
+        }
+        s_UploadQueue.clear();
+    }
 }
