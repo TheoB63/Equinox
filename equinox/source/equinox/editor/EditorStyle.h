@@ -6,21 +6,21 @@ struct ImFont;
 
 namespace Equinox
 {
-    struct FontConfig 
+    struct FontConfig
     {
-        const char* MainFontName;       // e.g. "Roboto-Regular.ttf"
-        float       MainFontSize;       // e.g. 15.0f
-        bool        MergeMainWithSolid; // true for Custom style (merge FA-Solid into main font)
-        float       IconFontSize;       // e.g. 14.0f or 48.0f
+        const char* MainFontName; // e.g. "Roboto-Regular.ttf"
+        float MainFontSize; // e.g. 15.0f
+        bool MergeMainWithSolid; // true for Custom style (merge FA-Solid into main font)
+        float IconFontSize; // e.g. 14.0f or 48.0f
     };
 
-    struct StylePreset 
+    struct StylePreset
     {
         const char* Name;
 
         // Docking
         float DockingSeparatorSize;
-        
+
         // Rounding
         float WindowRounding, ChildRounding, FrameRounding, GrabRounding;
         float PopupRounding, ScrollbarRounding, TabRounding;
@@ -30,8 +30,8 @@ namespace Equinox
 
         // Padding & spacing
         ImVec2 WindowPadding, FramePadding, ItemSpacing, ItemInnerSpacing, TouchExtraPadding;
-        float  IndentSpacing, ScrollbarSize, GrabMinSize;
-        float  Alpha;
+        float IndentSpacing, ScrollbarSize, GrabMinSize;
+        float Alpha;
 
         // Colors (only the ones that vary between presets)
         ImVec4 Colors[ImGuiCol_COUNT];
@@ -48,7 +48,6 @@ namespace Equinox
         // Built-in presets
         const StylePreset& Custom();
         const StylePreset& Bubblegum();
-        const StylePreset& Matrix();
         const StylePreset& Rider();
     }
 }

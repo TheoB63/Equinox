@@ -171,6 +171,7 @@
     <ClInclude Include="source\equinox\core\UUID.h" />
     <ClInclude Include="source\equinox\editor\Editor.h" />
     <ClInclude Include="source\equinox\editor\EditorSelection.h" />
+    <ClInclude Include="source\equinox\editor\EditorSettings.h" />
     <ClInclude Include="source\equinox\editor\EditorStyle.h" />
     <ClInclude Include="source\equinox\editor\inspectors\FontViewer.h" />
     <ClInclude Include="source\equinox\editor\inspectors\SceneViewer.h" />
@@ -281,6 +282,7 @@
     <ClCompile Include="source\equinox\core\Log.cpp" />
     <ClCompile Include="source\equinox\core\UUID.cpp" />
     <ClCompile Include="source\equinox\editor\Editor.cpp" />
+    <ClCompile Include="source\equinox\editor\EditorSettings.cpp" />
     <ClCompile Include="source\equinox\editor\EditorStyle.cpp" />
     <ClCompile Include="source\equinox\editor\inspectors\FontViewer.cpp" />
     <ClCompile Include="source\equinox\editor\inspectors\SceneViewer.cpp" />

@@ -37,7 +37,9 @@ namespace Equinox
 		float     time;
 		glm::mat4 lightSpaceMatrix;  // Set by UpdateLightUniforms before upload
 		float     shadowBias;
-		float     _pad[3];
+		float     iblIntensity;
+		float     skyboxIntensity;
+		float     _pad;
 	};
 
 	struct ObjectPushConstants

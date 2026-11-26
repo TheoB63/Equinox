@@ -60,7 +60,7 @@ namespace Equinox::EditorStyle
         }
         else
         {
-            // Bubblegum/Matrix: add default after main, standalone icon fonts
+            // Bubblegum: add default after main, standalone icon fonts
             io.Fonts->AddFontDefault();
             Editor::FARegularRef() = LoadIconFont("fa-regular-400.ttf", config.IconFontSize, false);
             Editor::FASolidRef() = LoadIconFont("fa-solid-900.ttf", config.IconFontSize, false);

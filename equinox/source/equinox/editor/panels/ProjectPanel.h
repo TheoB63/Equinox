@@ -10,7 +10,7 @@
 
 namespace Equinox
 {
-    struct DirectoryNode 
+    struct DirectoryNode
     {
         fs::path Path;
         std::string Name;
@@ -32,6 +32,9 @@ namespace Equinox
         void OnRender() override;
 
         void Refresh();
+
+        float GetThumbnailSize() const { return m_ThumbnailSize; }
+        void SetThumbnailSize(float size) { m_ThumbnailSize = std::clamp(size, 16.0f, 96.0f); }
 
     private:
         std::unique_ptr<DirectoryNode> BuildDirectoryTree(const fs::path& path, DirectoryNode* parent);

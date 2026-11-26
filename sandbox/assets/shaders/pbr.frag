@@ -21,7 +21,9 @@ layout(set = 0, binding = 0) uniform GlobalUniforms
     float time;
     mat4 lightSpaceMatrix;
     float shadowBias;
-    float _pad[3];
+    float iblIntensity;
+    float skyboxIntensity;
+    float _pad;
 } ubo;
 
 // Set 0: IBL textures
@@ -304,7 +306,7 @@ void main()
     vec2 brdf = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specularIBL = prefilteredColor * (F * brdf.x + brdf.y);
 
-    vec3 ambient = (kD * diffuseIBL + specularIBL) * ao;
+    vec3 ambient = (kD * diffuseIBL + specularIBL) * ao * ubo.iblIntensity;
 
     vec3 color = ambient + Lo;
 

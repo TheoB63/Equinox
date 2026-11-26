@@ -54,6 +54,14 @@ namespace Equinox
         //SetBubblegumStyle();
         //SetRiderStyle();
 
+        // Load persisted settings (style, layout, IBL, etc.)
+        LoadSettings();
+
+        // Apply persisted style (or fallback to Rider)
+        if (s_Settings.activeStyle == "Custom") SetCustomStyle();
+        else if (s_Settings.activeStyle == "Bubblegum") SetBubblegumStyle();
+        else SetRiderStyle();
+
 #ifdef _WIN32
         //window->SetWindowColors({ 21, 21, 21 }, { 40, 40, 40 }, { 255, 255, 255 });
         window->SetWindowColors({30, 31, 34}, {67, 69, 74}, {223, 225, 229});
@@ -129,10 +137,24 @@ namespace Equinox
         // Init all panels
         for (auto& panel : s_Panels)
             panel->OnInit();
+
+        // Apply persisted panel settings
+        if (auto* sp = GetPanel<ScenePanel>())
+            sp->GetEditorCamera().SetFlySpeed(s_Settings.cameraFlySpeed);
+        if (auto* pp = GetPanel<ProjectPanel>())
+            pp->SetThumbnailSize(s_Settings.thumbnailSize);
     }
 
     void Editor::Shutdown()
     {
+        // Sync panel state → settings before saving
+        if (auto* sp = GetPanel<ScenePanel>())
+            s_Settings.cameraFlySpeed = sp->GetEditorCamera().GetFlySpeed();
+        if (auto* pp = GetPanel<ProjectPanel>())
+            s_Settings.thumbnailSize = pp->GetThumbnailSize();
+
+        SaveSettings();
+
         EQN_CORE_TRACE("Cleaning up {} panels", s_Panels.size());
         s_Panels.clear();
         UI::ClearTextureCache();
@@ -178,6 +200,21 @@ namespace Equinox
 
     void Editor::BeginFrame()
     {
+        // Apply deferred style change (fonts can't be rebuilt between NewFrame/Render)
+        if (!s_PendingStyle.empty())
+        {
+            if (s_PendingStyle == "Custom") SetCustomStyle();
+            else if (s_PendingStyle == "Bubblegum") SetBubblegumStyle();
+            else SetRiderStyle();
+
+            s_Settings.activeStyle = s_PendingStyle;
+            s_PendingStyle.clear();
+
+            // Rebuild font texture after atlas change
+            if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
+                ImGui_ImplVulkan_CreateFontsTexture();
+        }
+
         if (Renderer::GetBackend()->GetAPI() == RenderBackend::API::Vulkan)
         {
             ImGui_ImplVulkan_NewFrame();
@@ -473,6 +510,85 @@ namespace Equinox
         s_IsDirty = true;
     }
 
+    // ================================================================
+    // Settings & Layout
+    // ================================================================
+
+    void Editor::LoadSettings()
+    {
+        s_SettingsPath = "editor_settings.json";
+        s_Settings = EditorSettings::Load(s_SettingsPath);
+    }
+
+    void Editor::SaveSettings()
+    {
+        if (!s_SettingsPath.empty())
+            EditorSettings::Save(s_Settings, s_SettingsPath);
+    }
+
+    void Editor::SaveLayout(const std::string& name)
+    {
+        namespace fs = std::filesystem;
+        fs::path layoutDir = "layouts";
+        if (!fs::exists(layoutDir))
+            fs::create_directories(layoutDir);
+
+        size_t size = 0;
+        const char* iniData = ImGui::SaveIniSettingsToMemory(&size);
+
+        fs::path layoutPath = layoutDir / (name + ".ini");
+        std::ofstream file(layoutPath);
+        if (file.is_open())
+        {
+            file.write(iniData, size);
+            s_Settings.activeLayout = name;
+            EQN_CORE_INFO("Saved layout '{}' to '{}'", name, layoutPath.string());
+        }
+    }
+
+    void Editor::LoadLayout(const std::string& name)
+    {
+        namespace fs = std::filesystem;
+        fs::path layoutPath = fs::path("layouts") / (name + ".ini");
+
+        if (!fs::exists(layoutPath))
+        {
+            EQN_CORE_WARN("Layout '{}' not found", name);
+            return;
+        }
+
+        std::ifstream file(layoutPath, std::ios::binary | std::ios::ate);
+        if (!file.is_open()) return;
+
+        auto size = file.tellg();
+        file.seekg(0);
+        std::string data(size, '\0');
+        file.read(data.data(), size);
+
+        ImGui::LoadIniSettingsFromMemory(data.c_str(), data.size());
+        s_Settings.activeLayout = name;
+        EQN_CORE_INFO("Loaded layout '{}'", name);
+    }
+
+    std::vector<std::string> Editor::GetLayoutNames()
+    {
+        namespace fs = std::filesystem;
+        std::vector<std::string> names;
+        fs::path layoutDir = "layouts";
+
+        if (!fs::exists(layoutDir))
+            return names;
+
+        for (const auto& entry : fs::directory_iterator(layoutDir))
+        {
+            if (entry.path().extension() == ".ini")
+                names.push_back(entry.path().stem().string());
+        }
+
+        std::sort(names.begin(), names.end());
+        return names;
+    }
+
     void Editor::ProcessShortcuts()
     {
         bool ctrl = ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_RightCtrl);
@@ -511,7 +627,78 @@ namespace Equinox
                     SaveSceneAs();
                 ImGui::EndMenu();
             }
+
+            if (ImGui::BeginMenu("View"))
+            {
+                // Style submenu — deferred to next BeginFrame (font atlas can't change mid-frame)
+                if (ImGui::BeginMenu("Style"))
+                {
+                    auto deferStyle = [](const char* name)
+                    {
+                        if (ImGui::MenuItem(name, nullptr, s_Settings.activeStyle == name))
+                            s_PendingStyle = name;
+                    };
+                    deferStyle("Custom");
+                    deferStyle("Bubblegum");
+                    deferStyle("Rider");
+                    ImGui::EndMenu();
+                }
+
+                ImGui::Separator();
+
+                // Layout submenu
+                if (ImGui::BeginMenu("Layouts"))
+                {
+                    auto names = GetLayoutNames();
+                    for (const auto& name : names)
+                    {
+                        bool isActive = (s_Settings.activeLayout == name);
+                        if (ImGui::MenuItem(name.c_str(), nullptr, isActive))
+                            LoadLayout(name);
+                    }
+
+                    if (!names.empty())
+                        ImGui::Separator();
+
+                    if (ImGui::MenuItem("Save Layout..."))
+                        s_ShowSaveLayoutPopup = true;
+
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMenu();
+            }
+
             ImGui::EndMenuBar();
+        }
+        // Save Layout popup — rendered outside menu scope so ImGui can track it
+        if (s_ShowSaveLayoutPopup)
+        {
+            ImGui::OpenPopup("Save Layout");
+            s_ShowSaveLayoutPopup = false;
+        }
+
+        if (ImGui::BeginPopupModal("Save Layout", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            static char layoutName[128] = "";
+            ImGui::Text("Layout Name:");
+            ImGui::SetNextItemWidth(250.0f);
+            ImGui::InputText("##LayoutName", layoutName, sizeof(layoutName));
+
+            ImGui::Spacing();
+            if (ImGui::Button("Save", ImVec2(120, 0)) && layoutName[0] != '\0')
+            {
+                SaveLayout(layoutName);
+                layoutName[0] = '\0';
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0)))
+            {
+                layoutName[0] = '\0';
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
         }
     }
 

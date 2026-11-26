@@ -67,6 +67,7 @@ namespace Equinox
             if (ImGui::Checkbox("##Active", &isActive))
             {
                 m_SelectedEntity.SetActive(isActive);
+                Editor::MarkDirty();
             }
 
             // Tooltip and spacing
@@ -84,6 +85,7 @@ namespace Equinox
             if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
             {
                 tag.m_Tag = std::string(buffer);
+                Editor::MarkDirty();
             }
 
             ImGui::EndGroup();
@@ -137,9 +139,21 @@ namespace Equinox
         DrawComponent<Transform>("Transform", m_SelectedEntity, [](Entity entity, Transform& transform)
         {
             UI::BeginProperties();
-            if (UI::Property("Position", transform.Position)) transform.IsDirty = true;
-            if (UI::Property("Rotation", transform.Rotation)) transform.IsDirty = true;
-            if (UI::Property("Scale", transform.Scale, 0.1f, 1.0f)) transform.IsDirty = true;
+            if (UI::Property("Position", transform.Position))
+            {
+                transform.IsDirty = true;
+                Editor::MarkDirty();
+            }
+            if (UI::Property("Rotation", transform.Rotation))
+            {
+                transform.IsDirty = true;
+                Editor::MarkDirty();
+            }
+            if (UI::Property("Scale", transform.Scale, 0.1f, 1.0f))
+            {
+                transform.IsDirty = true;
+                Editor::MarkDirty();
+            }
             UI::EndProperties();
         });
 
@@ -160,6 +174,7 @@ namespace Equinox
                     {
                         camera.Projection = (Camera::ProjectionType)i;
                         camera.IsDirty = true;
+                        Editor::MarkDirty();
                     }
                     if (isSelected)
                     {
@@ -183,7 +198,11 @@ namespace Equinox
                 ImGui::SameLine();
                 changed |= ImGui::DragFloat("##Far", &camera.FarClip, 0.1f, camera.NearClip, 10000.0f);
 
-                if (changed) camera.IsDirty = true;
+                if (changed)
+                {
+                    camera.IsDirty = true;
+                    Editor::MarkDirty();
+                }
             }
             // Orthographic settings
             else
@@ -199,20 +218,29 @@ namespace Equinox
                 ImGui::SameLine();
                 changed |= ImGui::DragFloat("##Far", &camera.OrthographicFar, 0.01f);
 
-                if (changed) camera.IsDirty = true;
+                if (changed)
+                {
+                    camera.IsDirty = true;
+                    Editor::MarkDirty();
+                }
             }
 
             // Aspect ratio (could be auto-calculated from viewport)
             ImGui::Text("Aspect");
             ImGui::SameLine();
-            if (ImGui::DragFloat("##Aspect", &camera.AspectRatio, 0.01f, 0.1f, 10.0f)) camera.IsDirty = true;
+            if (ImGui::DragFloat("##Aspect", &camera.AspectRatio, 0.01f, 0.1f, 10.0f))
+            {
+                camera.IsDirty = true;
+                Editor::MarkDirty();
+            }
         });
 
         DrawComponent<MeshRenderer>("Mesh Renderer", m_SelectedEntity, [](Entity entity, MeshRenderer& meshRenderer)
         {
             UI::BeginProperties();
 
-            UI::PropertyAsset("Model", meshRenderer.ModelUUID, AssetType::Model);
+            if (UI::PropertyAsset("Model", meshRenderer.ModelUUID, AssetType::Model))
+                Editor::MarkDirty();
 
             // Ensure model is loaded to get mesh count
             if (meshRenderer.ModelUUID.IsValid() && !AssetManager::IsLoaded(meshRenderer.ModelUUID) && !
@@ -223,7 +251,10 @@ namespace Equinox
             {
                 int meshIndex = (int)meshRenderer.MeshIndex;
                 if (UI::Property("Mesh Index", meshIndex, 0, (int)model->GetMeshes().size() - 1))
+                {
                     meshRenderer.MeshIndex = (u32)meshIndex;
+                    Editor::MarkDirty();
+                }
             }
 
             if (UI::PropertyAsset("Material", meshRenderer.MaterialUUID, AssetType::Material))
@@ -232,6 +263,7 @@ namespace Equinox
                 if (auto model = AssetManager::GetAsset<Model>(meshRenderer.ModelUUID))
                 {
                     model->AddMaterial(meshRenderer.MaterialUUID, meshRenderer.MeshIndex);
+                    Editor::MarkDirty();
                 }
             }
 
@@ -241,35 +273,46 @@ namespace Equinox
         DrawComponent<Animation>("Animation", m_SelectedEntity, [](Entity entity, Animation& animation)
         {
             // TODO: Implement animation component properties
-            ImGui::SliderInt("##Animation Index", &animation.AnimationIndex, 0, 20, "Index: %d",
-                             ImGuiSliderFlags_AlwaysClamp);
+            if (ImGui::SliderInt("##Animation Index", &animation.AnimationIndex, 0, 20, "Index: %d",
+                                 ImGuiSliderFlags_AlwaysClamp))
+                Editor::MarkDirty();
         });
 
         DrawComponent<DirectionalLight>("Directional Light", m_SelectedEntity,
                                         [](Entity entity, DirectionalLight& dirLight)
                                         {
                                             UI::BeginProperties();
-                                            UI::PropertyColor("Color", dirLight.Color);
-                                            UI::Property("Intensity", dirLight.Intensity, 0.1f, 0.0f, 1000.0f);
-                                            UI::Property("Cast Shadows", dirLight.CastShadows);
+                                            bool changed = false;
+                                            changed |= UI::PropertyColor("Color", dirLight.Color);
+                                            changed |= UI::Property("Intensity", dirLight.Intensity, 0.1f, 0.0f,
+                                                                    1000.0f);
+                                            changed |= UI::Property("Cast Shadows", dirLight.CastShadows);
                                             if (dirLight.CastShadows)
                                             {
-                                                UI::Property("Shadow Bias", dirLight.ShadowBias, 0.0001f, 0.0f, 0.05f);
-                                                UI::Property("Shadow Size", dirLight.ShadowOrthoSize, 1.0f, 10.0f,
-                                                             2000.0f);
-                                                UI::Property("Shadow Distance", dirLight.ShadowDistance, 1.0f, 10.0f,
-                                                             2000.0f);
+                                                changed |= UI::Property("Shadow Bias", dirLight.ShadowBias, 0.0001f,
+                                                                        0.0f, 0.05f);
+                                                changed |= UI::Property("Shadow Size", dirLight.ShadowOrthoSize, 1.0f,
+                                                                        10.0f, 2000.0f);
+                                                changed |= UI::Property("Shadow Distance", dirLight.ShadowDistance,
+                                                                        1.0f, 10.0f, 2000.0f);
                                             }
                                             UI::EndProperties();
+
+                                            if (changed)
+                                                Editor::MarkDirty();
                                         });
 
         DrawComponent<PointLight>("Point Light", m_SelectedEntity, [](Entity entity, PointLight& pointLight)
         {
             UI::BeginProperties();
-            UI::PropertyColor("Color", pointLight.Color);
-            UI::Property("Intensity", pointLight.Intensity, 0.1f, 0.0f, 1000.0f);
-            UI::Property("Range", pointLight.Range, 0.1f, 0.0f, 10000.0f);
+            bool changed = false;
+            changed |= UI::PropertyColor("Color", pointLight.Color);
+            changed |= UI::Property("Intensity", pointLight.Intensity, 0.1f, 0.0f, 1000.0f);
+            changed |= UI::Property("Range", pointLight.Range, 0.1f, 0.0f, 10000.0f);
             UI::EndProperties();
+
+            if (changed)
+                Editor::MarkDirty();
         });
 
         // Add Component button
